@@ -1,0 +1,672 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言一般web网站请求大致分为两类: ajax动态请求和静态资源请求(css, js, 图片资源及视频资源等)。而nginx是处理静态资源的一大神器，开启sendfile机制，使用linux内核提供的零拷贝技术，减少资源文件在用户态和内核态之间的内存拷贝和上下文切换带来的性能开销，并支持反向代理，可以很方便的控制静态资源文件缓存有效期等。同时利用tomcat应用服务器的特性，处理动态请求，比如aj">
+<meta property="og:type" content="article">
+<meta property="og:title" content="haproxy 实现七层动静分离和负载均衡">
+<meta property="og:url" content="http://www.pandan.xyz/2017/01/02/haproxy 实现七层动静分离和负载均衡/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言一般web网站请求大致分为两类: ajax动态请求和静态资源请求(css, js, 图片资源及视频资源等)。而nginx是处理静态资源的一大神器，开启sendfile机制，使用linux内核提供的零拷贝技术，减少资源文件在用户态和内核态之间的内存拷贝和上下文切换带来的性能开销，并支持反向代理，可以很方便的控制静态资源文件缓存有效期等。同时利用tomcat应用服务器的特性，处理动态请求，比如aj">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201701021427.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201701021601.png">
+<meta property="og:updated_time" content="2017-03-16T13:58:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="haproxy 实现七层动静分离和负载均衡">
+<meta name="twitter:description" content="前言一般web网站请求大致分为两类: ajax动态请求和静态资源请求(css, js, 图片资源及视频资源等)。而nginx是处理静态资源的一大神器，开启sendfile机制，使用linux内核提供的零拷贝技术，减少资源文件在用户态和内核态之间的内存拷贝和上下文切换带来的性能开销，并支持反向代理，可以很方便的控制静态资源文件缓存有效期等。同时利用tomcat应用服务器的特性，处理动态请求，比如aj">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201701021427.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/01/02/haproxy 实现七层动静分离和负载均衡/"/>
+
+  <title> haproxy 实现七层动静分离和负载均衡 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                haproxy 实现七层动静分离和负载均衡
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-02T14:12:36+08:00" content="2017-01-02">
+              2017-01-02
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/haproxy/" itemprop="url" rel="index">
+                    <span itemprop="name">haproxy</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一般web网站请求大致分为两类: ajax动态请求和静态资源请求(css, js, 图片资源及视频资源等)。而nginx是处理静态资源的一大神器，开启sendfile机制，使用linux内核提供的零拷贝技术，减少资源文件在用户态和内核态之间的内存拷贝和上下文切换带来的性能开销，并支持反向代理，可以很方便的控制静态资源文件缓存有效期等。同时利用tomcat应用服务器的特性，处理动态请求，比如ajax请求，http接口请求等，然后在流量接入层利用haproxy做动静分离和负载均衡，将动态请求分流到tomcat应用服务器集群，将静态资源请求分流到nginx静态资源服务器集群。<br><a id="more"></a></p>
+<h3 id="部署方案"><a href="#部署方案" class="headerlink" title="部署方案"></a>部署方案</h3><p>网络结构图：<br><img src="/images/201701021427.png" alt="image"></p>
+<p>haproxy 配置如下：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">frontend http-in</span><br><span class="line">    bind *:80</span><br><span class="line">    option http-keep-alive</span><br><span class="line">    timeout http-keep-alive 30s</span><br><span class="line">    log global</span><br><span class="line">    </span><br><span class="line">    acl lpp_web path_beg -i /lpp-web</span><br><span class="line">    acl uri_src path_reg -i ^/.+\.(js|css|ico|gif|bmp|jpg|jpeg|png|swf|cur)$</span><br><span class="line">    use_backend static_servers if lpp_web uri_src //都为true则走静态资源服务器</span><br><span class="line">    default_backend dynamic_servers //默认走dynamic_servers服务器集群</span><br><span class="line">    </span><br><span class="line">frontend https-in</span><br><span class="line">    bind *:443 ssl crt /usr/local/haproxy/conf/pandan.xyz.pem ciphers HIGH:!aNULL:!MD5</span><br><span class="line">    option http-keep-alive</span><br><span class="line">    timeout http-keep-alive 30s</span><br><span class="line">    log global</span><br><span class="line">    </span><br><span class="line">    acl lpp_web path_beg -i /lpp-web</span><br><span class="line">    acl uri_src path_reg -i ^/.+\.(js|css|ico|gif|bmp|jpg|jpeg|png|swf|cur)$</span><br><span class="line">    use_backend static_servers if lpp_web uri_src //都为true则走静态资源服务器</span><br><span class="line">    default_backend dynamic_servers //默认走dynamic_servers服务器集群</span><br><span class="line">    </span><br><span class="line">//nginx静态资源服务器集群</span><br><span class="line">backend static_servers</span><br><span class="line">    mode http</span><br><span class="line">    balance source</span><br><span class="line">    option httpchk GET /lpp-web/monitor.html</span><br><span class="line">    server resource_nginx115 10.116.84.115:800 cookie resource_nginx115 check inter 3000 rise 3 fall 3 weight 1</span><br><span class="line">    server resource_nginx116 10.116.84.116:800 cookie resource_nginx116 check inter 3000 rise 3 fall 3 weight 1</span><br><span class="line">    http-request add-header X-Forwarded-Proto https if &#123; ssl_fc &#125; //如果是https请求，则添加一个请求头，告诉后端服务器请求的协议类型，否则后端服务器是无法感知具体请求协议的</span><br><span class="line">    </span><br><span class="line">//tomcat应用服务器集群</span><br><span class="line">backend dynamic_servers</span><br><span class="line">    mode http</span><br><span class="line">    balance source</span><br><span class="line">    option httpchk GET /lpp-web/monitor.html</span><br><span class="line">    server app_tomcat112 10.116.84.112:800 cookie app-tomcat112 check inter 3000 rise 3 fall 3 weight 1</span><br><span class="line">    server app_tomcat109 10.116.84.109:800 cookie app-tomcat109 check inter 3000 rise 3 fall 3 weight 1</span><br><span class="line">    http-request add-header X-Forwarded-Proto https if &#123; ssl_fc &#125; //如果是https请求，则添加一个请求头，告诉后端服务器请求的协议类型，否则后端服务器是无法感知具体请求协议的</span><br></pre></td></tr></table></figure></p>
+<p>nginx 配置如下：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    sendfile        on;</span><br><span class="line">    keepalive_timeout 30s;</span><br><span class="line">    </span><br><span class="line">    gzip  on;</span><br><span class="line">    gzip_comp_level 4;</span><br><span class="line">    </span><br><span class="line">    client_max_body_size 8m;</span><br><span class="line">    client_body_buffer_size 128k;</span><br><span class="line">    </span><br><span class="line">    client_header_buffer_size 16k;</span><br><span class="line">    large_client_header_buffers 4 32k;</span><br><span class="line">    </span><br><span class="line">    proxy_buffer_size 16k;</span><br><span class="line">    proxy_buffers 8 32k;</span><br><span class="line">    proxy_busy_buffers_size 64k;</span><br><span class="line">    </span><br><span class="line">    server &#123;</span><br><span class="line">        listen       800;</span><br><span class="line">        server_name  localhost;</span><br><span class="line">        access_log  logs/resource.access.log main if=$loggable;</span><br><span class="line"></span><br><span class="line">        location ~ ^/.+\.(ico|gif|bmp|jpg|jpeg|png|swf|cur)$ &#123;</span><br><span class="line">           root   /usr/local/tomcat/app_tomcat112/webapps; //指向工程资源文件根目录</span><br><span class="line">           expires 15d; //告诉客户端浏览器缓存15天</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="总结与思考"><a href="#总结与思考" class="headerlink" title="总结与思考"></a>总结与思考</h3><p>总结：</p>
+<p>为了方便部署，减少运维成本，我们采用的还是将web网站整个工程都部署在tomcat中(并没有将工程中的静态资源文件单独剥离，这也是方便开发和运维)，然后在同一个服务器下，即安装nginx服务，也安装了tomcat服务。配置nginx的静态资源目录为tomcat所在目录下的webapps中工程资源目录。但是，由于浏览器的并发请求数是针对同一域名进行限制的，即同一时间针对同一域名下的请求有一定数量限制，超过限制数目的请求会被阻塞。所以，静态资源服务器都有自己的单独的域名，一来可以增大并发请求数，二来可以减少不必要的cookie信息的携带传输，消耗不必要的带宽等。</p>
+<p>思考：</p>
+<p>通过分析上述网络结构图，不难发现haproxy流量接入层是个单点，是整个集群的流量入口，当流量比较大时，也会成为性能的瓶颈所在，一旦该haproxy服务宕机，会导致整个集群无法对外提供服务，并不满足大型网站架构的高可用特性。</p>
+<p>常见替代方案如下：</p>
+<ul>
+<li><p>方案1（haproxy + keepalived + nginx + tomcat）<br><img src="/images/201701021601.png" alt="image"><br>在上述架构方案中，加入一个keepalived服务，keepalived是虚拟路由冗余协议的一种实现，可以实现双机浮动的虚拟IP(VIP)，通过在两台服务器上部署haproxy服务，并且每台服务器上安装keepalived服务，用于相互检测haproxy服务是否可用，如果发现主服务不可用，则动态修改虚拟VIP对应的物理mac地址为备haproxy服务器的mac地址，从而实现一个高可用架构，缺点是有一个冗余的haproxy服务器处于闲置状态，没有对服务器资源充分利用。</p>
+</li>
+<li><p>方案2（LVS/DR + keepalived + ngnix + tomcat）</p>
+<p>可以采用LVS/DR + keepalived + ngnix + tomcat架构来实现负载均衡和高可用流量接入层架构，直接通过nginx实现动静分离和应用服务器负载均衡，利用keepalived的虚拟路由冗余协议实现双机浮动的高可用架构，利用LVS/DR模式作为流量接入层负载均衡，LVS/DR和haproxy的区别是LVS/DR通过在数据链路层动态修改请求包中的目标mac地址，来达到流量的负载均衡，并且请求响应是由真实处理的nginx服务器直接返回给客户端，而不用经过LVS/DR负载器再返回给客户端；而haproxy做接入层负载，则完全是请求代理的方式，客户端所有的请求和响应都需要经过haproxy，当请求并发量很大时，haproxy就会成为性能的瓶颈（受限于单台haproxy服务器端口数，文件描述符，内存，cpu，磁盘I/O，网卡带宽等限制）。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/30/go 开发环境安装及配置/" rel="next" title="go 开发环境安装及配置">
+                <i class="fa fa-chevron-left"></i> go 开发环境安装及配置
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/05/jdbc 操作数据库详解/" rel="prev" title="jdbc 操作数据库详解">
+                jdbc 操作数据库详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部署方案"><span class="nav-number">2.</span> <span class="nav-text">部署方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结与思考"><span class="nav-number">3.</span> <span class="nav-text">总结与思考</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

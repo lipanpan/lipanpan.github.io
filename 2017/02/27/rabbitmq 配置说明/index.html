@@ -1,0 +1,679 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言本篇主要介绍rabbitmq相关的配置，首先在rabbitmq中有两类配置：rabbitmq-env.conf环境变量配置和rabbitmq.config服务节点配置，这些文件默认存放位置是在${rabbitmq安装路径}/etc/rabbitmq目录下，默认是没有的，需要自己手动创建。下面将着重介绍这两类配置，它们有哪些配置项? 以及这些配置项的作用?">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rabbitmq 配置说明">
+<meta property="og:url" content="http://www.pandan.xyz/2017/02/27/rabbitmq 配置说明/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言本篇主要介绍rabbitmq相关的配置，首先在rabbitmq中有两类配置：rabbitmq-env.conf环境变量配置和rabbitmq.config服务节点配置，这些文件默认存放位置是在${rabbitmq安装路径}/etc/rabbitmq目录下，默认是没有的，需要自己手动创建。下面将着重介绍这两类配置，它们有哪些配置项? 以及这些配置项的作用?">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201702272303.png">
+<meta property="og:updated_time" content="2017-03-16T14:03:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rabbitmq 配置说明">
+<meta name="twitter:description" content="前言本篇主要介绍rabbitmq相关的配置，首先在rabbitmq中有两类配置：rabbitmq-env.conf环境变量配置和rabbitmq.config服务节点配置，这些文件默认存放位置是在${rabbitmq安装路径}/etc/rabbitmq目录下，默认是没有的，需要自己手动创建。下面将着重介绍这两类配置，它们有哪些配置项? 以及这些配置项的作用?">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201702272303.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/02/27/rabbitmq 配置说明/"/>
+
+  <title> rabbitmq 配置说明 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rabbitmq 配置说明
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-27T23:10:36+08:00" content="2017-02-27">
+              2017-02-27
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本篇主要介绍rabbitmq相关的配置，首先在rabbitmq中有两类配置：rabbitmq-env.conf环境变量配置和rabbitmq.config服务节点配置，这些文件默认存放位置是在${rabbitmq安装路径}/etc/rabbitmq目录下，默认是没有的，需要自己手动创建。下面将着重介绍这两类配置，它们有哪些配置项? 以及这些配置项的作用?<br><a id="more"></a></p>
+<h3 id="rabbitmq-env-conf"><a href="#rabbitmq-env-conf" class="headerlink" title="rabbitmq-env.conf"></a>rabbitmq-env.conf</h3><p>原文：In order of preference, the startup scripts get their values from the environment, from /etc/rabbitmq/rabbitmq-env.conf and finally from the built-in default values.</p>
+<p>翻译：rabbitmq服务按照优先级顺序读取环境变量值，优先读取系统环境变量，然后读取rabbitmq-env.conf配置文件，最后才是系统预定的默认值。</p>
+<p>RabbitMQ environment variable names have the prefix RABBITMQ_. A typical variable called RABBITMQ_var_name is set as follows:</p>
+<ol>
+<li>a shell environment variable called RABBITMQ_var_name is used if this is defined;</li>
+<li>otherwise, a variable called var_name is used if this is set in the rabbitmq-env.conf file</li>
+<li>otherwise, a system-specified default value is used.</li>
+</ol>
+<p>上述描述传达了两个重要信息：</p>
+<ol>
+<li>系统环境变量配置都是以RABBITMQ_前缀开头的，但是在rabbitmq-env.conf是不需要该前缀的；</li>
+<li>配置的优先级：系统环境变量 &gt; rabbitmq-env.conf配置 &gt; 系统默认值<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">NODE_PORT= //端口号；</span><br><span class="line">NODENAME= //节点名称；</span><br><span class="line">CONFIG_FILE= //配置文件的路径；</span><br><span class="line">MNESIA_BASE= //MNESIA数据库的路径；</span><br><span class="line">LOG_BASE= //log的路径；</span><br><span class="line">PLUGINS_DIR= //插件的路径；</span><br><span class="line">......等等</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><img src="/images/201702272303.png" alt="image"></p>
+<h3 id="rabbitmq-config"><a href="#rabbitmq-config" class="headerlink" title="rabbitmq.config"></a>rabbitmq.config</h3><p>下面是从github下的rabbitmq服务完整的配置信息及格式并且附有详情地址，绝大多数情况下，我们不用配置的这么详细，因为rabbitmq配置都是有默认值的，可以在rabbitmq节点下运行./rabbitmqctl status命令查看当前节点的配置信息。rabbitmq.config是一个标准的erlang配置文件，配置必须符合erlang标准规范，不然会出现配置解析报错，导致服务无法启动。以下就是个完整而标准的配置，我们可以直接在上面进行修改和调整即可！<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">%% -*- mode: erlang -*-</span><br><span class="line">%% ----------------------------------------------------------------------------</span><br><span class="line">%% RabbitMQ Sample Configuration File.</span><br><span class="line">%%</span><br><span class="line">%% See http://www.rabbitmq.com/configure.html for details.</span><br><span class="line">%% ----------------------------------------------------------------------------</span><br><span class="line">[</span><br><span class="line"> &#123;rabbit,</span><br><span class="line">  [%%</span><br><span class="line">   %% Network Connectivity</span><br><span class="line">   %% ====================</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% By default, RabbitMQ will listen on all interfaces, using</span><br><span class="line">   %% the standard (reserved) AMQP port.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tcp_listeners, [5672]&#125;,</span><br><span class="line"></span><br><span class="line">   %% To listen on a specific interface, provide a tuple of &#123;IpAddress, Port&#125;.</span><br><span class="line">   %% For example, to listen only on localhost for both IPv4 and IPv6:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tcp_listeners, [&#123;&quot;127.0.0.1&quot;, 5672&#125;,</span><br><span class="line">   %%                  &#123;&quot;::1&quot;,       5672&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% SSL listeners are configured in the same fashion as TCP listeners,</span><br><span class="line">   %% including the option to control the choice of interface.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;ssl_listeners, [5671]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Number of Erlang processes that will accept connections for the TCP</span><br><span class="line">   %% and SSL listeners.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;num_tcp_acceptors, 10&#125;,</span><br><span class="line">   %% &#123;num_ssl_acceptors, 1&#125;,</span><br><span class="line"></span><br><span class="line">   %% Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection</span><br><span class="line">   %% and SSL handshake), in milliseconds.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;handshake_timeout, 10000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Log levels (currently just used for connection logging).</span><br><span class="line">   %% One of &apos;debug&apos;, &apos;info&apos;, &apos;warning&apos;, &apos;error&apos; or &apos;none&apos;, in decreasing</span><br><span class="line">   %% order of verbosity. Defaults to &apos;info&apos;.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;log_levels, [&#123;connection, info&#125;, &#123;channel, info&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set to &apos;true&apos; to perform reverse DNS lookups when accepting a</span><br><span class="line">   %% connection. Hostnames will then be shown instead of IP addresses</span><br><span class="line">   %% in rabbitmqctl and the management plugin.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;reverse_dns_lookups, true&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Security / AAA</span><br><span class="line">   %% ==============</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% The default &quot;guest&quot; user is only permitted to access the server</span><br><span class="line">   %% via a loopback interface (e.g. localhost).</span><br><span class="line">   %% &#123;loopback_users, [&lt;&lt;&quot;guest&quot;&gt;&gt;]&#125;,</span><br><span class="line">   %%</span><br><span class="line">   %% Uncomment the following line if you want to allow access to the</span><br><span class="line">   %% guest user from anywhere on the network.</span><br><span class="line">   %% &#123;loopback_users, []&#125;,</span><br><span class="line"></span><br><span class="line">   %% Configuring SSL.</span><br><span class="line">   %% See http://www.rabbitmq.com/ssl.html for full documentation.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;ssl_options, [&#123;cacertfile,           &quot;/path/to/testca/cacert.pem&quot;&#125;,</span><br><span class="line">   %%                &#123;certfile,             &quot;/path/to/server/cert.pem&quot;&#125;,</span><br><span class="line">   %%                &#123;keyfile,              &quot;/path/to/server/key.pem&quot;&#125;,</span><br><span class="line">   %%                &#123;verify,               verify_peer&#125;,</span><br><span class="line">   %%                &#123;fail_if_no_peer_cert, false&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Choose the available SASL mechanism(s) to expose.</span><br><span class="line">   %% The two default (built in) mechanisms are &apos;PLAIN&apos; and</span><br><span class="line">   %% &apos;AMQPLAIN&apos;. Additional mechanisms can be added via</span><br><span class="line">   %% plugins.</span><br><span class="line">   %%</span><br><span class="line">   %% See http://www.rabbitmq.com/authentication.html for more details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;auth_mechanisms, [&apos;PLAIN&apos;, &apos;AMQPLAIN&apos;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Select an authentication database to use. RabbitMQ comes bundled</span><br><span class="line">   %% with a built-in auth-database, based on mnesia.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;auth_backends, [rabbit_auth_backend_internal]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Configurations supporting the rabbitmq_auth_mechanism_ssl and</span><br><span class="line">   %% rabbitmq_auth_backend_ldap plugins.</span><br><span class="line">   %%</span><br><span class="line">   %% NB: These options require that the relevant plugin is enabled.</span><br><span class="line">   %% See http://www.rabbitmq.com/plugins.html for further details.</span><br><span class="line"></span><br><span class="line">   %% The RabbitMQ-auth-mechanism-ssl plugin makes it possible to</span><br><span class="line">   %% authenticate a user based on the client&apos;s SSL certificate.</span><br><span class="line">   %%</span><br><span class="line">   %% To use auth-mechanism-ssl, add to or replace the auth_mechanisms</span><br><span class="line">   %% list with the entry &apos;EXTERNAL&apos;.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;auth_mechanisms, [&apos;EXTERNAL&apos;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% The rabbitmq_auth_backend_ldap plugin allows the broker to</span><br><span class="line">   %% perform authentication and authorisation by deferring to an</span><br><span class="line">   %% external LDAP server.</span><br><span class="line">   %%</span><br><span class="line">   %% For more information about configuring the LDAP backend, see</span><br><span class="line">   %% http://www.rabbitmq.com/ldap.html.</span><br><span class="line">   %%</span><br><span class="line">   %% Enable the LDAP auth backend by adding to or replacing the</span><br><span class="line">   %% auth_backends entry:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;auth_backends, [rabbit_auth_backend_ldap]&#125;,</span><br><span class="line"></span><br><span class="line">   %% This pertains to both the rabbitmq_auth_mechanism_ssl plugin and</span><br><span class="line">   %% STOMP ssl_cert_login configurations. See the rabbitmq_stomp</span><br><span class="line">   %% configuration section later in this file and the README in</span><br><span class="line">   %% https://github.com/rabbitmq/rabbitmq-auth-mechanism-ssl for further</span><br><span class="line">   %% details.</span><br><span class="line">   %%</span><br><span class="line">   %% To use the SSL cert&apos;s CN instead of its DN as the username</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;ssl_cert_login_from, common_name&#125;,</span><br><span class="line"></span><br><span class="line">   %% SSL handshake timeout, in milliseconds.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;ssl_handshake_timeout, 5000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Password hashing implementation. Will only affect newly</span><br><span class="line">   %% created users. To recalculate hash for an existing user</span><br><span class="line">   %% it&apos;s necessary to update her password.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;password_hashing_module, rabbit_password_hashing_sha256&#125;,</span><br><span class="line"></span><br><span class="line">   %% Configuration entry encryption.</span><br><span class="line">   %% See http://www.rabbitmq.com/configure.html#configuration-encryption</span><br><span class="line">   %%</span><br><span class="line">   %% To specify the passphrase in the configuration file:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;config_entry_decoder, [&#123;passphrase, &lt;&lt;&quot;mypassphrase&quot;&gt;&gt;&#125;]&#125;</span><br><span class="line">   %%</span><br><span class="line">   %% To specify the passphrase in an external file:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;config_entry_decoder, [&#123;passphrase, &#123;file, &quot;/path/to/passphrase/file&quot;&#125;&#125;]&#125;</span><br><span class="line">   %%</span><br><span class="line">   %% To make the broker request the passphrase when it starts:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;config_entry_decoder, [&#123;passphrase, prompt&#125;]&#125;</span><br><span class="line">   %%</span><br><span class="line">   %% To change encryption settings:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;config_entry_decoder, [&#123;cipher,     aes_cbc256&#125;,</span><br><span class="line">   %%                         &#123;hash,       sha512&#125;,</span><br><span class="line">   %%                         &#123;iterations, 1000&#125;]&#125;</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Default User / VHost</span><br><span class="line">   %% ====================</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% On first start RabbitMQ will create a vhost and a user. These</span><br><span class="line">   %% config items control what gets created. See</span><br><span class="line">   %% http://www.rabbitmq.com/access-control.html for further</span><br><span class="line">   %% information about vhosts and access control.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;default_vhost,       &lt;&lt;&quot;/&quot;&gt;&gt;&#125;,</span><br><span class="line">   %% &#123;default_user,        &lt;&lt;&quot;guest&quot;&gt;&gt;&#125;,</span><br><span class="line">   %% &#123;default_pass,        &lt;&lt;&quot;guest&quot;&gt;&gt;&#125;,</span><br><span class="line">   %% &#123;default_permissions, [&lt;&lt;&quot;.*&quot;&gt;&gt;, &lt;&lt;&quot;.*&quot;&gt;&gt;, &lt;&lt;&quot;.*&quot;&gt;&gt;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Tags for default user</span><br><span class="line">   %%</span><br><span class="line">   %% For more details about tags, see the documentation for the</span><br><span class="line">   %% Management Plugin at http://www.rabbitmq.com/management.html.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;default_user_tags, [administrator]&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Additional network and protocol related configuration</span><br><span class="line">   %% =====================================================</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% Set the default AMQP heartbeat delay (in seconds).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;heartbeat, 60&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set the max permissible size of an AMQP frame (in bytes).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;frame_max, 131072&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set the max frame size the server will accept before connection</span><br><span class="line">   %% tuning occurs</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;initial_frame_max, 4096&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set the max permissible number of channels per connection.</span><br><span class="line">   %% 0 means &quot;no limit&quot;.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;channel_max, 128&#125;,</span><br><span class="line"></span><br><span class="line">   %% Customising Socket Options.</span><br><span class="line">   %%</span><br><span class="line">   %% See (http://www.erlang.org/doc/man/inet.html#setopts-2) for</span><br><span class="line">   %% further documentation.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tcp_listen_options, [&#123;backlog,       128&#125;,</span><br><span class="line">   %%                       &#123;nodelay,       true&#125;,</span><br><span class="line">   %%                       &#123;exit_on_close, false&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Resource Limits &amp; Flow Control</span><br><span class="line">   %% ==============================</span><br><span class="line">   %%</span><br><span class="line">   %% See http://www.rabbitmq.com/memory.html for full details.</span><br><span class="line"></span><br><span class="line">   %% Memory-based Flow Control threshold.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vm_memory_high_watermark, 0.4&#125;,</span><br><span class="line"></span><br><span class="line">   %% Alternatively, we can set a limit (in bytes) of RAM used by the node.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vm_memory_high_watermark, &#123;absolute, 1073741824&#125;&#125;,</span><br><span class="line">   %%</span><br><span class="line">   %% Or you can set absolute value using memory units.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vm_memory_high_watermark, &#123;absolute, &quot;1024M&quot;&#125;&#125;,</span><br><span class="line">   %%</span><br><span class="line">   %% Supported units suffixes:</span><br><span class="line">   %%</span><br><span class="line">   %% k, kiB: kibibytes (2^10 bytes)</span><br><span class="line">   %% M, MiB: mebibytes (2^20)</span><br><span class="line">   %% G, GiB: gibibytes (2^30)</span><br><span class="line">   %% kB: kilobytes (10^3)</span><br><span class="line">   %% MB: megabytes (10^6)</span><br><span class="line">   %% GB: gigabytes (10^9)</span><br><span class="line"></span><br><span class="line">   %% Fraction of the high watermark limit at which queues start to</span><br><span class="line">   %% page message out to disc in order to free up memory.</span><br><span class="line">   %%</span><br><span class="line">   %% Values greater than 0.9 can be dangerous and should be used carefully.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vm_memory_high_watermark_paging_ratio, 0.5&#125;,</span><br><span class="line"></span><br><span class="line">   %% Interval (in milliseconds) at which we perform the check of the memory</span><br><span class="line">   %% levels against the watermarks.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;memory_monitor_interval, 2500&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set disk free limit (in bytes). Once free disk space reaches this</span><br><span class="line">   %% lower bound, a disk alarm will be set - see the documentation</span><br><span class="line">   %% listed above for more details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;disk_free_limit, 50000000&#125;,</span><br><span class="line">   %%</span><br><span class="line">   %% Or you can set it using memory units (same as in vm_memory_high_watermark)</span><br><span class="line">   %% &#123;disk_free_limit, &quot;50MB&quot;&#125;,</span><br><span class="line">   %% &#123;disk_free_limit, &quot;50000kB&quot;&#125;,</span><br><span class="line">   %% &#123;disk_free_limit, &quot;2GB&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Alternatively, we can set a limit relative to total available RAM.</span><br><span class="line">   %%</span><br><span class="line">   %% Values lower than 1.0 can be dangerous and should be used carefully.</span><br><span class="line">   %% &#123;disk_free_limit, &#123;mem_relative, 2.0&#125;&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Misc/Advanced Options</span><br><span class="line">   %% =====================</span><br><span class="line">   %%</span><br><span class="line">   %% NB: Change these only if you understand what you are doing!</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% To announce custom properties to clients on connection:</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;server_properties, []&#125;,</span><br><span class="line"></span><br><span class="line">   %% How to respond to cluster partitions.</span><br><span class="line">   %% See http://www.rabbitmq.com/partitions.html for further details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;cluster_partition_handling, ignore&#125;,</span><br><span class="line"></span><br><span class="line">   %% Make clustering happen *automatically* at startup - only applied</span><br><span class="line">   %% to nodes that have just been reset or started for the first time.</span><br><span class="line">   %% See http://www.rabbitmq.com/clustering.html#auto-config for</span><br><span class="line">   %% further details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;cluster_nodes, &#123;[&apos;rabbit@my.host.com&apos;], disc&#125;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Interval (in milliseconds) at which we send keepalive messages</span><br><span class="line">   %% to other cluster members. Note that this is not the same thing</span><br><span class="line">   %% as net_ticktime; missed keepalive messages will not cause nodes</span><br><span class="line">   %% to be considered down.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;cluster_keepalive_interval, 10000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set (internal) statistics collection granularity.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;collect_statistics, none&#125;,</span><br><span class="line"></span><br><span class="line">   %% Statistics collection interval (in milliseconds).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;collect_statistics_interval, 5000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Explicitly enable/disable hipe compilation.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;hipe_compile, true&#125;,</span><br><span class="line"></span><br><span class="line">   %% Timeout used when waiting for Mnesia tables in a cluster to</span><br><span class="line">   %% become available.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;mnesia_table_loading_timeout, 30000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Size in bytes below which to embed messages in the queue index. See</span><br><span class="line">   %% http://www.rabbitmq.com/persistence-conf.html</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;queue_index_embed_msgs_below, 4096&#125;,</span><br><span class="line"></span><br><span class="line">   %% Whether or not to enable background GC.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;background_gc_enabled, true&#125;,</span><br><span class="line">   %%</span><br><span class="line">   %% Interval (in milliseconds) at which we run background GC.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;background_gc_target_interval, 60000&#125;</span><br><span class="line"></span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% Advanced Erlang Networking/Clustering Options.</span><br><span class="line"> %%</span><br><span class="line"> %% See http://www.rabbitmq.com/clustering.html for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> &#123;kernel,</span><br><span class="line">  [%% Sets the net_kernel tick time.</span><br><span class="line">   %% Please see http://erlang.org/doc/man/kernel_app.html and</span><br><span class="line">   %% http://www.rabbitmq.com/nettick.html for further details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;net_ticktime, 60&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ Management Plugin</span><br><span class="line"> %%</span><br><span class="line"> %% See http://www.rabbitmq.com/management.html for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_management,</span><br><span class="line">  [%% Pre-Load schema definitions from the following JSON file. See</span><br><span class="line">   %% http://www.rabbitmq.com/management.html#load-definitions</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;load_definitions, &quot;/path/to/schema.json&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Log all requests to the management HTTP API to a file.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;http_log_dir, &quot;/path/to/access.log&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Change the port on which the HTTP listener listens,</span><br><span class="line">   %% specifying an interface for the web server to bind to.</span><br><span class="line">   %% Also set the listener to use SSL and provide SSL options.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;listener, [&#123;port,     12345&#125;,</span><br><span class="line">   %%             &#123;ip,       &quot;127.0.0.1&quot;&#125;,</span><br><span class="line">   %%             &#123;ssl,      true&#125;,</span><br><span class="line">   %%             &#123;ssl_opts, [&#123;cacertfile, &quot;/path/to/cacert.pem&quot;&#125;,</span><br><span class="line">   %%                         &#123;certfile,   &quot;/path/to/cert.pem&quot;&#125;,</span><br><span class="line">   %%                         &#123;keyfile,    &quot;/path/to/key.pem&quot;&#125;]&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% One of &apos;basic&apos;, &apos;detailed&apos; or &apos;none&apos;. See</span><br><span class="line">   %% http://www.rabbitmq.com/management.html#fine-stats for more details.</span><br><span class="line">   %% &#123;rates_mode, basic&#125;,</span><br><span class="line"></span><br><span class="line">   %% Configure how long aggregated data (such as message rates and queue</span><br><span class="line">   %% lengths) is retained. Please read the plugin&apos;s documentation in</span><br><span class="line">   %% http://www.rabbitmq.com/management.html#configuration for more</span><br><span class="line">   %% details.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;sample_retention_policies,</span><br><span class="line">   %%  [&#123;global,   [&#123;60, 5&#125;, &#123;3600, 60&#125;, &#123;86400, 1200&#125;]&#125;,</span><br><span class="line">   %%   &#123;basic,    [&#123;60, 5&#125;, &#123;3600, 60&#125;]&#125;,</span><br><span class="line">   %%   &#123;detailed, [&#123;10, 5&#125;]&#125;]&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ Shovel Plugin</span><br><span class="line"> %%</span><br><span class="line"> %% See http://www.rabbitmq.com/shovel.html for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_shovel,</span><br><span class="line">  [&#123;shovels,</span><br><span class="line">    [%% A named shovel worker.</span><br><span class="line">     %% &#123;my_first_shovel,</span><br><span class="line">     %%  [</span><br><span class="line"></span><br><span class="line">     %% List the source broker(s) from which to consume.</span><br><span class="line">     %%</span><br><span class="line">     %%   &#123;sources,</span><br><span class="line">     %%    [%% URI(s) and pre-declarations for all source broker(s).</span><br><span class="line">     %%     &#123;brokers, [&quot;amqp://user:password@host.domain/my_vhost&quot;]&#125;,</span><br><span class="line">     %%     &#123;declarations, []&#125;</span><br><span class="line">     %%    ]&#125;,</span><br><span class="line"></span><br><span class="line">     %% List the destination broker(s) to publish to.</span><br><span class="line">     %%   &#123;destinations,</span><br><span class="line">     %%    [%% A singular version of the &apos;brokers&apos; element.</span><br><span class="line">     %%     &#123;broker, &quot;amqp://&quot;&#125;,</span><br><span class="line">     %%     &#123;declarations, []&#125;</span><br><span class="line">     %%    ]&#125;,</span><br><span class="line"></span><br><span class="line">     %% Name of the queue to shovel messages from.</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;queue, &lt;&lt;&quot;your-queue-name-goes-here&quot;&gt;&gt;&#125;,</span><br><span class="line"></span><br><span class="line">     %% Optional prefetch count.</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;prefetch_count, 10&#125;,</span><br><span class="line"></span><br><span class="line">     %% when to acknowledge messages:</span><br><span class="line">     %% - no_ack: never (auto)</span><br><span class="line">     %% - on_publish: after each message is republished</span><br><span class="line">     %% - on_confirm: when the destination broker confirms receipt</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;ack_mode, on_confirm&#125;,</span><br><span class="line"></span><br><span class="line">     %% Overwrite fields of the outbound basic.publish.</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;publish_fields, [&#123;exchange,    &lt;&lt;&quot;my_exchange&quot;&gt;&gt;&#125;,</span><br><span class="line">     %%                   &#123;routing_key, &lt;&lt;&quot;from_shovel&quot;&gt;&gt;&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">     %% Static list of basic.properties to set on re-publication.</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;publish_properties, [&#123;delivery_mode, 2&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">     %% The number of seconds to wait before attempting to</span><br><span class="line">     %% reconnect in the event of a connection failure.</span><br><span class="line">     %%</span><br><span class="line">     %% &#123;reconnect_delay, 2.5&#125;</span><br><span class="line"></span><br><span class="line">     %% ]&#125; %% End of my_first_shovel</span><br><span class="line">    ]&#125;</span><br><span class="line">   %% Rather than specifying some values per-shovel, you can specify</span><br><span class="line">   %% them for all shovels here.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;defaults, [&#123;prefetch_count,     0&#125;,</span><br><span class="line">   %%             &#123;ack_mode,           on_confirm&#125;,</span><br><span class="line">   %%             &#123;publish_fields,     []&#125;,</span><br><span class="line">   %%             &#123;publish_properties, [&#123;delivery_mode, 2&#125;]&#125;,</span><br><span class="line">   %%             &#123;reconnect_delay,    2.5&#125;]&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ Stomp Adapter</span><br><span class="line"> %%</span><br><span class="line"> %% See http://www.rabbitmq.com/stomp.html for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_stomp,</span><br><span class="line">  [%% Network Configuration - the format is generally the same as for the broker</span><br><span class="line"></span><br><span class="line">   %% Listen only on localhost (ipv4 &amp; ipv6) on a specific port.</span><br><span class="line">   %% &#123;tcp_listeners, [&#123;&quot;127.0.0.1&quot;, 61613&#125;,</span><br><span class="line">   %%                  &#123;&quot;::1&quot;,       61613&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Listen for SSL connections on a specific port.</span><br><span class="line">   %% &#123;ssl_listeners, [61614]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Number of Erlang processes that will accept connections for the TCP</span><br><span class="line">   %% and SSL listeners.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;num_tcp_acceptors, 10&#125;,</span><br><span class="line">   %% &#123;num_ssl_acceptors, 1&#125;,</span><br><span class="line"></span><br><span class="line">   %% Additional SSL options</span><br><span class="line"></span><br><span class="line">   %% Extract a name from the client&apos;s certificate when using SSL.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;ssl_cert_login, true&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set a default user name and password. This is used as the default login</span><br><span class="line">   %% whenever a CONNECT frame omits the login and passcode headers.</span><br><span class="line">   %%</span><br><span class="line">   %% Please note that setting this will allow clients to connect without</span><br><span class="line">   %% authenticating!</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;default_user, [&#123;login,    &quot;guest&quot;&#125;,</span><br><span class="line">   %%                 &#123;passcode, &quot;guest&quot;&#125;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% If a default user is configured, or you have configured use SSL client</span><br><span class="line">   %% certificate based authentication, you can choose to allow clients to</span><br><span class="line">   %% omit the CONNECT frame entirely. If set to true, the client is</span><br><span class="line">   %% automatically connected as the default user or user supplied in the</span><br><span class="line">   %% SSL certificate whenever the first frame sent on a session is not a</span><br><span class="line">   %% CONNECT frame.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;implicit_connect, true&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ MQTT Adapter</span><br><span class="line"> %%</span><br><span class="line"> %% See https://github.com/rabbitmq/rabbitmq-mqtt/blob/stable/README.md</span><br><span class="line"> %% for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_mqtt,</span><br><span class="line">  [%% Set the default user name and password. Will be used as the default login</span><br><span class="line">   %% if a connecting client provides no other login details.</span><br><span class="line">   %%</span><br><span class="line">   %% Please note that setting this will allow clients to connect without</span><br><span class="line">   %% authenticating!</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;default_user, &lt;&lt;&quot;guest&quot;&gt;&gt;&#125;,</span><br><span class="line">   %% &#123;default_pass, &lt;&lt;&quot;guest&quot;&gt;&gt;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Enable anonymous access. If this is set to false, clients MUST provide</span><br><span class="line">   %% login information in order to connect. See the default_user/default_pass</span><br><span class="line">   %% configuration elements for managing logins without authentication.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;allow_anonymous, true&#125;,</span><br><span class="line"></span><br><span class="line">   %% If you have multiple chosts, specify the one to which the</span><br><span class="line">   %% adapter connects.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vhost, &lt;&lt;&quot;/&quot;&gt;&gt;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Specify the exchange to which messages from MQTT clients are published.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;exchange, &lt;&lt;&quot;amq.topic&quot;&gt;&gt;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Specify TTL (time to live) to control the lifetime of non-clean sessions.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;subscription_ttl, 1800000&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set the prefetch count (governing the maximum number of unacknowledged</span><br><span class="line">   %% messages that will be delivered).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;prefetch, 10&#125;,</span><br><span class="line"></span><br><span class="line">   %% TCP/SSL Configuration (as per the broker configuration).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tcp_listeners, [1883]&#125;,</span><br><span class="line">   %% &#123;ssl_listeners, []&#125;,</span><br><span class="line"></span><br><span class="line">   %% Number of Erlang processes that will accept connections for the TCP</span><br><span class="line">   %% and SSL listeners.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;num_tcp_acceptors, 10&#125;,</span><br><span class="line">   %% &#123;num_ssl_acceptors, 1&#125;,</span><br><span class="line"></span><br><span class="line">   %% TCP/Socket options (as per the broker configuration).</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tcp_listen_options, [&#123;backlog,   128&#125;,</span><br><span class="line">   %%                       &#123;nodelay,   true&#125;]&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ AMQP 1.0 Support</span><br><span class="line"> %%</span><br><span class="line"> %% See https://github.com/rabbitmq/rabbitmq-amqp1.0/blob/stable/README.md</span><br><span class="line"> %% for details</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_amqp1_0,</span><br><span class="line">  [%% Connections that are not authenticated with SASL will connect as this</span><br><span class="line">   %% account. See the README for more information.</span><br><span class="line">   %%</span><br><span class="line">   %% Please note that setting this will allow clients to connect without</span><br><span class="line">   %% authenticating!</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;default_user, &quot;guest&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Enable protocol strict mode. See the README for more information.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;protocol_strict_mode, false&#125;</span><br><span class="line">  ]&#125;,</span><br><span class="line"></span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"> %% RabbitMQ LDAP Plugin</span><br><span class="line"> %%</span><br><span class="line"> %% See http://www.rabbitmq.com/ldap.html for details.</span><br><span class="line"> %%</span><br><span class="line"> %% ----------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"> &#123;rabbitmq_auth_backend_ldap,</span><br><span class="line">  [%%</span><br><span class="line">   %% Connecting to the LDAP server(s)</span><br><span class="line">   %% ================================</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% Specify servers to bind to. You *must* set this in order for the plugin</span><br><span class="line">   %% to work properly.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;servers, [&quot;your-server-name-goes-here&quot;]&#125;,</span><br><span class="line"></span><br><span class="line">   %% Connect to the LDAP server using SSL</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;use_ssl, false&#125;,</span><br><span class="line"></span><br><span class="line">   %% Specify the LDAP port to connect to</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;port, 389&#125;,</span><br><span class="line"></span><br><span class="line">   %% LDAP connection timeout, in milliseconds or &apos;infinity&apos;</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;timeout, infinity&#125;,</span><br><span class="line"></span><br><span class="line">   %% Enable logging of LDAP queries.</span><br><span class="line">   %% One of</span><br><span class="line">   %%   - false (no logging is performed)</span><br><span class="line">   %%   - true (verbose logging of the logic used by the plugin)</span><br><span class="line">   %%   - network (as true, but additionally logs LDAP network traffic)</span><br><span class="line">   %%</span><br><span class="line">   %% Defaults to false.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;log, false&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Authentication</span><br><span class="line">   %% ==============</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% Pattern to convert the username given through AMQP to a DN before</span><br><span class="line">   %% binding</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;user_dn_pattern, &quot;cn=$&#123;username&#125;,ou=People,dc=example,dc=com&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Alternatively, you can convert a username to a Distinguished</span><br><span class="line">   %% Name via an LDAP lookup after binding. See the documentation for</span><br><span class="line">   %% full details.</span><br><span class="line"></span><br><span class="line">   %% When converting a username to a dn via a lookup, set these to</span><br><span class="line">   %% the name of the attribute that represents the user name, and the</span><br><span class="line">   %% base DN for the lookup query.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;dn_lookup_attribute,   &quot;userPrincipalName&quot;&#125;,</span><br><span class="line">   %% &#123;dn_lookup_base,        &quot;DC=gopivotal,DC=com&quot;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Controls how to bind for authorisation queries and also to</span><br><span class="line">   %% retrieve the details of users logging in without presenting a</span><br><span class="line">   %% password (e.g., SASL EXTERNAL).</span><br><span class="line">   %% One of</span><br><span class="line">   %%  - as_user (to bind as the authenticated user - requires a password)</span><br><span class="line">   %%  - anon    (to bind anonymously)</span><br><span class="line">   %%  - &#123;UserDN, Password&#125; (to bind with a specified user name and password)</span><br><span class="line">   %%</span><br><span class="line">   %% Defaults to &apos;as_user&apos;.</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;other_bind, as_user&#125;,</span><br><span class="line"></span><br><span class="line">   %%</span><br><span class="line">   %% Authorisation</span><br><span class="line">   %% =============</span><br><span class="line">   %%</span><br><span class="line"></span><br><span class="line">   %% The LDAP plugin can perform a variety of queries against your</span><br><span class="line">   %% LDAP server to determine questions of authorisation. See</span><br><span class="line">   %% http://www.rabbitmq.com/ldap.html#authorisation for more</span><br><span class="line">   %% information.</span><br><span class="line"></span><br><span class="line">   %% Set the query to use when determining vhost access</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;vhost_access_query, &#123;in_group,</span><br><span class="line">   %%                       &quot;ou=$&#123;vhost&#125;-users,ou=vhosts,dc=example,dc=com&quot;&#125;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set the query to use when determining resource (e.g., queue) access</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;resource_access_query, &#123;constant, true&#125;&#125;,</span><br><span class="line"></span><br><span class="line">   %% Set queries to determine which tags a user has</span><br><span class="line">   %%</span><br><span class="line">   %% &#123;tag_queries, []&#125;</span><br><span class="line">  ]&#125;</span><br><span class="line">].</span><br></pre></td></tr></table></figure></p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://www.rabbitmq.com/relocate.html" target="_blank" rel="noopener">http://www.rabbitmq.com/relocate.html</a></li>
+<li><a href="http://www.rabbitmq.com/configure.html#config-items" target="_blank" rel="noopener">http://www.rabbitmq.com/configure.html#config-items</a></li>
+<li><a href="http://www.rabbitmq.com/configure.html#configuration-file" target="_blank" rel="noopener">http://www.rabbitmq.com/configure.html#configuration-file</a></li>
+<li><a href="http://www.rabbitmq.com/configure.html#define-environment-variables" target="_blank" rel="noopener">http://www.rabbitmq.com/configure.html#define-environment-variables</a></li>
+<li><a href="https://github.com/rabbitmq/rabbitmq-server/blob/stable/docs/rabbitmq.config.example" target="_blank" rel="noopener">https://github.com/rabbitmq/rabbitmq-server/blob/stable/docs/rabbitmq.config.example</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/26/rabbitmq 消息转发模式/" rel="next" title="rabbitmq 消息转发模式">
+                <i class="fa fa-chevron-left"></i> rabbitmq 消息转发模式
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/28/rabbitmq 镜像队列集群配置/" rel="prev" title="rabbitmq 镜像队列集群配置">
+                rabbitmq 镜像队列集群配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rabbitmq-env-conf"><span class="nav-number">2.</span> <span class="nav-text">rabbitmq-env.conf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rabbitmq-config"><span class="nav-number">3.</span> <span class="nav-text">rabbitmq.config</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言本篇主要介绍rabbitmq消费端Consumer的一些基本的使用特性，Consumer Cancel（取消消费者），Consumer Prefetch（设置消费者的预取数量）以及Consumer Priorities（设置消费者的优先级）等等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rabbitmq 消费者Consumer相关特性">
+<meta property="og:url" content="http://www.pandan.xyz/2017/03/11/rabbitmq 消费者Consumer相关特性/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言本篇主要介绍rabbitmq消费端Consumer的一些基本的使用特性，Consumer Cancel（取消消费者），Consumer Prefetch（设置消费者的预取数量）以及Consumer Priorities（设置消费者的优先级）等等。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-03-15T14:02:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rabbitmq 消费者Consumer相关特性">
+<meta name="twitter:description" content="前言本篇主要介绍rabbitmq消费端Consumer的一些基本的使用特性，Consumer Cancel（取消消费者），Consumer Prefetch（设置消费者的预取数量）以及Consumer Priorities（设置消费者的优先级）等等。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/03/11/rabbitmq 消费者Consumer相关特性/"/>
+
+  <title> rabbitmq 消费者Consumer相关特性 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rabbitmq 消费者Consumer相关特性
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-11T23:10:36+08:00" content="2017-03-11">
+              2017-03-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本篇主要介绍rabbitmq消费端Consumer的一些基本的使用特性，Consumer Cancel（取消消费者），Consumer Prefetch（设置消费者的预取数量）以及Consumer Priorities（设置消费者的优先级）等等。<br><a id="more"></a></p>
+<h3 id="Consumer-Cancel"><a href="#Consumer-Cancel" class="headerlink" title="Consumer Cancel"></a>Consumer Cancel</h3><p>queue中的消费者，可能会因为各种原因而被取消，例如：客户端通过向broker发送basic.cancel导致消费者被取消，broker回复一个basic.cancel-ok；消费者消费的queue不可用或被删除以及queue所在节点不可用等都会导致消费者被取消，对于broker由于未知原因导致消费者被取消，客户端是无法感知的。</p>
+<p>那么，为了解决这个问题，我们引入了一种扩展机制（即当broker发生未知原因导致消费者被取消，则发送basic.cancel通知client，除了因为节点不可用则是无法通知的），如果是客户端主动向broker发送basic.cancel取消消费者，broker也是不会向client发送basic.cancel的，而是回复basic.cancel-ok。</p>
+<p>但是，默认情况下，AMQP 0-9-1 client并没有启用当broker发生未知原因导致消费者被取消的通知功能，我们必须在client-properties属性列表中设置consumer_cancel_notify的值为true，告知broker方可启用，但是通过阅读rabbitmq client sdk源码发现默认就是开启的，可能rabbitmq client sdk是对AMQP 0-9-1 client的进一步封装吧。</p>
+<p><strong>rabbitmq sdk源码</strong>：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ConnectionFactory connectionFactory = <span class="keyword">new</span> ConnectionFactory();</span><br><span class="line">Map&lt;String, Object&gt; clientProperties = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line"><span class="comment">// 替换默认的client capabilities</span></span><br><span class="line">connectionFactory.setClientProperties(clientProperties);</span><br><span class="line"></span><br><span class="line"># 源码</span><br><span class="line"><span class="keyword">private</span> Map&lt;String, Object&gt; _clientProperties = AMQConnection.defaultClientProperties();</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Retrieve a copy of the default table of client properties that</span></span><br><span class="line"><span class="comment"> * will be sent to the server during connection startup. This</span></span><br><span class="line"><span class="comment"> * method is called when each new ConnectionFactory instance is</span></span><br><span class="line"><span class="comment"> * constructed.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> a map of client properties</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@see</span> Connection#getClientProperties</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String, Object&gt; <span class="title">defaultClientProperties</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Map&lt;String,Object&gt; props = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">    props.put(<span class="string">"product"</span>, LongStringHelper.asLongString(<span class="string">"RabbitMQ"</span>));</span><br><span class="line">    props.put(<span class="string">"version"</span>, LongStringHelper.asLongString(ClientVersion.VERSION));</span><br><span class="line">    props.put(<span class="string">"platform"</span>, LongStringHelper.asLongString(<span class="string">"Java"</span>));</span><br><span class="line">    props.put(<span class="string">"copyright"</span>, LongStringHelper.asLongString(Copyright.COPYRIGHT));</span><br><span class="line">    props.put(<span class="string">"information"</span>, LongStringHelper.asLongString(Copyright.LICENSE));</span><br><span class="line">    Map&lt;String, Object&gt; capabilities = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">    capabilities.put(<span class="string">"publisher_confirms"</span>, <span class="keyword">true</span>); <span class="comment">//publisher_confirms默认开启的</span></span><br><span class="line">    capabilities.put(<span class="string">"exchange_exchange_bindings"</span>, <span class="keyword">true</span>);</span><br><span class="line">    capabilities.put(<span class="string">"basic.nack"</span>, <span class="keyword">true</span>);</span><br><span class="line">    capabilities.put(<span class="string">"consumer_cancel_notify"</span>, <span class="keyword">true</span>); <span class="comment">//consumer_cancel_notify默认开启的</span></span><br><span class="line">    capabilities.put(<span class="string">"connection.blocked"</span>, <span class="keyword">true</span>);</span><br><span class="line">    capabilities.put(<span class="string">"authentication_failure_close"</span>, <span class="keyword">true</span>);</span><br><span class="line">    props.put(<span class="string">"capabilities"</span>, capabilities);</span><br><span class="line">    <span class="keyword">return</span> props;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>取消通知代码</strong>：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">channel.queueDeclare(queue, <span class="keyword">false</span>, <span class="keyword">true</span>, <span class="keyword">false</span>, <span class="keyword">null</span>);</span><br><span class="line">Consumer consumer = <span class="keyword">new</span> DefaultConsumer(channel) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleCancel</span><span class="params">(String consumerTag)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// consumer has been cancelled unexpectedly</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">channel.basicConsume(queue, consumer);</span><br></pre></td></tr></table></figure></p>
+<p><strong>client主动取消代码</strong>：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">channel.queueDeclare(queue, <span class="keyword">false</span>, <span class="keyword">true</span>, <span class="keyword">false</span>, <span class="keyword">null</span>);</span><br><span class="line">Consumer consumer = <span class="keyword">new</span> DefaultConsumer(channel) &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleCancelOk</span><span class="params">(String consumerTag)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// client 主动取消消费者</span></span><br><span class="line">       <span class="comment">//  broker 回复basic.cancel-ok，回调此函数</span></span><br><span class="line">       .......</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">channel.basicConsume(queue, consumer);</span><br><span class="line"></span><br><span class="line"><span class="comment">// consumerTag：当前channel内Consumer的唯一标识，由client指定，如果没有指定则交由服务端自动生成</span></span><br><span class="line">channel.basicCancel(consumerTag);</span><br></pre></td></tr></table></figure></p>
+<h3 id="Consumer-Prefetch"><a href="#Consumer-Prefetch" class="headerlink" title="Consumer Prefetch"></a>Consumer Prefetch</h3><p>Prefetch机制是用于控制未确认消息数量的一种有效方式。AMQP指定了basic.qos方法，允许我们在使用时限制通道（或连接）上未确认消息的数量（也称为“预取计数”）。但是很不幸的是，通道并不是理想的范围，因为单个通道可能从多个队列消费消息，通道和队列需要为每个发送的消息彼此协调，方可确保它们不超过此限制。这在单个机器上很慢，并且在跨集群消费时更慢。对于大多数使用场景，指定每个消费者的预取计数更加符合场景。当未确认消息数量达到Prefetch限制后，broker将不再继续向该channel或consumer发送消息，直到限制被解除。</p>
+<p>因此RabbitMQ重新定义了basic.qos方法中全局标志的含义：<br>global | Meaning of prefetch_count in AMQP 0-9-1 | Meaning of prefetch_count in RabbitMQ<br>—|—|—<br>false | 限制通道channel上未确认消息数量 | 限制每个consumer上未确认消息数量<br>true  | 限制连接connection上未确认消息数量 | 限制通道channel上未确认消息数量<br><strong>connection，channel，consumer三者之间的关系</strong>：一个connection可以创建多个channel，而每个channel又可以创建多个consumer。</p>
+<p><strong>示例代码：</strong><br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 限制每个consumer未确认消息数量10个</span></span><br><span class="line">Channel channel = ...;</span><br><span class="line">Consumer consumer1 = ...;</span><br><span class="line">Consumer consumer2 = ...;</span><br><span class="line">channel.basicQos(<span class="number">10</span>); <span class="comment">// Per consumer limit</span></span><br><span class="line">channel.basicConsume(<span class="string">"my-queue1"</span>, <span class="keyword">false</span>, consumer1);</span><br><span class="line">channel.basicConsume(<span class="string">"my-queue2"</span>, <span class="keyword">false</span>, consumer2);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 限制通道channel上未确认消息数量15个</span></span><br><span class="line">Channel channel = ...;</span><br><span class="line">Consumer consumer1 = ...;</span><br><span class="line">Consumer consumer2 = ...;</span><br><span class="line">channel.basicQos(<span class="number">15</span>, <span class="keyword">true</span>);  <span class="comment">// Per channel limit</span></span><br><span class="line">channel.basicConsume(<span class="string">"my-queue1"</span>, <span class="keyword">false</span>, consumer1);</span><br><span class="line">channel.basicConsume(<span class="string">"my-queue2"</span>, <span class="keyword">false</span>, consumer2);</span><br></pre></td></tr></table></figure></p>
+<p>ps: 大多数client-api上，global的默认值是false；</p>
+<h3 id="Consumer-Priorities"><a href="#Consumer-Priorities" class="headerlink" title="Consumer Priorities"></a>Consumer Priorities</h3><p>通常情况下，queue中活跃的消费者都是循环的接收消息，但是如果是设置了优先级的消费者，则消息优先投递给优先级高的消费者（数值越大，优先级越高），只有当高优先级的消费者被阻塞或者被取消时，queue中的消息才会投递给低优先级的消费者；如果存在相同优先级的消费者，则跟通常情况下一样，相同优先级的消费者循环接收消息。</p>
+<p>在任何情况下，消费者要么处于active活跃状态，要么处于block阻塞状态。引起消费者从active状态到block状态有很多原因，例如：channel达到basic.qos未确认消息的最大值，这时消费者就会被阻塞；或者简单的因为网络阻塞等。并且由于消费者可以每秒在active和block状态之间来回切换多次，所以在管理界面中是不会显示消费者当前状态的（因为这是非及时的，不准确的）。</p>
+<p><strong>示例代码</strong>：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Channel channel = ...;</span><br><span class="line">Consumer consumer = ...;</span><br><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">args.put(<span class="string">"x-priority"</span>, <span class="number">10</span>);</span><br><span class="line">channel.basicConsume(<span class="string">"my-queue"</span>, <span class="keyword">false</span>, args, consumer);<span class="comment">// 创建一个优先级为10的消费者</span></span><br></pre></td></tr></table></figure></p>
+<p>ps：x-priority为整数值，可以是正数，也可以是负数；并且数值越大优先级越高。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://www.rabbitmq.com/consumer-cancel.html" target="_blank" rel="noopener">http://www.rabbitmq.com/consumer-cancel.html</a></li>
+<li><a href="http://www.rabbitmq.com/consumer-prefetch.html" target="_blank" rel="noopener">http://www.rabbitmq.com/consumer-prefetch.html</a></li>
+<li><a href="http://www.rabbitmq.com/consumer-priority.html" target="_blank" rel="noopener">http://www.rabbitmq.com/consumer-priority.html</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/10/rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列/" rel="next" title="rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列">
+                <i class="fa fa-chevron-left"></i> rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/12/rabbitmq 远程过程调用RPC/" rel="prev" title="rabbitmq 远程过程调用RPC">
+                rabbitmq 远程过程调用RPC <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Cancel"><span class="nav-number">2.</span> <span class="nav-text">Consumer Cancel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Prefetch"><span class="nav-number">3.</span> <span class="nav-text">Consumer Prefetch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Priorities"><span class="nav-number">4.</span> <span class="nav-text">Consumer Priorities</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

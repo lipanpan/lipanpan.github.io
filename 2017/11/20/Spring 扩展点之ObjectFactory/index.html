@@ -1,0 +1,688 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 Spring框架为开发者提供了很多可扩展的点，ObjectFactory接口就是其中一个，常运用于SpringMVC中在Controller层注入HttpServletRequest request对象等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 扩展点之ObjectFactory">
+<meta property="og:url" content="http://www.pandan.xyz/2017/11/20/Spring 扩展点之ObjectFactory/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 Spring框架为开发者提供了很多可扩展的点，ObjectFactory接口就是其中一个，常运用于SpringMVC中在Controller层注入HttpServletRequest request对象等。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-11-30T15:46:52.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring 扩展点之ObjectFactory">
+<meta name="twitter:description" content="前言 Spring框架为开发者提供了很多可扩展的点，ObjectFactory接口就是其中一个，常运用于SpringMVC中在Controller层注入HttpServletRequest request对象等。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/11/20/Spring 扩展点之ObjectFactory/"/>
+
+  <title> Spring 扩展点之ObjectFactory | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Spring 扩展点之ObjectFactory
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-11-20T21:47:56+08:00" content="2017-11-20">
+              2017-11-20
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Spring框架为开发者提供了很多可扩展的点，ObjectFactory接口就是其中一个，常运用于SpringMVC中在Controller层注入HttpServletRequest request对象等。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Defines a factory which can return an Object instance</span></span><br><span class="line"><span class="comment"> * (possibly shared or independent) when invoked.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;This interface is typically used to encapsulate a generic factory which</span></span><br><span class="line"><span class="comment"> * returns a new instance (prototype) of some target object on each invocation.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;This interface is similar to &#123;<span class="doctag">@link</span> FactoryBean&#125;, but implementations</span></span><br><span class="line"><span class="comment"> * of the latter are normally meant to be defined as SPI instances in a</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@link</span> BeanFactory&#125;, while implementations of this class are normally meant</span></span><br><span class="line"><span class="comment"> * to be fed as an API to other beans (through injection). As such, the</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@code</span> getObject()&#125; method has different exception handling behavior.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Colin Sampaleanu</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@since</span> 1.0.2</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@see</span> FactoryBean</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ObjectFactory</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Return an instance (possibly shared or independent)</span></span><br><span class="line"><span class="comment">	 * of the object managed by this factory.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> an instance of the bean (should never be &#123;<span class="doctag">@code</span> null&#125;)</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> BeansException in case of creation errors</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function">T <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="常见扩展实现"><a href="#常见扩展实现" class="headerlink" title="常见扩展实现"></a>常见扩展实现</h3></blockquote>
+<ol>
+<li>RequestObjectFactory</li>
+<li>ResponseObjectFactory</li>
+<li>SessionObjectFactory</li>
+<li>WebRequestObjectFactory</li>
+<li>TargetBeanObjectFactory</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WebApplicationContextUtils</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Factory that exposes the current request object on demand.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"serial"</span>)</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestObjectFactory</span> <span class="keyword">implements</span> <span class="title">ObjectFactory</span>&lt;<span class="title">ServletRequest</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> ServletRequest <span class="title">getObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> currentRequestAttributes().getRequest();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="string">"Current HttpServletRequest"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Factory that exposes the current response object on demand.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"serial"</span>)</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseObjectFactory</span> <span class="keyword">implements</span> <span class="title">ObjectFactory</span>&lt;<span class="title">ServletResponse</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> ServletResponse <span class="title">getObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			ServletResponse response = currentRequestAttributes().getResponse();</span><br><span class="line">			<span class="keyword">if</span> (response == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Current servlet response not available - "</span> +</span><br><span class="line">						<span class="string">"consider using RequestContextFilter instead of RequestContextListener"</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> response;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="string">"Current HttpServletResponse"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Factory that exposes the current session object on demand.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"serial"</span>)</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SessionObjectFactory</span> <span class="keyword">implements</span> <span class="title">ObjectFactory</span>&lt;<span class="title">HttpSession</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> HttpSession <span class="title">getObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> currentRequestAttributes().getRequest().getSession();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="string">"Current HttpSession"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Factory that exposes the current WebRequest object on demand.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"serial"</span>)</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">WebRequestObjectFactory</span> <span class="keyword">implements</span> <span class="title">ObjectFactory</span>&lt;<span class="title">WebRequest</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> WebRequest <span class="title">getObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			ServletRequestAttributes requestAttr = currentRequestAttributes();</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">new</span> ServletWebRequest(requestAttr.getRequest(), requestAttr.getResponse());</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="string">"Current ServletWebRequest"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 控制层基类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">protected</span> HttpServletRequest request;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">protected</span> HttpServletResponse response;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">protected</span> HttpSession session;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 子类</span></span><br><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SystemController</span> <span class="keyword">extends</span> <span class="title">BaseController</span> </span>&#123;</span><br><span class="line">    ........</span><br><span class="line">    ............</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>咋一看，是不是觉得存在线程安全问题? 在SpringMvc中Controller不是单例的吗？那request，response和session对象岂不是所有线程共享的，后面进来的请求岂不是会覆盖前面请求的这些对象。但事实上，官方已经给出证明example，这种写法是正确的，不会存在线程安全问题，下面来分析一下，Spring是如何实现的。</p>
+<p>注意：ResponseObjectFactory 是从Spring 4版本以上才开始出现的。</p>
+<blockquote>
+<h3 id="实现原理分析"><a href="#实现原理分析" class="headerlink" title="实现原理分析"></a>实现原理分析</h3></blockquote>
+<p>XmlWebApplicationContext是Spring提供的容器的一种实现，多运用于Web项目中。继承于AbstractRefreshableWebApplicationContext，而AbstractRefreshableWebApplicationContext重写了AbstractApplicationContext中的<br>postProcessBeanFactory方法，向beanFactory容器中添加依赖解析映射关系。</p>
+<p>AbstractApplicationContext：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractApplicationContext</span> <span class="keyword">extends</span> <span class="title">DefaultResourceLoader</span></span></span><br><span class="line"><span class="class">		<span class="keyword">implements</span> <span class="title">ConfigurableApplicationContext</span>, <span class="title">DisposableBean</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">refresh</span><span class="params">()</span> <span class="keyword">throws</span> BeansException, IllegalStateException </span>&#123;</span><br><span class="line">		<span class="keyword">synchronized</span> (<span class="keyword">this</span>.startupShutdownMonitor) &#123;</span><br><span class="line">			<span class="comment">// Prepare this context for refreshing.</span></span><br><span class="line">			prepareRefresh();</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Tell the subclass to refresh the internal bean factory.</span></span><br><span class="line">			<span class="comment">// 加载Bean信息，并添加到容器中</span></span><br><span class="line">			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Prepare the bean factory for use in this context.</span></span><br><span class="line">			prepareBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				<span class="comment">// Allows post-processing of the bean factory in context subclasses.</span></span><br><span class="line">				<span class="comment">// 调用子类重写的方法</span></span><br><span class="line">				postProcessBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Invoke factory processors registered as beans in the context.</span></span><br><span class="line">				invokeBeanFactoryPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Register bean processors that intercept bean creation.</span></span><br><span class="line">				registerBeanPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize message source for this context.</span></span><br><span class="line">				initMessageSource();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize event multicaster for this context.</span></span><br><span class="line">				initApplicationEventMulticaster();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize other special beans in specific context subclasses.</span></span><br><span class="line">				onRefresh();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Check for listener beans and register them.</span></span><br><span class="line">				registerListeners();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Instantiate all remaining (non-lazy-init) singletons.</span></span><br><span class="line">				finishBeanFactoryInitialization(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Last step: publish corresponding event.</span></span><br><span class="line">				finishRefresh();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">catch</span> (BeansException ex) &#123;</span><br><span class="line">				<span class="keyword">if</span> (logger.isWarnEnabled()) &#123;</span><br><span class="line">					logger.warn(<span class="string">"Exception encountered during context initialization - "</span> +</span><br><span class="line">							<span class="string">"cancelling refresh attempt: "</span> + ex);</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Destroy already created singletons to avoid dangling resources.</span></span><br><span class="line">				destroyBeans();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Reset 'active' flag.</span></span><br><span class="line">				cancelRefresh(ex);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Propagate exception to caller.</span></span><br><span class="line">				<span class="keyword">throw</span> ex;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">finally</span> &#123;</span><br><span class="line">				<span class="comment">// Reset common introspection caches in Spring's core, since we</span></span><br><span class="line">				<span class="comment">// might not ever need metadata for singleton beans anymore...</span></span><br><span class="line">				resetCommonCaches();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Modify the application context's internal bean factory after its standard</span></span><br><span class="line"><span class="comment">	 * initialization. All bean definitions will have been loaded, but no beans</span></span><br><span class="line"><span class="comment">	 * will have been instantiated yet. This allows for registering special</span></span><br><span class="line"><span class="comment">	 * BeanPostProcessors etc in certain ApplicationContext implementations.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> beanFactory the bean factory used by the application context</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">postProcessBeanFactory</span><span class="params">(ConfigurableListableBeanFactory beanFactory)</span> </span>&#123;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>AbstractRefreshableWebApplicationContext是AbstractApplicationContext的子类：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractRefreshableWebApplicationContext</span> <span class="keyword">extends</span> <span class="title">AbstractRefreshableConfigApplicationContext</span></span></span><br><span class="line"><span class="class">		<span class="keyword">implements</span> <span class="title">ConfigurableWebApplicationContext</span>, <span class="title">ThemeSource</span> </span>&#123;</span><br><span class="line">		</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">postProcessBeanFactory</span><span class="params">(ConfigurableListableBeanFactory beanFactory)</span> </span>&#123;</span><br><span class="line">		beanFactory.addBeanPostProcessor(<span class="keyword">new</span> ServletContextAwareProcessor(<span class="keyword">this</span>.servletContext, <span class="keyword">this</span>.servletConfig));</span><br><span class="line">		beanFactory.ignoreDependencyInterface(ServletContextAware.class);</span><br><span class="line">		beanFactory.ignoreDependencyInterface(ServletConfigAware.class);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 关键步骤：添加解析映射关系</span></span><br><span class="line">		WebApplicationContextUtils.registerWebApplicationScopes(beanFactory, <span class="keyword">this</span>.servletContext);</span><br><span class="line">		WebApplicationContextUtils.registerEnvironmentBeans(beanFactory, <span class="keyword">this</span>.servletContext, <span class="keyword">this</span>.servletConfig);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>WebApplicationContextUtils:<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WebApplicationContextUtils</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Register web-specific scopes ("request", "session", "globalSession", "application")</span></span><br><span class="line"><span class="comment">	 * with the given BeanFactory, as used by the WebApplicationContext.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> beanFactory the BeanFactory to configure</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> sc the ServletContext that we're running within</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">registerWebApplicationScopes</span><span class="params">(ConfigurableListableBeanFactory beanFactory, ServletContext sc)</span> </span>&#123;</span><br><span class="line">		beanFactory.registerScope(WebApplicationContext.SCOPE_REQUEST, <span class="keyword">new</span> RequestScope());</span><br><span class="line">		beanFactory.registerScope(WebApplicationContext.SCOPE_SESSION, <span class="keyword">new</span> SessionScope(<span class="keyword">false</span>));</span><br><span class="line">		beanFactory.registerScope(WebApplicationContext.SCOPE_GLOBAL_SESSION, <span class="keyword">new</span> SessionScope(<span class="keyword">true</span>));</span><br><span class="line">		<span class="keyword">if</span> (sc != <span class="keyword">null</span>) &#123;</span><br><span class="line">			ServletContextScope appScope = <span class="keyword">new</span> ServletContextScope(sc);</span><br><span class="line">			beanFactory.registerScope(WebApplicationContext.SCOPE_APPLICATION, appScope);</span><br><span class="line">			<span class="comment">// Register as ServletContext attribute, for ContextCleanupListener to detect it.</span></span><br><span class="line">			sc.setAttribute(ServletContextScope.class.getName(), appScope);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 向容器中添加依赖解析映射关系</span></span><br><span class="line">		beanFactory.registerResolvableDependency(ServletRequest.class, <span class="keyword">new</span> RequestObjectFactory());</span><br><span class="line">		beanFactory.registerResolvableDependency(ServletResponse.class, <span class="keyword">new</span> ResponseObjectFactory());</span><br><span class="line">		beanFactory.registerResolvableDependency(HttpSession.class, <span class="keyword">new</span> SessionObjectFactory());</span><br><span class="line">		beanFactory.registerResolvableDependency(WebRequest.class, <span class="keyword">new</span> WebRequestObjectFactory());</span><br><span class="line">		<span class="keyword">if</span> (jsfPresent) &#123;</span><br><span class="line">			FacesDependencyRegistrar.registerFacesDependencies(beanFactory);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当Spring容器启动的时候，会调用refresh方法，从而触发postProcessBeanFactory方法的执行。向beanFactory中添加依赖解析映射关系，当调用beanFactory.getBean方法获取实例时，注入依赖Bean则会使用到该依赖解析映射关系。</p>
+<p>DefaultListableBeanFactory:<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultListableBeanFactory</span> <span class="keyword">extends</span> <span class="title">AbstractAutowireCapableBeanFactory</span></span></span><br><span class="line"><span class="class">		<span class="keyword">implements</span> <span class="title">ConfigurableListableBeanFactory</span>, <span class="title">BeanDefinitionRegistry</span>, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Map from dependency type to corresponding autowired value */</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Class&lt;?&gt;, Object&gt; resolvableDependencies = <span class="keyword">new</span> ConcurrentHashMap&lt;Class&lt;?&gt;, Object&gt;(<span class="number">16</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerResolvableDependency</span><span class="params">(Class&lt;?&gt; dependencyType, Object autowiredValue)</span> </span>&#123;</span><br><span class="line">		Assert.notNull(dependencyType, <span class="string">"Dependency type must not be null"</span>);</span><br><span class="line">		<span class="keyword">if</span> (autowiredValue != <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!(autowiredValue <span class="keyword">instanceof</span> ObjectFactory || dependencyType.isInstance(autowiredValue))) &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Value ["</span> + autowiredValue +</span><br><span class="line">						<span class="string">"] does not implement specified dependency type ["</span> + dependencyType.getName() + <span class="string">"]"</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">this</span>.resolvableDependencies.put(dependencyType, autowiredValue);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Find bean instances that match the required type.</span></span><br><span class="line"><span class="comment">	 * Called during autowiring for the specified bean.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> beanName the name of the bean that is about to be wired</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> requiredType the actual type of bean to look for</span></span><br><span class="line"><span class="comment">	 * (may be an array component type or collection element type)</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> descriptor the descriptor of the dependency to resolve</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> a Map of candidate names and candidate instances that match</span></span><br><span class="line"><span class="comment">	 * the required type (never &#123;<span class="doctag">@code</span> null&#125;)</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> BeansException in case of errors</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #autowireByType</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #autowireConstructor</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> Map&lt;String, Object&gt; <span class="title">findAutowireCandidates</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">			String beanName, Class&lt;?&gt; requiredType, DependencyDescriptor descriptor)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(</span><br><span class="line">				<span class="keyword">this</span>, requiredType, <span class="keyword">true</span>, descriptor.isEager());</span><br><span class="line">		Map&lt;String, Object&gt; result = <span class="keyword">new</span> LinkedHashMap&lt;String, Object&gt;(candidateNames.length);</span><br><span class="line">		<span class="keyword">for</span> (Class&lt;?&gt; autowiringType : <span class="keyword">this</span>.resolvableDependencies.keySet()) &#123;</span><br><span class="line">		    <span class="comment">// 判断当前依赖Bean类型requiredType是否是autowiringType及其子类</span></span><br><span class="line">			<span class="keyword">if</span> (autowiringType.isAssignableFrom(requiredType)) &#123;</span><br><span class="line">			    <span class="comment">// 如果是则使用映射关系值，如：RequestObjectFactory等</span></span><br><span class="line">				Object autowiringValue = <span class="keyword">this</span>.resolvableDependencies.get(autowiringType);</span><br><span class="line">				<span class="comment">// 关键步骤：生成JDK动态代理</span></span><br><span class="line">				autowiringValue = AutowireUtils.resolveAutowiringValue(autowiringValue, requiredType);</span><br><span class="line">				<span class="keyword">if</span> (requiredType.isInstance(autowiringValue)) &#123;</span><br><span class="line">					result.put(ObjectUtils.identityToString(autowiringValue), autowiringValue);</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> (String candidate : candidateNames) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!isSelfReference(beanName, candidate) &amp;&amp; isAutowireCandidate(candidate, descriptor)) &#123;</span><br><span class="line">				addCandidateEntry(result, candidate, descriptor, requiredType);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (result.isEmpty() &amp;&amp; !indicatesMultipleBeans(requiredType)) &#123;</span><br><span class="line">			<span class="comment">// Consider fallback matches if the first pass failed to find anything...</span></span><br><span class="line">			DependencyDescriptor fallbackDescriptor = descriptor.forFallbackMatch();</span><br><span class="line">			<span class="keyword">for</span> (String candidate : candidateNames) &#123;</span><br><span class="line">				<span class="keyword">if</span> (!isSelfReference(beanName, candidate) &amp;&amp; isAutowireCandidate(candidate, fallbackDescriptor)) &#123;</span><br><span class="line">					addCandidateEntry(result, candidate, descriptor, requiredType);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">				<span class="comment">// Consider self references as a final pass...</span></span><br><span class="line">				<span class="comment">// but in the case of a dependency collection, not the very same bean itself.</span></span><br><span class="line">				<span class="keyword">for</span> (String candidate : candidateNames) &#123;</span><br><span class="line">					<span class="keyword">if</span> (isSelfReference(beanName, candidate) &amp;&amp;</span><br><span class="line">							(!(descriptor <span class="keyword">instanceof</span> MultiElementDescriptor) || !beanName.equals(candidate)) &amp;&amp;</span><br><span class="line">							isAutowireCandidate(candidate, fallbackDescriptor)) &#123;</span><br><span class="line">						addCandidateEntry(result, candidate, descriptor, requiredType);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">		</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>AutowireUtils:<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">abstract class AutowireUtils &#123;</span><br><span class="line">   </span><br><span class="line">   /**</span><br><span class="line">	 * Resolve the given autowiring value against the given required type,</span><br><span class="line">	 * e.g. an &#123;@link ObjectFactory&#125; value to its actual object result.</span><br><span class="line">	 * @param autowiringValue the value to resolve</span><br><span class="line">	 * @param requiredType the type to assign the result to</span><br><span class="line">	 * @return the resolved value</span><br><span class="line">	 */</span><br><span class="line">	public static Object resolveAutowiringValue(Object autowiringValue, Class&lt;?&gt; requiredType) &#123;</span><br><span class="line">		if (autowiringValue instanceof ObjectFactory &amp;&amp; !requiredType.isInstance(autowiringValue)) &#123;</span><br><span class="line">			ObjectFactory&lt;?&gt; factory = (ObjectFactory&lt;?&gt;) autowiringValue;</span><br><span class="line">			if (autowiringValue instanceof Serializable &amp;&amp; requiredType.isInterface()) &#123;</span><br><span class="line">			    // 如果是接口则生成基于JDK的动态代理</span><br><span class="line">				autowiringValue = Proxy.newProxyInstance(requiredType.getClassLoader(),</span><br><span class="line">						new Class&lt;?&gt;[] &#123;requiredType&#125;, new ObjectFactoryDelegatingInvocationHandler(factory));</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">			    // 不是接口则返回factory.getObject()对象</span><br><span class="line">				return factory.getObject();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		// 返回原始值</span><br><span class="line">		return autowiringValue;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	/**</span><br><span class="line">	 * Reflective InvocationHandler for lazy access to the current target object.</span><br><span class="line">	 */</span><br><span class="line">	@SuppressWarnings(&quot;serial&quot;)</span><br><span class="line">	private static class ObjectFactoryDelegatingInvocationHandler implements InvocationHandler, Serializable &#123;</span><br><span class="line"></span><br><span class="line">		private final ObjectFactory&lt;?&gt; objectFactory;</span><br><span class="line"></span><br><span class="line">		public ObjectFactoryDelegatingInvocationHandler(ObjectFactory&lt;?&gt; objectFactory) &#123;</span><br><span class="line">			this.objectFactory = objectFactory;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable &#123;</span><br><span class="line">			String methodName = method.getName();</span><br><span class="line">			if (methodName.equals(&quot;equals&quot;)) &#123;</span><br><span class="line">				// Only consider equal when proxies are identical.</span><br><span class="line">				return (proxy == args[0]);</span><br><span class="line">			&#125;</span><br><span class="line">			else if (methodName.equals(&quot;hashCode&quot;)) &#123;</span><br><span class="line">				// Use hashCode of proxy.</span><br><span class="line">				return System.identityHashCode(proxy);</span><br><span class="line">			&#125;</span><br><span class="line">			else if (methodName.equals(&quot;toString&quot;)) &#123;</span><br><span class="line">				return this.objectFactory.toString();</span><br><span class="line">			&#125;</span><br><span class="line">			try &#123;</span><br><span class="line">			    // 通过反射调用，如RequestObjectFactory等中的方法</span><br><span class="line">				return method.invoke(this.objectFactory.getObject(), args);</span><br><span class="line">			&#125;</span><br><span class="line">			catch (InvocationTargetException ex) &#123;</span><br><span class="line">				throw ex.getTargetException();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们在回到WebApplicationContextUtils类中的RequestObjectFactory，看下其具体的实现。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WebApplicationContextUtils</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Factory that exposes the current request object on demand.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@SuppressWarnings</span>(<span class="string">"serial"</span>)</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestObjectFactory</span> <span class="keyword">implements</span> <span class="title">ObjectFactory</span>&lt;<span class="title">ServletRequest</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> ServletRequest <span class="title">getObject</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> currentRequestAttributes().getRequest();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="meta">@Override</span></span><br><span class="line">		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="string">"Current HttpServletRequest"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * RequestContextHolder 从当前请求上下文中获取真实的Request，Response，Session等对象</span></span><br><span class="line"><span class="comment">	 * Return the current RequestAttributes instance as ServletRequestAttributes.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> RequestContextHolder#currentRequestAttributes()</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> ServletRequestAttributes <span class="title">currentRequestAttributes</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		RequestAttributes requestAttr = RequestContextHolder.currentRequestAttributes();</span><br><span class="line">		<span class="keyword">if</span> (!(requestAttr <span class="keyword">instanceof</span> ServletRequestAttributes)) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Current request is not a servlet request"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> (ServletRequestAttributes) requestAttr;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>请求线程上下文管理器RequestContextHolder：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestContextHolder</span>  </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;RequestAttributes&gt; requestAttributesHolder =</span><br><span class="line">			<span class="keyword">new</span> NamedThreadLocal&lt;RequestAttributes&gt;(<span class="string">"Request attributes"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;RequestAttributes&gt; inheritableRequestAttributesHolder =</span><br><span class="line">			<span class="keyword">new</span> NamedInheritableThreadLocal&lt;RequestAttributes&gt;(<span class="string">"Request context"</span>);</span><br><span class="line">			</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Bind the given RequestAttributes to the current thread.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> attributes the RequestAttributes to expose,</span></span><br><span class="line"><span class="comment">	 * or &#123;<span class="doctag">@code</span> null&#125; to reset the thread-bound context</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> inheritable whether to expose the RequestAttributes as inheritable</span></span><br><span class="line"><span class="comment">	 * for child threads (using an &#123;<span class="doctag">@link</span> InheritableThreadLocal&#125;)</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setRequestAttributes</span><span class="params">(RequestAttributes attributes, <span class="keyword">boolean</span> inheritable)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (attributes == <span class="keyword">null</span>) &#123;</span><br><span class="line">			resetRequestAttributes();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (inheritable) &#123;</span><br><span class="line">				inheritableRequestAttributesHolder.set(attributes);</span><br><span class="line">				requestAttributesHolder.remove();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				requestAttributesHolder.set(attributes);</span><br><span class="line">				inheritableRequestAttributesHolder.remove();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Return the RequestAttributes currently bound to the thread.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the RequestAttributes currently bound to the thread,</span></span><br><span class="line"><span class="comment">	 * or &#123;<span class="doctag">@code</span> null&#125; if none bound</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestAttributes <span class="title">getRequestAttributes</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		RequestAttributes attributes = requestAttributesHolder.get();</span><br><span class="line">		<span class="keyword">if</span> (attributes == <span class="keyword">null</span>) &#123;</span><br><span class="line">			attributes = inheritableRequestAttributesHolder.get();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> attributes;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Return the RequestAttributes currently bound to the thread.</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;Exposes the previously bound RequestAttributes instance, if any.</span></span><br><span class="line"><span class="comment">	 * Falls back to the current JSF FacesContext, if any.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the RequestAttributes currently bound to the thread</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> IllegalStateException if no RequestAttributes object</span></span><br><span class="line"><span class="comment">	 * is bound to the current thread</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #setRequestAttributes</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> ServletRequestAttributes</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> FacesRequestAttributes</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> javax.faces.context.FacesContext#getCurrentInstance()</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RequestAttributes <span class="title">currentRequestAttributes</span><span class="params">()</span> <span class="keyword">throws</span> IllegalStateException </span>&#123;</span><br><span class="line">		RequestAttributes attributes = getRequestAttributes();</span><br><span class="line">		<span class="keyword">if</span> (attributes == <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (jsfPresent) &#123;</span><br><span class="line">				attributes = FacesRequestAttributesFactory.getFacesRequestAttributes();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (attributes == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"No thread-bound request found: "</span> +</span><br><span class="line">						<span class="string">"Are you referring to request attributes outside of an actual web request, "</span> +</span><br><span class="line">						<span class="string">"or processing a request outside of the originally receiving thread? "</span> +</span><br><span class="line">						<span class="string">"If you are actually operating within a web request and still receive this message, "</span> +</span><br><span class="line">						<span class="string">"your code is probably running outside of DispatcherServlet/DispatcherPortlet: "</span> +</span><br><span class="line">						<span class="string">"In this case, use RequestContextListener or RequestContextFilter to expose the current request."</span>);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> attributes;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当请求进来时，设置当前请求的上下文信息，RequestContextFilter类。<br>RequestContextFilter：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestContextFilter</span> <span class="keyword">extends</span> <span class="title">OncePerRequestFilter</span> </span>&#123;</span><br><span class="line">   <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doFilterInternal</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">			HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">		ServletRequestAttributes attributes = <span class="keyword">new</span> ServletRequestAttributes(request, response);</span><br><span class="line">		initContextHolders(request, attributes);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			filterChain.doFilter(request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">finally</span> &#123;</span><br><span class="line">			resetContextHolders();</span><br><span class="line">			<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">				logger.debug(<span class="string">"Cleared thread-bound request context: "</span> + request);</span><br><span class="line">			&#125;</span><br><span class="line">			attributes.requestCompleted();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置请求上下文信息</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initContextHolders</span><span class="params">(HttpServletRequest request, ServletRequestAttributes requestAttributes)</span> </span>&#123;</span><br><span class="line">		LocaleContextHolder.setLocale(request.getLocale(), <span class="keyword">this</span>.threadContextInheritable);</span><br><span class="line">		RequestContextHolder.setRequestAttributes(requestAttributes, <span class="keyword">this</span>.threadContextInheritable);</span><br><span class="line">		<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">			logger.debug(<span class="string">"Bound request context to thread: "</span> + request);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">resetContextHolders</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		LocaleContextHolder.resetLocaleContext();</span><br><span class="line">		RequestContextHolder.resetRequestAttributes();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>至此，怎个流程算是串起来了，之所以不会存在线程安全问题，那是因为注入的是实现了HttpServletRequest，   HttpServletResponse接口的动态代理对象，然后在这个动态代理对象中执行invoke时，获取当前线程上下文所关联的实际request，response等对象，再反射执行其中的方法。整体设计非常巧妙，设计思想值得学习和借鉴。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/19/Spring 扩展点之FactoryBean/" rel="next" title="Spring 扩展点之FactoryBean">
+                <i class="fa fa-chevron-left"></i> Spring 扩展点之FactoryBean
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/01/Spring 扩展点之BeanPostProcessor/" rel="prev" title="Spring 扩展点之BeanPostProcessor">
+                Spring 扩展点之BeanPostProcessor <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口定义"><span class="nav-number">2.</span> <span class="nav-text">接口定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见扩展实现"><span class="nav-number">3.</span> <span class="nav-text">常见扩展实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试用例"><span class="nav-number">4.</span> <span class="nav-text">测试用例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现原理分析"><span class="nav-number">5.</span> <span class="nav-text">实现原理分析</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

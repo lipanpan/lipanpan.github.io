@@ -1,0 +1,670 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言如果采用标准的AMQP协议，则唯一能够保证消息不会丢失的方式是利用其事务机制——令channel处于transactional模式、向其publish消息、执行commit动作。在这种方式下，事务机制会带来大量的多余开销，并会导致吞吐量下降250% 。为了补救事务带来的问题，引入了Publisher Confirm机制，详情参考之前的一篇博文《rabbitmq 消息可靠投递及消费机制》。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rabbitmq 事务机制">
+<meta property="og:url" content="http://www.pandan.xyz/2017/03/08/rabbitmq 事务机制/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言如果采用标准的AMQP协议，则唯一能够保证消息不会丢失的方式是利用其事务机制——令channel处于transactional模式、向其publish消息、执行commit动作。在这种方式下，事务机制会带来大量的多余开销，并会导致吞吐量下降250% 。为了补救事务带来的问题，引入了Publisher Confirm机制，详情参考之前的一篇博文《rabbitmq 消息可靠投递及消费机制》。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201703082247.png">
+<meta property="og:updated_time" content="2017-03-16T13:45:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rabbitmq 事务机制">
+<meta name="twitter:description" content="前言如果采用标准的AMQP协议，则唯一能够保证消息不会丢失的方式是利用其事务机制——令channel处于transactional模式、向其publish消息、执行commit动作。在这种方式下，事务机制会带来大量的多余开销，并会导致吞吐量下降250% 。为了补救事务带来的问题，引入了Publisher Confirm机制，详情参考之前的一篇博文《rabbitmq 消息可靠投递及消费机制》。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201703082247.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/03/08/rabbitmq 事务机制/"/>
+
+  <title> rabbitmq 事务机制 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rabbitmq 事务机制
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-08T23:10:36+08:00" content="2017-03-08">
+              2017-03-08
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>如果采用标准的AMQP协议，则唯一能够保证消息不会丢失的方式是利用其事务机制——令channel处于transactional模式、向其publish消息、执行commit动作。在这种方式下，事务机制会带来大量的多余开销，并会导致吞吐量下降250% 。为了补救事务带来的问题，引入了Publisher Confirm机制，详情参考之前的一篇博文《<a href="/2017/03/05/rabbitmq%20%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E6%8A%95%E9%80%92%E5%8F%8A%E6%B6%88%E8%B4%B9%E6%9C%BA%E5%88%B6/">rabbitmq 消息可靠投递及消费机制</a>》。<br><a id="more"></a></p>
+<h3 id="使用事务"><a href="#使用事务" class="headerlink" title="使用事务"></a>使用事务</h3><p>AMQP协议中事务操作相关方法：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">channel.txSelect(); <span class="comment">// 开启通道事务模式，与channel.confirmSelect()模式互斥</span></span><br><span class="line">channel.txCommit(); <span class="comment">// 提交事务</span></span><br><span class="line">channel.txRollback(); <span class="comment">// 回滚事务</span></span><br></pre></td></tr></table></figure></p>
+<p>ps: 对于transactional模式和Publisher Confirm模式，一个通道channel同时只能开启其中的一种模式，不能同时开启的。在通过txSelect开启事务之后，我们便可以发布消息给broker代理服务器，如果txCommit提交成功则消息一定到达broker了，如果在txCommit执行之前broker异常崩溃或者由于其他原因抛出异常，这个时候我们便可以捕获异常通过txRollback回滚事务。</p>
+<p><strong>示例代码</strong>：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// The publisher would use something like:</span></span><br><span class="line"><span class="keyword">int</span> MSG_COUNT = <span class="number">10000</span>;</span><br><span class="line">channel.txSelect();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 单条消息提交事务</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MSG_COUNT; ++i) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">       channel.basicPublish(exchange, routingKey,</span><br><span class="line">                        MessageProperties.PERSISTENT_BASIC,</span><br><span class="line">                        <span class="string">"nop"</span>.getBytes());</span><br><span class="line">       channel.txCommit();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">       channel.txRollback();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 多条消息批量提交事务，如果失败则该批次所有消息都提交失败</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= MSG_COUNT; ++i) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">       channel.basicPublish(exchange, routingKey,</span><br><span class="line">                        MessageProperties.PERSISTENT_BASIC,</span><br><span class="line">                        <span class="string">"nop"</span>.getBytes());</span><br><span class="line">        <span class="keyword">if</span>((i % <span class="number">10</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">          channel.txCommit(); <span class="comment">// 每10条消息提交一次</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">       channel.txRollback();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>完整示例 <a href="https://gist.github.com/scvalex/613157" target="_blank" rel="noopener">at here</a>。</p>
+<p><img src="/images/201703082247.png" alt="批量提交事务"></p>
+<p><strong>流程说明</strong>：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. client 发送Tx.Select向broker声明开启channel事务模式</span><br><span class="line">2. broker 返回Tx.Select-Ok表明channel事务模式开启成功</span><br><span class="line">------至此client和broker完成握手约定启用channel事务模式-------</span><br><span class="line">3. client Basic.Publish 发送消息给broker</span><br><span class="line">4. ........</span><br><span class="line">5. client 发送Tx.Commit给broker通知其提交数据，然后client等待响应结果</span><br><span class="line">6. broker接收并处理完消息数据之后，返回Tx.Commit-Ok给客户端，然后client继续执行</span><br><span class="line">7. 如果broker接收消息时，内部出现异常则客户端会抛出异常，这时client执行回滚操作，那么这批消息则不会被broker接收并处理。</span><br></pre></td></tr></table></figure></p>
+<p><strong>特别说明</strong>：AMQP协议中的事务仅仅是指生产者发送消息给broker这一系列流程处理的事务机制，并不包含消费端的处理流程。</p>
+<h3 id="事务机制-VS-Publisher-Confirm"><a href="#事务机制-VS-Publisher-Confirm" class="headerlink" title="事务机制 VS Publisher Confirm"></a>事务机制 VS Publisher Confirm</h3><p>据官方统计，在事务模式下，发送10000条消息要耗时4分钟，可见性能很低，所以出现了事务机制的替代方案Publisher Confirm模式，是AMQP协议的一种扩展机制。Publisher Confirm机制更轻量级，且支持异步确认。事务确实能够解决producer与broker之间消息确认的问题，只有消息成功被broker接收，事务提交才能成功，否则我们便可以在捕获异常进行事务回滚操作同时进行消息重发，但是使用事务机制的话会降低RabbitMQ的性能，那么有没有更好的方法既能保障producer知道消息已经正确送到，又能基本上不带来性能上的损失呢？从AMQP协议的层面看是没有更好的方法，但是RabbitMQ提供了一个更好的方案，即将channel信道设置成confirm模式 ——<strong>Publisher Confirm机制是AMQP协议事务的一种替代方案</strong>。 </p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://www.rabbitmq.com/blog/2011/02/10/introducing-publisher-confirms/" target="_blank" rel="noopener">http://www.rabbitmq.com/blog/2011/02/10/introducing-publisher-confirms/</a></li>
+<li><a href="https://gist.github.com/scvalex/613157" target="_blank" rel="noopener">https://gist.github.com/scvalex/613157</a></li>
+<li><a href="http://hg.rabbitmq.com/rabbitmq-java-client/file/default/test/src/com/rabbitmq/examples/ConfirmDontLoseMessages.java" target="_blank" rel="noopener">http://hg.rabbitmq.com/rabbitmq-java-client/file/default/test/src/com/rabbitmq/examples/ConfirmDontLoseMessages.java</a></li>
+<li><a href="http://blog.csdn.net/u013256816/article/details/55515234" target="_blank" rel="noopener">http://blog.csdn.net/u013256816/article/details/55515234</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/08/jquery插件之tablesorter表格排序/" rel="next" title="jquery插件之tablesorter表格排序">
+                <i class="fa fa-chevron-left"></i> jquery插件之tablesorter表格排序
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/09/rabbitmq 基于TTL和Dead Letter特性实现延迟队列/" rel="prev" title="rabbitmq 基于TTL和Dead Letter特性实现延迟队列">
+                rabbitmq 基于TTL和Dead Letter特性实现延迟队列 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用事务"><span class="nav-number">2.</span> <span class="nav-text">使用事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务机制-VS-Publisher-Confirm"><span class="nav-number">3.</span> <span class="nav-text">事务机制 VS Publisher Confirm</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

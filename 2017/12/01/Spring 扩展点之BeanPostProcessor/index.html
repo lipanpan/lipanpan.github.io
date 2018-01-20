@@ -1,0 +1,679 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 本篇介绍Spring提供的另外一个非常有用的扩展点BeanPostProcessor，通常用于在初始化Bean前后加入自定义逻辑，例如对@Autowired，@Value，@Resource，@Scheduled，@Async等注解的解析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 扩展点之BeanPostProcessor">
+<meta property="og:url" content="http://www.pandan.xyz/2017/12/01/Spring 扩展点之BeanPostProcessor/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 本篇介绍Spring提供的另外一个非常有用的扩展点BeanPostProcessor，通常用于在初始化Bean前后加入自定义逻辑，例如对@Autowired，@Value，@Resource，@Scheduled，@Async等注解的解析。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-12-16T15:31:44.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring 扩展点之BeanPostProcessor">
+<meta name="twitter:description" content="前言 本篇介绍Spring提供的另外一个非常有用的扩展点BeanPostProcessor，通常用于在初始化Bean前后加入自定义逻辑，例如对@Autowired，@Value，@Resource，@Scheduled，@Async等注解的解析。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/12/01/Spring 扩展点之BeanPostProcessor/"/>
+
+  <title> Spring 扩展点之BeanPostProcessor | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Spring 扩展点之BeanPostProcessor
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-12-01T22:47:56+08:00" content="2017-12-01">
+              2017-12-01
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>本篇介绍Spring提供的另外一个非常有用的扩展点BeanPostProcessor，通常用于在初始化Bean前后加入自定义逻辑，例如对@Autowired，@Value，@Resource，@Scheduled，@Async等注解的解析。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BeanPostProcessor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Apply this BeanPostProcessor to the given new bean instance &lt;i&gt;before&lt;/i&gt; any bean</span></span><br><span class="line"><span class="comment">	 * initialization callbacks (like InitializingBean's &#123;<span class="doctag">@code</span> afterPropertiesSet&#125;</span></span><br><span class="line"><span class="comment">	 * or a custom init-method). The bean will already be populated with property values.</span></span><br><span class="line"><span class="comment">	 * The returned bean instance may be a wrapper around the original.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> bean the new bean instance</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> beanName the name of the bean</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the bean instance to use, either the original or a wrapped one;</span></span><br><span class="line"><span class="comment">	 * if &#123;<span class="doctag">@code</span> null&#125;, no subsequent BeanPostProcessors will be invoked</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> org.springframework.beans.BeansException in case of errors</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.beans.factory.InitializingBean#afterPropertiesSet</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function">Object <span class="title">postProcessBeforeInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Apply this BeanPostProcessor to the given new bean instance &lt;i&gt;after&lt;/i&gt; any bean</span></span><br><span class="line"><span class="comment">	 * initialization callbacks (like InitializingBean's &#123;<span class="doctag">@code</span> afterPropertiesSet&#125;</span></span><br><span class="line"><span class="comment">	 * or a custom init-method). The bean will already be populated with property values.</span></span><br><span class="line"><span class="comment">	 * The returned bean instance may be a wrapper around the original.</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;In case of a FactoryBean, this callback will be invoked for both the FactoryBean</span></span><br><span class="line"><span class="comment">	 * instance and the objects created by the FactoryBean (as of Spring 2.0). The</span></span><br><span class="line"><span class="comment">	 * post-processor can decide whether to apply to either the FactoryBean or created</span></span><br><span class="line"><span class="comment">	 * objects or both through corresponding &#123;<span class="doctag">@code</span> bean instanceof FactoryBean&#125; checks.</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;This callback will also be invoked after a short-circuiting triggered by a</span></span><br><span class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation&#125; method,</span></span><br><span class="line"><span class="comment">	 * in contrast to all other BeanPostProcessor callbacks.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> bean the new bean instance</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> beanName the name of the bean</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the bean instance to use, either the original or a wrapped one;</span></span><br><span class="line"><span class="comment">	 * if &#123;<span class="doctag">@code</span> null&#125;, no subsequent BeanPostProcessors will be invoked</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> org.springframework.beans.BeansException in case of errors</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.beans.factory.InitializingBean#afterPropertiesSet</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.beans.factory.FactoryBean</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function">Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="常见扩展实现"><a href="#常见扩展实现" class="headerlink" title="常见扩展实现"></a>常见扩展实现</h3></blockquote>
+<ol>
+<li>ScheduledAnnotationBeanPostProcessor 用于解析@Scheduled，定时任务；</li>
+<li>AsyncAnnotationBeanPostProcessor 用于解析@Async，异步执行；</li>
+<li>AutowiredAnnotationBeanPostProcessor 用于解析@Autowired，@Value注解，实现依赖注入；</li>
+<li>CommonAnnotationBeanPostProcessor 用于解析@PostConstruct，@PreDestroy，@Resource注解；</li>
+</ol>
+<p>可以看出spring很多核心的功能，都是基于BeanPostProcessor这一扩展点实现的。</p>
+<blockquote>
+<h3 id="实现原理分析"><a href="#实现原理分析" class="headerlink" title="实现原理分析"></a>实现原理分析</h3></blockquote>
+<p>下面以Spring定时任务为切入点，来分析BeanPostProcessor的实现原理。搞明白了其中的一个，其他的都大同小异。</p>
+<p>示例代码：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableScheduling</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ScheduledPrintJob</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Scheduled</span>(cron = <span class="string">"0/5 * * * * ?"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ScheduledPrintJob print."</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在springboot项目中，我们只需要通过@EnableScheduling启用定时任务功能，然后配合@Scheduled注解，即可将相应的方法加入定时执行队列中，那么spring是如何做到这一点的呢？下面我们将一步一步分析。</p>
+<p>@EnableScheduling：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Import</span>(SchedulingConfiguration.class) <span class="comment">// 导入SchedulingConfiguration配置</span></span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> EnableScheduling &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>SchedulingConfiguration:<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Role</span>(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchedulingConfiguration</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 向容器中加入ScheduledAnnotationBeanPostProcessor Bean</span></span><br><span class="line">	<span class="meta">@Bean</span>(name = TaskManagementConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME)</span><br><span class="line">	<span class="meta">@Role</span>(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line">	<span class="function"><span class="keyword">public</span> ScheduledAnnotationBeanPostProcessor <span class="title">scheduledAnnotationProcessor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> ScheduledAnnotationBeanPostProcessor();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ScheduledAnnotationBeanPostProcessor:<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ScheduledAnnotationBeanPostProcessor</span></span></span><br><span class="line"><span class="class">		<span class="keyword">implements</span> <span class="title">MergedBeanDefinitionPostProcessor</span>, <span class="title">DestructionAwareBeanPostProcessor</span>,</span></span><br><span class="line"><span class="class">		<span class="title">Ordered</span>, <span class="title">EmbeddedValueResolverAware</span>, <span class="title">BeanNameAware</span>, <span class="title">BeanFactoryAware</span>, <span class="title">ApplicationContextAware</span>,</span></span><br><span class="line"><span class="class">		<span class="title">SmartInitializingSingleton</span>, <span class="title">ApplicationListener</span>&lt;<span class="title">ContextRefreshedEvent</span>&gt;, <span class="title">DisposableBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postProcessMergedBeanDefinition</span><span class="params">(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName)</span> </span>&#123;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">postProcessBeforeInitialization</span><span class="params">(Object bean, String beanName)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> bean;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在Bean初始化之后，执行此逻辑</span></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(<span class="keyword">final</span> Object bean, String beanName)</span> </span>&#123;</span><br><span class="line">		Class&lt;?&gt; targetClass = AopUtils.getTargetClass(bean);</span><br><span class="line">		<span class="keyword">if</span> (!<span class="keyword">this</span>.nonAnnotatedClasses.contains(targetClass)) &#123;</span><br><span class="line">		    <span class="comment">// 扫描获取当前Bean中所有含@Schedules注解的method</span></span><br><span class="line">			Map&lt;Method, Set&lt;Scheduled&gt;&gt; annotatedMethods = MethodIntrospector.selectMethods(targetClass,</span><br><span class="line">					<span class="keyword">new</span> MethodIntrospector.MetadataLookup&lt;Set&lt;Scheduled&gt;&gt;() &#123;</span><br><span class="line">						<span class="meta">@Override</span></span><br><span class="line">						<span class="function"><span class="keyword">public</span> Set&lt;Scheduled&gt; <span class="title">inspect</span><span class="params">(Method method)</span> </span>&#123;</span><br><span class="line">							Set&lt;Scheduled&gt; scheduledMethods = AnnotatedElementUtils.getMergedRepeatableAnnotations(</span><br><span class="line">									method, Scheduled.class, Schedules.class);</span><br><span class="line">							<span class="keyword">return</span> (!scheduledMethods.isEmpty() ? scheduledMethods : <span class="keyword">null</span>);</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;);</span><br><span class="line">			<span class="keyword">if</span> (annotatedMethods.isEmpty()) &#123;</span><br><span class="line">				<span class="keyword">this</span>.nonAnnotatedClasses.add(targetClass);</span><br><span class="line">				<span class="keyword">if</span> (logger.isTraceEnabled()) &#123;</span><br><span class="line">					logger.trace(<span class="string">"No @Scheduled annotations found on bean class: "</span> + bean.getClass());</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="comment">// Non-empty set of methods</span></span><br><span class="line">				<span class="keyword">for</span> (Map.Entry&lt;Method, Set&lt;Scheduled&gt;&gt; entry : annotatedMethods.entrySet()) &#123;</span><br><span class="line">					Method method = entry.getKey();</span><br><span class="line">					<span class="keyword">for</span> (Scheduled scheduled : entry.getValue()) &#123;</span><br><span class="line">					    <span class="comment">// 依次解析标明了@Scheduled的Method</span></span><br><span class="line">						processScheduled(scheduled, method, bean);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">					logger.debug(annotatedMethods.size() + <span class="string">" @Scheduled methods processed on bean '"</span> + beanName +</span><br><span class="line">							<span class="string">"': "</span> + annotatedMethods);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> bean;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">processScheduled</span><span class="params">(Scheduled scheduled, Method method, Object bean)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			Assert.isTrue(method.getParameterTypes().length == <span class="number">0</span>,</span><br><span class="line">					<span class="string">"Only no-arg methods may be annotated with @Scheduled"</span>);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 将method包装成ScheduledMethodRunnable实例</span></span><br><span class="line">			Method invocableMethod = AopUtils.selectInvocableMethod(method, bean.getClass());</span><br><span class="line">			Runnable runnable = <span class="keyword">new</span> ScheduledMethodRunnable(bean, invocableMethod);</span><br><span class="line">			</span><br><span class="line">			<span class="keyword">boolean</span> processedSchedule = <span class="keyword">false</span>;</span><br><span class="line">			String errorMessage =</span><br><span class="line">					<span class="string">"Exactly one of the 'cron', 'fixedDelay(String)', or 'fixedRate(String)' attributes is required"</span>;</span><br><span class="line"></span><br><span class="line">			Set&lt;ScheduledTask&gt; tasks = <span class="keyword">new</span> LinkedHashSet&lt;ScheduledTask&gt;(<span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Determine initial delay</span></span><br><span class="line">			<span class="keyword">long</span> initialDelay = scheduled.initialDelay();</span><br><span class="line">			String initialDelayString = scheduled.initialDelayString();</span><br><span class="line">			<span class="keyword">if</span> (StringUtils.hasText(initialDelayString)) &#123;</span><br><span class="line">				Assert.isTrue(initialDelay &lt; <span class="number">0</span>, <span class="string">"Specify 'initialDelay' or 'initialDelayString', not both"</span>);</span><br><span class="line">				<span class="keyword">if</span> (<span class="keyword">this</span>.embeddedValueResolver != <span class="keyword">null</span>) &#123;</span><br><span class="line">					initialDelayString = <span class="keyword">this</span>.embeddedValueResolver.resolveStringValue(initialDelayString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">try</span> &#123;</span><br><span class="line">					initialDelay = Long.parseLong(initialDelayString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">catch</span> (NumberFormatException ex) &#123;</span><br><span class="line">					<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">							<span class="string">"Invalid initialDelayString value \""</span> + initialDelayString + <span class="string">"\" - cannot parse into integer"</span>);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Check cron expression</span></span><br><span class="line">			String cron = scheduled.cron();</span><br><span class="line">			<span class="keyword">if</span> (StringUtils.hasText(cron)) &#123; <span class="comment">// 如果是cron类任务</span></span><br><span class="line">				Assert.isTrue(initialDelay == -<span class="number">1</span>, <span class="string">"'initialDelay' not supported for cron triggers"</span>);</span><br><span class="line">				processedSchedule = <span class="keyword">true</span>;</span><br><span class="line">				String zone = scheduled.zone();</span><br><span class="line">				<span class="keyword">if</span> (<span class="keyword">this</span>.embeddedValueResolver != <span class="keyword">null</span>) &#123;</span><br><span class="line">					cron = <span class="keyword">this</span>.embeddedValueResolver.resolveStringValue(cron);</span><br><span class="line">					zone = <span class="keyword">this</span>.embeddedValueResolver.resolveStringValue(zone);</span><br><span class="line">				&#125;</span><br><span class="line">				TimeZone timeZone;</span><br><span class="line">				<span class="keyword">if</span> (StringUtils.hasText(zone)) &#123;</span><br><span class="line">					timeZone = StringUtils.parseTimeZoneString(zone);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span> &#123;</span><br><span class="line">					timeZone = TimeZone.getDefault();</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="comment">// 将任务加入队列中</span></span><br><span class="line">				tasks.add(<span class="keyword">this</span>.registrar.scheduleCronTask(<span class="keyword">new</span> CronTask(runnable, <span class="keyword">new</span> CronTrigger(cron, timeZone))));</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// At this point we don't need to differentiate between initial delay set or not anymore</span></span><br><span class="line">			<span class="keyword">if</span> (initialDelay &lt; <span class="number">0</span>) &#123;</span><br><span class="line">				initialDelay = <span class="number">0</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Check fixed delay</span></span><br><span class="line">			<span class="keyword">long</span> fixedDelay = scheduled.fixedDelay();</span><br><span class="line">			<span class="keyword">if</span> (fixedDelay &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">				Assert.isTrue(!processedSchedule, errorMessage);</span><br><span class="line">				processedSchedule = <span class="keyword">true</span>;</span><br><span class="line">				tasks.add(<span class="keyword">this</span>.registrar.scheduleFixedDelayTask(<span class="keyword">new</span> IntervalTask(runnable, fixedDelay, initialDelay)));</span><br><span class="line">			&#125;</span><br><span class="line">			String fixedDelayString = scheduled.fixedDelayString();</span><br><span class="line">			<span class="keyword">if</span> (StringUtils.hasText(fixedDelayString)) &#123;</span><br><span class="line">				Assert.isTrue(!processedSchedule, errorMessage);</span><br><span class="line">				processedSchedule = <span class="keyword">true</span>;</span><br><span class="line">				<span class="keyword">if</span> (<span class="keyword">this</span>.embeddedValueResolver != <span class="keyword">null</span>) &#123;</span><br><span class="line">					fixedDelayString = <span class="keyword">this</span>.embeddedValueResolver.resolveStringValue(fixedDelayString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">try</span> &#123;</span><br><span class="line">					fixedDelay = Long.parseLong(fixedDelayString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">catch</span> (NumberFormatException ex) &#123;</span><br><span class="line">					<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">							<span class="string">"Invalid fixedDelayString value \""</span> + fixedDelayString + <span class="string">"\" - cannot parse into integer"</span>);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="comment">// 加入延迟任务</span></span><br><span class="line">				tasks.add(<span class="keyword">this</span>.registrar.scheduleFixedDelayTask(<span class="keyword">new</span> IntervalTask(runnable, fixedDelay, initialDelay)));</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Check fixed rate</span></span><br><span class="line">			<span class="keyword">long</span> fixedRate = scheduled.fixedRate();</span><br><span class="line">			<span class="keyword">if</span> (fixedRate &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">				Assert.isTrue(!processedSchedule, errorMessage);</span><br><span class="line">				processedSchedule = <span class="keyword">true</span>;</span><br><span class="line">				<span class="comment">// 加入固定速率执行任务</span></span><br><span class="line">				tasks.add(<span class="keyword">this</span>.registrar.scheduleFixedRateTask(<span class="keyword">new</span> IntervalTask(runnable, fixedRate, initialDelay)));</span><br><span class="line">			&#125;</span><br><span class="line">			String fixedRateString = scheduled.fixedRateString();</span><br><span class="line">			<span class="keyword">if</span> (StringUtils.hasText(fixedRateString)) &#123;</span><br><span class="line">				Assert.isTrue(!processedSchedule, errorMessage);</span><br><span class="line">				processedSchedule = <span class="keyword">true</span>;</span><br><span class="line">				<span class="keyword">if</span> (<span class="keyword">this</span>.embeddedValueResolver != <span class="keyword">null</span>) &#123;</span><br><span class="line">					fixedRateString = <span class="keyword">this</span>.embeddedValueResolver.resolveStringValue(fixedRateString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">try</span> &#123;</span><br><span class="line">					fixedRate = Long.parseLong(fixedRateString);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">catch</span> (NumberFormatException ex) &#123;</span><br><span class="line">					<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">							<span class="string">"Invalid fixedRateString value \""</span> + fixedRateString + <span class="string">"\" - cannot parse into integer"</span>);</span><br><span class="line">				&#125;</span><br><span class="line">				tasks.add(<span class="keyword">this</span>.registrar.scheduleFixedRateTask(<span class="keyword">new</span> IntervalTask(runnable, fixedRate, initialDelay)));</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Check whether we had any attribute set</span></span><br><span class="line">			Assert.isTrue(processedSchedule, errorMessage);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Finally register the scheduled tasks</span></span><br><span class="line">			<span class="keyword">synchronized</span> (<span class="keyword">this</span>.scheduledTasks) &#123;</span><br><span class="line">				Set&lt;ScheduledTask&gt; registeredTasks = <span class="keyword">this</span>.scheduledTasks.get(bean);</span><br><span class="line">				<span class="keyword">if</span> (registeredTasks == <span class="keyword">null</span>) &#123;</span><br><span class="line">					registeredTasks = <span class="keyword">new</span> LinkedHashSet&lt;ScheduledTask&gt;(<span class="number">4</span>);</span><br><span class="line">					<span class="keyword">this</span>.scheduledTasks.put(bean, registeredTasks);</span><br><span class="line">				&#125;</span><br><span class="line">				registeredTasks.addAll(tasks);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (IllegalArgumentException ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</span><br><span class="line">					<span class="string">"Encountered invalid @Scheduled method '"</span> + method.getName() + <span class="string">"': "</span> + ex.getMessage());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>那么，ScheduledAnnotationBeanPostProcessor又是在什么时候被执行的呢？要了解BeanPostProcessor扩展点是在什么时候执行的，需要我们一步一步的跟踪beanFactory.getBean()的调用过程。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractBeanFactory</span> <span class="keyword">extends</span> <span class="title">FactoryBeanRegistrySupport</span> <span class="keyword">implements</span> <span class="title">ConfigurableBeanFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">getBean</span><span class="params">(String name)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> doGetBean(name, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">false</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">protected</span> &lt;T&gt; <span class="function">T <span class="title">doGetBean</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">			<span class="keyword">final</span> String name, <span class="keyword">final</span> Class&lt;T&gt; requiredType, <span class="keyword">final</span> Object[] args, <span class="keyword">boolean</span> typeCheckOnly)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">			</span><br><span class="line">		...  省略部分逻辑 ...</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// Create bean instance.</span></span><br><span class="line">		<span class="keyword">if</span> (mbd.isSingleton()) &#123;</span><br><span class="line">			sharedInstance = getSingleton(beanName, <span class="keyword">new</span> ObjectFactory&lt;Object&gt;() &#123;</span><br><span class="line">				<span class="meta">@Override</span></span><br><span class="line">				<span class="function"><span class="keyword">public</span> Object <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">				   <span class="keyword">try</span> &#123;</span><br><span class="line">				        <span class="comment">// 创建Bean实例</span></span><br><span class="line">					    <span class="keyword">return</span> createBean(beanName, mbd, args);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (BeansException ex) &#123;</span><br><span class="line">						<span class="comment">// Explicitly remove instance from singleton cache: It might have been put there</span></span><br><span class="line">						<span class="comment">// eagerly by the creation process, to allow for circular reference resolution.</span></span><br><span class="line">						<span class="comment">// Also remove any beans that received a temporary reference to the bean.</span></span><br><span class="line">						destroySingleton(beanName);</span><br><span class="line">						<span class="keyword">throw</span> ex;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;);</span><br><span class="line">				bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);</span><br><span class="line">			&#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (mbd.isPrototype()) &#123;</span><br><span class="line">				<span class="comment">// It's a prototype -&gt; create a new instance.</span></span><br><span class="line">				Object prototypeInstance = <span class="keyword">null</span>;</span><br><span class="line">				<span class="keyword">try</span> &#123;</span><br><span class="line">					beforePrototypeCreation(beanName);</span><br><span class="line">					prototypeInstance = createBean(beanName, mbd, args);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">finally</span> &#123;</span><br><span class="line">					afterPrototypeCreation(beanName);</span><br><span class="line">				&#125;</span><br><span class="line">				bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);</span><br><span class="line">			&#125;</span><br><span class="line">		</span><br><span class="line">		... 省略部分逻辑 ...</span><br><span class="line">	</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AbstractAutowireCapableBeanFactory 继承自 AbstractBeanFactory:<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractAutowireCapableBeanFactory</span> <span class="keyword">extends</span> <span class="title">AbstractBeanFactory</span></span></span><br><span class="line"><span class="class">		<span class="keyword">implements</span> <span class="title">AutowireCapableBeanFactory</span> </span>&#123;</span><br><span class="line">		</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Central method of this class: creates a bean instance,</span></span><br><span class="line"><span class="comment">	 * populates the bean instance, applies post-processors, etc.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #doCreateBean</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> Object <span class="title">createBean</span><span class="params">(String beanName, RootBeanDefinition mbd, Object[] args)</span> <span class="keyword">throws</span> BeanCreationException </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">			logger.debug(<span class="string">"Creating instance of bean '"</span> + beanName + <span class="string">"'"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		RootBeanDefinition mbdToUse = mbd;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Make sure bean class is actually resolved at this point, and</span></span><br><span class="line">		<span class="comment">// clone the bean definition in case of a dynamically resolved Class</span></span><br><span class="line">		<span class="comment">// which cannot be stored in the shared merged bean definition.</span></span><br><span class="line">		Class&lt;?&gt; resolvedClass = resolveBeanClass(mbd, beanName);</span><br><span class="line">		<span class="keyword">if</span> (resolvedClass != <span class="keyword">null</span> &amp;&amp; !mbd.hasBeanClass() &amp;&amp; mbd.getBeanClassName() != <span class="keyword">null</span>) &#123;</span><br><span class="line">			mbdToUse = <span class="keyword">new</span> RootBeanDefinition(mbd);</span><br><span class="line">			mbdToUse.setBeanClass(resolvedClass);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Prepare method overrides.</span></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			mbdToUse.prepareMethodOverrides();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (BeanDefinitionValidationException ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> BeanDefinitionStoreException(mbdToUse.getResourceDescription(),</span><br><span class="line">					beanName, <span class="string">"Validation of method overrides failed"</span>, ex);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="comment">// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.</span></span><br><span class="line">			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);</span><br><span class="line">			<span class="keyword">if</span> (bean != <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> bean;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(mbdToUse.getResourceDescription(), beanName,</span><br><span class="line">					<span class="string">"BeanPostProcessor before instantiation of bean failed"</span>, ex);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建Bean实例</span></span><br><span class="line">		Object beanInstance = doCreateBean(beanName, mbdToUse, args);</span><br><span class="line">		<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">			logger.debug(<span class="string">"Finished creating instance of bean '"</span> + beanName + <span class="string">"'"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> beanInstance;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">protected</span> Object <span class="title">doCreateBean</span><span class="params">(<span class="keyword">final</span> String beanName, <span class="keyword">final</span> RootBeanDefinition mbd, <span class="keyword">final</span> Object[] args)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> BeanCreationException </span>&#123;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Instantiate the bean.</span></span><br><span class="line">		BeanWrapper instanceWrapper = <span class="keyword">null</span>;</span><br><span class="line">		<span class="keyword">if</span> (mbd.isSingleton()) &#123;</span><br><span class="line">			instanceWrapper = <span class="keyword">this</span>.factoryBeanInstanceCache.remove(beanName);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (instanceWrapper == <span class="keyword">null</span>) &#123;</span><br><span class="line">			instanceWrapper = createBeanInstance(beanName, mbd, args);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">final</span> Object bean = (instanceWrapper != <span class="keyword">null</span> ? instanceWrapper.getWrappedInstance() : <span class="keyword">null</span>);</span><br><span class="line">		Class&lt;?&gt; beanType = (instanceWrapper != <span class="keyword">null</span> ? instanceWrapper.getWrappedClass() : <span class="keyword">null</span>);</span><br><span class="line">		mbd.resolvedTargetType = beanType;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Allow post-processors to modify the merged bean definition.</span></span><br><span class="line">		<span class="keyword">synchronized</span> (mbd.postProcessingLock) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!mbd.postProcessed) &#123;</span><br><span class="line">				<span class="keyword">try</span> &#123;</span><br><span class="line">				    <span class="comment">// 执行MergedBeanDefinitionPostProcessor -&gt; postProcessMergedBeanDefinition()</span></span><br><span class="line">					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">					<span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(mbd.getResourceDescription(), beanName,</span><br><span class="line">							<span class="string">"Post-processing of merged bean definition failed"</span>, ex);</span><br><span class="line">				&#125;</span><br><span class="line">				mbd.postProcessed = <span class="keyword">true</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Eagerly cache singletons to be able to resolve circular references</span></span><br><span class="line">		<span class="comment">// even when triggered by lifecycle interfaces like BeanFactoryAware.</span></span><br><span class="line">		<span class="keyword">boolean</span> earlySingletonExposure = (mbd.isSingleton() &amp;&amp; <span class="keyword">this</span>.allowCircularReferences &amp;&amp;</span><br><span class="line">				isSingletonCurrentlyInCreation(beanName));</span><br><span class="line">		<span class="keyword">if</span> (earlySingletonExposure) &#123;</span><br><span class="line">			<span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">				logger.debug(<span class="string">"Eagerly caching bean '"</span> + beanName +</span><br><span class="line">						<span class="string">"' to allow for resolving potential circular references"</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			addSingletonFactory(beanName, <span class="keyword">new</span> ObjectFactory&lt;Object&gt;() &#123;</span><br><span class="line">				<span class="meta">@Override</span></span><br><span class="line">				<span class="function"><span class="keyword">public</span> Object <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">					<span class="keyword">return</span> getEarlyBeanReference(beanName, mbd, bean);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Initialize the bean instance.</span></span><br><span class="line">		Object exposedObject = bean;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			populateBean(beanName, mbd, instanceWrapper);</span><br><span class="line">			<span class="keyword">if</span> (exposedObject != <span class="keyword">null</span>) &#123;</span><br><span class="line">			    <span class="comment">// 初始化Bean</span></span><br><span class="line">				exposedObject = initializeBean(beanName, exposedObject, mbd);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">			<span class="keyword">if</span> (ex <span class="keyword">instanceof</span> BeanCreationException &amp;&amp; beanName.equals(((BeanCreationException) ex).getBeanName())) &#123;</span><br><span class="line">				<span class="keyword">throw</span> (BeanCreationException) ex;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(</span><br><span class="line">						mbd.getResourceDescription(), beanName, <span class="string">"Initialization of bean failed"</span>, ex);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	    ... 省略部分逻辑 ...</span><br><span class="line">	    </span><br><span class="line">		<span class="keyword">return</span> exposedObject;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 初始化Bean -&gt; BeanPostProcessor  </span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> Object <span class="title">initializeBean</span><span class="params">(<span class="keyword">final</span> String beanName, <span class="keyword">final</span> Object bean, RootBeanDefinition mbd)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (System.getSecurityManager() != <span class="keyword">null</span>) &#123;</span><br><span class="line">			AccessController.doPrivileged(<span class="keyword">new</span> PrivilegedAction&lt;Object&gt;() &#123;</span><br><span class="line">				<span class="meta">@Override</span></span><br><span class="line">				<span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">					invokeAwareMethods(beanName, bean);</span><br><span class="line">					<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;, getAccessControlContext());</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			invokeAwareMethods(beanName, bean);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		Object wrappedBean = bean;</span><br><span class="line">		<span class="keyword">if</span> (mbd == <span class="keyword">null</span> || !mbd.isSynthetic()) &#123;</span><br><span class="line">		    <span class="comment">// 执行BeanPostProcessor -&gt; postProcessBeforeInitialization()</span></span><br><span class="line">			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			invokeInitMethods(beanName, wrappedBean, mbd);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(</span><br><span class="line">					(mbd != <span class="keyword">null</span> ? mbd.getResourceDescription() : <span class="keyword">null</span>),</span><br><span class="line">					beanName, <span class="string">"Invocation of init method failed"</span>, ex);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (mbd == <span class="keyword">null</span> || !mbd.isSynthetic()) &#123;</span><br><span class="line">		    <span class="comment">// 执行BeanPostProcessor -&gt; postProcessAfterInitialization()</span></span><br><span class="line">			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> wrappedBean;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 循环执行MergedBeanDefinitionPostProcessor —&gt; postProcessMergedBeanDefinition方法</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">applyMergedBeanDefinitionPostProcessors</span><span class="params">(RootBeanDefinition mbd, Class&lt;?&gt; beanType,     String beanName)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">for</span> (BeanPostProcessor bp : getBeanPostProcessors()) &#123;</span><br><span class="line">			<span class="keyword">if</span> (bp <span class="keyword">instanceof</span> MergedBeanDefinitionPostProcessor) &#123;</span><br><span class="line">				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;</span><br><span class="line">				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">applyBeanPostProcessorsBeforeInitialization</span><span class="params">(Object existingBean, String beanName)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line"></span><br><span class="line">		Object result = existingBean;</span><br><span class="line">		<span class="keyword">for</span> (BeanPostProcessor beanProcessor : getBeanPostProcessors()) &#123;</span><br><span class="line">		    <span class="comment">// 循环执行postProcessBeforeInitialization方法</span></span><br><span class="line">			result = beanProcessor.postProcessBeforeInitialization(result, beanName);</span><br><span class="line">			<span class="keyword">if</span> (result == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> result;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Object <span class="title">applyBeanPostProcessorsAfterInitialization</span><span class="params">(Object existingBean, String beanName)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line"></span><br><span class="line">		Object result = existingBean;</span><br><span class="line">		<span class="keyword">for</span> (BeanPostProcessor beanProcessor : getBeanPostProcessors()) &#123;</span><br><span class="line">		    <span class="comment">// 循环执行postProcessAfterInitialization方法</span></span><br><span class="line">			result = beanProcessor.postProcessAfterInitialization(result, beanName);</span><br><span class="line">			<span class="keyword">if</span> (result == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> result;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/20/Spring 扩展点之ObjectFactory/" rel="next" title="Spring 扩展点之ObjectFactory">
+                <i class="fa fa-chevron-left"></i> Spring 扩展点之ObjectFactory
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/06/数据库切库步骤及回退方案/" rel="prev" title="数据库切库步骤及回退方案">
+                数据库切库步骤及回退方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口定义"><span class="nav-number">2.</span> <span class="nav-text">接口定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见扩展实现"><span class="nav-number">3.</span> <span class="nav-text">常见扩展实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现原理分析"><span class="nav-number">4.</span> <span class="nav-text">实现原理分析</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

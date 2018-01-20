@@ -1,0 +1,703 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言DNS(Domain Name System，域名系统)，用于将域名解析成IP地址的服务，能够使用户更方便的访问互联网，而不用去记IP地址。DNS协议运行在UDP协议之上，使用端口号53。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DNS 理论篇">
+<meta property="og:url" content="http://www.pandan.xyz/2017/02/02/dns 理论篇/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言DNS(Domain Name System，域名系统)，用于将域名解析成IP地址的服务，能够使用户更方便的访问互联网，而不用去记IP地址。DNS协议运行在UDP协议之上，使用端口号53。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201702031720.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201702031736.png">
+<meta property="og:updated_time" content="2017-03-16T13:59:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DNS 理论篇">
+<meta name="twitter:description" content="前言DNS(Domain Name System，域名系统)，用于将域名解析成IP地址的服务，能够使用户更方便的访问互联网，而不用去记IP地址。DNS协议运行在UDP协议之上，使用端口号53。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201702031720.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/02/02/dns 理论篇/"/>
+
+  <title> DNS 理论篇 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                DNS 理论篇
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-02T16:49:36+08:00" content="2017-02-02">
+              2017-02-02
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/计算机网络/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机网络</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>DNS(Domain Name System，域名系统)，用于将域名解析成IP地址的服务，能够使用户更方便的访问互联网，而不用去记IP地址。DNS协议运行在UDP协议之上，使用端口号53。<br><a id="more"></a></p>
+<h3 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h3><p><img src="/images/201702031720.png" alt="DNS解析架构图"></p>
+<p>域名服务器的分类：</p>
+<ol>
+<li>根域名服务器（.root）</li>
+<li>顶级域名服务器（.com .cn .net等）</li>
+<li>权威域名服务器（例如：阿里万网提供的dns9.hichina.com，dns10.hichina.com等，腾讯DNSPod提供的    f1g1ns1.dnspod.net，f1g1ns2.dnspod.net等，自己申请搭建的权威域名服务器等）</li>
+<li>本地域名服务器（设备连上网要么会自动分配，或者自己手动指定的本地域名服务器）</li>
+<li>公共域名服务器（例如：google提供的8.8.8.8，国内公共域名服务器：114.114.114.114等）</li>
+</ol>
+<p>DNS域名解析流程(www.pandan.xyz)：</p>
+<ol>
+<li>客户端查询本机DNS缓存www.pandan.xyz对应的IP地址（hosts文件配置，机器一启动就会加载到本机DNS缓存中）</li>
+<li>如果没有找到，客户端查询本地配置的域名服务器（即：本地域名服务器，可以是第三方提供的公共域名服务器）</li>
+<li>如果本地域名服务器没有查到，则由本地域名服务器迭代查询根域名服务器</li>
+<li>根域名服务器返回.xyz顶级域名对应的NS记录（即解析.xyz顶级域名的权威域名服务器）</li>
+<li>本地域名服务器根据.xyz的NS记录，查询出pandan.xyz二级域名的NS记录（即pandan.xyz二级域名的权威域名服务器）</li>
+<li>本地域名服务器根据pandan.xyz的NS记录，查询出www.pandan.xyz域名的IP地址并缓存起来</li>
+<li>本地域名服务器返回客户端www.pandan.xyz域名对应的IP地址，客户端收到IP地址并缓存起来</li>
+</ol>
+<p>使用dig命令查看DNS解析的全过程，如下图：<br><img src="/images/201702031736.png" alt="DNS解析全过程"></p>
+<h3 id="DNS解析记录"><a href="#DNS解析记录" class="headerlink" title="DNS解析记录"></a>DNS解析记录</h3><p>通常一条解析记录包含以下信息：</p>
+<ol>
+<li><p>记录类型</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">A记录：将域名指向一个IPv4地址（例如：10.10.10.10），需要增加A记录</span><br><span class="line">CNAME记录：如果将域名指向另一个域名，实现与被指向域名相同的访问效果，需要增加CNAME记录</span><br><span class="line">MX记录：建立电子邮箱服务，将指向邮件服务器地址，需要设置MX记录</span><br><span class="line">NS记录：域名解析服务器记录，如果要将子域名指定某个域名服务器来解析，需要设置NS记录</span><br><span class="line">TXT记录：可任意填写（可为空），通常用做SPF记录（反垃圾邮件）使用</span><br><span class="line">AAAA记录：将主机名（或域名）指向一个IPv6地址（例如：ff03:0:0:0:0:0:0:c1），需要添加AAAA记录</span><br><span class="line">SRV记录：记录了哪台计算机提供了哪个服务。格式为：服务的名字.协议的类型（例如：_example-server._tcp）</span><br><span class="line">显性URL：将域名指向一个http（s)协议地址，访问域名时，自动跳转至目标地址（例如：将www.net.cn显性转发到www.hichina.com后，访问www.net.cn时，地址栏显示的地址为：www.hichina.com）。</span><br><span class="line">隐性URL：与显性URL类似，但隐性转发会隐藏真实的目标地址（例如：将www.net.cn隐性转发到www.hichina.com后，访问www.net.cn时，地址栏显示的地址仍然为：www.net.cn）。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>主机记录</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">主机记录就是域名前缀，常见用法有：</span><br><span class="line">www：将域名解析为www.example.com，填写www</span><br><span class="line">@：将域名解析为example.com（不带www），填写@或者不填写</span><br><span class="line">mail：将域名解析为mail.example.com，通常用于解析邮箱服务器</span><br><span class="line">*：泛解析，所有子域名均被解析到统一地址（除单独设置的子域名解析）</span><br><span class="line">二级域名：如：mail.example.com或abc.example.com，填写mail或abc</span><br><span class="line">手机网站：如：m.example.com，填写m</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>解析线路(运营商)</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">解析线路一般情况下选择：默认，</span><br><span class="line">当为了满足DNS线路智能解析，比如联通用户解析到联通服务器机房IP，电信用户解析到电信机房IP功能时，就需要指定DNS解析记录的解析线路了。</span><br><span class="line">常见解析线路：默认，联通，电信，移动，教育网，海外，百度，谷歌等</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>记录值</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">A记录的值填写服务器IP地址（必须为IPv4地址，例如：202.106.0.20）</span><br><span class="line">CNAME记录的值填写另外一个域名（例如：cname.pandan.xyz）</span><br><span class="line">NS记录的值填写要解析该域名的权威域名服务器的域名（例如：万网权威DNS解析服务dns9.hichina.com，dns10.hichina.com）</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>MX优先级</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">专门针对MX记录使用的，其他记录类型不用关心（用来指定邮件服务器接收邮件优先顺序，1-10，数值越小优先级越高）。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TTL</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">TTL（全称：Time To Live）指各地DNS服务器缓存该域名记录信息的时间，一般默认10分钟。</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一般情况下，我们常用的记录类型有：A记录，NS记录，MX记录，CNAME记录这些。<br>当我们需要将域名解析成对应的IP时，则选择A记录，如果是IPv6则选择AAAA记录；<br>当我们需要将域名作为邮件域名解析时，选择MX记录，例如：139.com，qq.com，163.com等；<br>当我们需要将该域名委托给其他权威域名服务器解析时，则选择NS记录，指定该域名的权威解析域名服务器；<br>当我们需要将我们的域名解析到CDN时，我们可以修改解析记录，选择CNAME别名记录，记录值则是CDN服务提供商的域名。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://selfboot.cn/2015/11/05/dns_theory" target="_blank" rel="noopener">http://selfboot.cn/2015/11/05/dns_theory</a></li>
+<li><a href="http://selfboot.cn/2015/11/14/dns_practice" target="_blank" rel="noopener">http://selfboot.cn/2015/11/14/dns_practice</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/02/dns 实践篇/" rel="next" title="DNS 实践篇">
+                <i class="fa fa-chevron-left"></i> DNS 实践篇
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/02/zookeeper 简介/" rel="prev" title="zookeeper 简介">
+                zookeeper 简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作机制"><span class="nav-number">2.</span> <span class="nav-text">工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS解析记录"><span class="nav-number">3.</span> <span class="nav-text">DNS解析记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言一般讲到网络通信模型，就会涉及到协议，事件驱动模型（select，poll，epoll等），以及序列化与反序列化实现机制。众所周知，在网络传输中，传输的内容都是字节流的形式，所以在网络编程中序列化与反序列化机制则是比较重要的一个模块，而在amqp-client中是没有考虑序列化与反序列化实现机制，而是将这一模块，交由应用层去实现，只负责数据的传输，所以在amqp-client的API中都是直接">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rabbitmq amqp-client源码解读">
+<meta property="og:url" content="http://www.pandan.xyz/2017/03/20/rabbitmq amqp-client源码解读/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言一般讲到网络通信模型，就会涉及到协议，事件驱动模型（select，poll，epoll等），以及序列化与反序列化实现机制。众所周知，在网络传输中，传输的内容都是字节流的形式，所以在网络编程中序列化与反序列化机制则是比较重要的一个模块，而在amqp-client中是没有考虑序列化与反序列化实现机制，而是将这一模块，交由应用层去实现，只负责数据的传输，所以在amqp-client的API中都是直接">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-03-22T15:19:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rabbitmq amqp-client源码解读">
+<meta name="twitter:description" content="前言一般讲到网络通信模型，就会涉及到协议，事件驱动模型（select，poll，epoll等），以及序列化与反序列化实现机制。众所周知，在网络传输中，传输的内容都是字节流的形式，所以在网络编程中序列化与反序列化机制则是比较重要的一个模块，而在amqp-client中是没有考虑序列化与反序列化实现机制，而是将这一模块，交由应用层去实现，只负责数据的传输，所以在amqp-client的API中都是直接">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/03/20/rabbitmq amqp-client源码解读/"/>
+
+  <title> rabbitmq amqp-client源码解读 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rabbitmq amqp-client源码解读
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-20T22:10:36+08:00" content="2017-03-20">
+              2017-03-20
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一般讲到网络通信模型，就会涉及到协议，事件驱动模型（select，poll，epoll等），以及序列化与反序列化实现机制。众所周知，在网络传输中，传输的内容都是字节流的形式，所以在网络编程中序列化与反序列化机制则是比较重要的一个模块，而在amqp-client中是没有考虑序列化与反序列化实现机制，而是将这一模块，交由应用层去实现，只负责数据的传输，所以在amqp-client的API中都是直接传输字节数组的参数。下面将围绕着AMQP协议，Socket网络编程，线程协作wait/notify等来展开说明amqp-client具体实现过程，首先在AMQP协议中有这样几个抽象的概念Connection，Channel，Command，Frame等，而amqp-client则是对AMQP协议的具体实现（如同httpclient实现了http协议一样）。其中一个Connection可以创建多个Channel，每个Channel类似一个会话，我们可以针对Channel开启事务模式，Publisher Confirms确认机制等，多个Channel共用一个TCP连接收发消息。<br><a id="more"></a></p>
+<h3 id="Connection"><a href="#Connection" class="headerlink" title="Connection"></a>Connection</h3><p>和JDBC中的Connection概念一样，amqp-client中一个Connection底层也是通过Socket实现的TCP连接，可以通过一个Connection创建多个Channel，多个Channel共用此Connection与服务端broker进行通信，所以各Channel在使用Connection进行消息收发时，必须要使用Connection级别的锁来控制并发数据流读写操作，防止多个Channel数据读写错乱。</p>
+<p>在amqp-client中Connection抽象概念的具体实现类是AMQConnection<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AMQConnection</span> <span class="keyword">extends</span> <span class="title">ShutdownNotifierComponent</span> </span></span><br><span class="line"><span class="class">             <span class="keyword">implements</span> <span class="title">Connection</span>, <span class="title">NetworkConnection</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutorService consumerWorkServiceExecutor;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutorService heartbeatExecutor;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutorService shutdownExecutor;</span><br><span class="line">    <span class="keyword">private</span> Thread mainLoopThread;</span><br><span class="line">    <span class="keyword">private</span> ThreadFactory threadFactory = Executors.defaultThreadFactory();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 告诉broker客户端支持的特性- 默认值</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String, Object&gt; <span class="title">defaultClientProperties</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Map&lt;String,Object&gt; props = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">        props.put(<span class="string">"product"</span>, LongStringHelper.asLongString(<span class="string">"RabbitMQ"</span>));</span><br><span class="line">        props.put(<span class="string">"version"</span>, LongStringHelper.asLongString(ClientVersion.VERSION));</span><br><span class="line">        props.put(<span class="string">"platform"</span>, LongStringHelper.asLongString(<span class="string">"Java"</span>));</span><br><span class="line">        props.put(<span class="string">"copyright"</span>, LongStringHelper.asLongString(Copyright.COPYRIGHT));</span><br><span class="line">        props.put(<span class="string">"information"</span>, LongStringHelper.asLongString(Copyright.LICENSE));</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Object&gt; capabilities = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">        capabilities.put(<span class="string">"publisher_confirms"</span>, <span class="keyword">true</span>);</span><br><span class="line">        capabilities.put(<span class="string">"exchange_exchange_bindings"</span>, <span class="keyword">true</span>);</span><br><span class="line">        capabilities.put(<span class="string">"basic.nack"</span>, <span class="keyword">true</span>);</span><br><span class="line">        capabilities.put(<span class="string">"consumer_cancel_notify"</span>, <span class="keyword">true</span>);</span><br><span class="line">        capabilities.put(<span class="string">"connection.blocked"</span>, <span class="keyword">true</span>);</span><br><span class="line">        capabilities.put(<span class="string">"authentication_failure_close"</span>, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        props.put(<span class="string">"capabilities"</span>, capabilities);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> props;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">protected</span> ConsumerWorkService _workService = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">/** Frame 处理器 */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> FrameHandler _frameHandler;</span><br><span class="line">    <span class="comment">/** Flag controlling the main driver loop's termination */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> _running = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">/** 连接全局异常处理器*/</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExceptionHandler _exceptionHandler;</span><br><span class="line">    <span class="comment">/** Manages heart-beat sending for this connection */</span></span><br><span class="line">    <span class="keyword">private</span> HeartbeatSender _heartbeatSender;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String _virtualHost;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Object&gt; _clientProperties;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SaslConfig saslConfig;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> requestedHeartbeat;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> requestedChannelMax;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> requestedFrameMax;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> handshakeTimeout;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> shutdownTimeout;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String username;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String password;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Collection&lt;BlockedListener&gt; blockedListeners = </span><br><span class="line">                  <span class="keyword">new</span> CopyOnWriteArrayList&lt;BlockedListener&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Maximum frame length, or zero if no limit is set */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> _frameMax = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/** Count of socket-timeouts that have happened without any incoming frames */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> _missedHeartbeats = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/** Currently-configured heart-beat interval, in seconds. 0 meaning none. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> _heartbeat = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/** Object that manages a set of channels */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> ChannelManager _channelManager;</span><br><span class="line">    <span class="comment">/** Saved server properties field from connection.start */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Map&lt;String, Object&gt; _serverProperties;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Protected API - respond, in the driver thread, to a ShutdownSignal.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> channel the channel to disconnect</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">disconnectChannel</span><span class="params">(ChannelN channel)</span> </span>&#123;</span><br><span class="line">        ChannelManager cm = _channelManager;</span><br><span class="line">        <span class="keyword">if</span> (cm != <span class="keyword">null</span>) cm.releaseChannelNumber(channel);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">     <span class="comment">/** Construct a new connection</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> params parameters for it</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AMQConnection</span><span class="params">(ConnectionParams params, FrameHandler frameHandler)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        checkPreconditions();</span><br><span class="line">        <span class="keyword">this</span>.username = params.getUsername();</span><br><span class="line">        <span class="keyword">this</span>.password = params.getPassword();</span><br><span class="line">        <span class="keyword">this</span>._frameHandler = frameHandler;</span><br><span class="line">        <span class="keyword">this</span>._virtualHost = params.getVirtualHost();</span><br><span class="line">        <span class="keyword">this</span>._exceptionHandler = params.getExceptionHandler();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>._clientProperties = <span class="keyword">new</span> HashMap&lt;String, Object&gt;(params.getClientProperties());</span><br><span class="line">        <span class="keyword">this</span>.requestedFrameMax = params.getRequestedFrameMax();</span><br><span class="line">        <span class="keyword">this</span>.requestedChannelMax = params.getRequestedChannelMax();</span><br><span class="line">        <span class="keyword">this</span>.requestedHeartbeat = params.getRequestedHeartbeat();</span><br><span class="line">        <span class="keyword">this</span>.handshakeTimeout = params.getHandshakeTimeout();</span><br><span class="line">        <span class="keyword">this</span>.shutdownTimeout = params.getShutdownTimeout();</span><br><span class="line">        <span class="keyword">this</span>.saslConfig = params.getSaslConfig();</span><br><span class="line">        <span class="keyword">this</span>.consumerWorkServiceExecutor = params.getConsumerWorkServiceExecutor();</span><br><span class="line">        <span class="keyword">this</span>.heartbeatExecutor = params.getHeartbeatExecutor();</span><br><span class="line">        <span class="keyword">this</span>.shutdownExecutor = params.getShutdownExecutor();</span><br><span class="line">        <span class="keyword">this</span>.threadFactory = params.getThreadFactory();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>._channelManager = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">this</span>._brokerInitiatedShutdown = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">this</span>._inConnectionNegotiation = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initializeConsumerWorkService</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>._workService  = <span class="keyword">new</span> ConsumerWorkService(consumerWorkServiceExecutor, </span><br><span class="line">                                                     threadFactory, </span><br><span class="line">                                                     shutdownTimeout);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initializeHeartbeatSender</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>._heartbeatSender = <span class="keyword">new</span> HeartbeatSender(_frameHandler, heartbeatExecutor, threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// connection初始化方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> <span class="keyword">throws</span> IOException, TimeoutException </span>&#123;</span><br><span class="line">        initializeConsumerWorkService();</span><br><span class="line">        initializeHeartbeatSender();</span><br><span class="line">        <span class="keyword">this</span>._running = <span class="keyword">true</span>;</span><br><span class="line">        <span class="comment">// Make sure that the first thing we do is to send the header,</span></span><br><span class="line">        <span class="comment">// which should cause any socket errors to show up for us, rather</span></span><br><span class="line">        <span class="comment">// than risking them pop out in the MainLoop</span></span><br><span class="line">        AMQChannel.SimpleBlockingRpcContinuation connStartBlocker </span><br><span class="line">                   = <span class="keyword">new</span> AMQChannel.SimpleBlockingRpcContinuation();</span><br><span class="line">            </span><br><span class="line">        <span class="comment">// We enqueue an RPC continuation here without sending an RPC</span></span><br><span class="line">        <span class="comment">// request, since the protocol specifies that after sending</span></span><br><span class="line">        <span class="comment">// the version negotiation header, the client (connection</span></span><br><span class="line">        <span class="comment">// initiator) is to wait for a connection.start method to</span></span><br><span class="line">        <span class="comment">// arrive.</span></span><br><span class="line">        _channel0.enqueueRpc(connStartBlocker);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// The following two lines are akin to AMQChannel's</span></span><br><span class="line">            <span class="comment">// transmit() method for this pseudo-RPC.</span></span><br><span class="line">            _frameHandler.setTimeout(handshakeTimeout);</span><br><span class="line">            _frameHandler.sendHeader();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException ioe) &#123;</span><br><span class="line">            _frameHandler.close();</span><br><span class="line">            <span class="keyword">throw</span> ioe;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// start the main loop going</span></span><br><span class="line">        MainLoop loop = <span class="keyword">new</span> MainLoop();</span><br><span class="line">        <span class="keyword">final</span> String name = <span class="string">"AMQP Connection "</span> + getHostAddress() + <span class="string">":"</span> + getPort();</span><br><span class="line">        mainLoopThread = Environment.newThread(threadFactory, loop, name);</span><br><span class="line">        mainLoopThread.start();</span><br><span class="line">        <span class="comment">// after this point clear-up of MainLoop is triggered by closing the frameHandler.</span></span><br><span class="line"></span><br><span class="line">        AMQP.Connection.Start connStart;</span><br><span class="line">        AMQP.Connection.Tune connTune = <span class="keyword">null</span>;</span><br><span class="line">        </span><br><span class="line">        ......</span><br><span class="line">        .........</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** The special channel 0 (&lt;i&gt;not&lt;/i&gt; managed by the &lt;code&gt;&lt;b&gt;_channelManager&lt;/b&gt;&lt;/code&gt;) */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AMQChannel _channel0 = <span class="keyword">new</span> AMQChannel(<span class="keyword">this</span>, <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">processAsync</span><span class="params">(Command c)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            <span class="comment">// _channel0是一个特殊的处理，专门用于处于Connection Close/Blocked/Unblocked等事件</span></span><br><span class="line">            <span class="keyword">return</span> getConnection().processControlCommand(c);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 专门用于处于Connection Close/Blocked/Unblocked等事件回调监听器</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unused"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">processControlCommand</span><span class="params">(Command c)</span> <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Method method = c.getMethod();</span><br><span class="line">        <span class="keyword">if</span> (isOpen()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (method <span class="keyword">instanceof</span> AMQP.Connection.Close) &#123; <span class="comment">// 连接关闭回调</span></span><br><span class="line">                handleConnectionClose(c);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> AMQP.Connection.Blocked) &#123; <span class="comment">// 连接阻塞回调</span></span><br><span class="line">                AMQP.Connection.Blocked blocked = (AMQP.Connection.Blocked) method;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">for</span> (BlockedListener l : <span class="keyword">this</span>.blockedListeners) &#123;</span><br><span class="line">                        l.handleBlocked(blocked.getReason());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                    getExceptionHandler().handleBlockedListenerException(<span class="keyword">this</span>, ex);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> AMQP.Connection.Unblocked) &#123; <span class="comment">//连接解除阻塞事件回调</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">for</span> (BlockedListener l : <span class="keyword">this</span>.blockedListeners) &#123;</span><br><span class="line">                        l.handleUnblocked();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                    getExceptionHandler().handleBlockedListenerException(<span class="keyword">this</span>, ex);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (method <span class="keyword">instanceof</span> AMQP.Connection.Close) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    _channel0.quiescingTransmit(<span class="keyword">new</span> AMQP.Connection.CloseOk.Builder().build());</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException ignored) &#123; &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> AMQP.Connection.CloseOk) &#123;</span><br><span class="line">                _running = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">return</span> !_channel0.isOutstandingRpc();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// Ignore all others.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 循环从TCP连接中读取输入流</span></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">MainLoop</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * Channel reader thread main loop. Reads a frame, and if it is</span></span><br><span class="line"><span class="comment">         * not a heartbeat frame, dispatches it to the channel it refers to.</span></span><br><span class="line"><span class="comment">         * Continues running until the "running" flag is set false by</span></span><br><span class="line"><span class="comment">         * shutdown().</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">while</span> (_running) &#123;</span><br><span class="line">                    Frame frame = _frameHandler.readFrame();</span><br><span class="line">                    <span class="keyword">if</span> (frame != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        _missedHeartbeats = <span class="number">0</span>;</span><br><span class="line">                        <span class="keyword">if</span> (frame.type == AMQP.FRAME_HEARTBEAT) &#123;</span><br><span class="line">                            <span class="comment">// Ignore it: we've already just reset the heartbeat counter.</span></span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="keyword">if</span> (frame.channel == <span class="number">0</span>) &#123; <span class="comment">// the special channel</span></span><br><span class="line">                                 <span class="comment">// 这是一个特殊的channel编号，专门用于处理connection相关事件回调机制</span></span><br><span class="line">                                _channel0.handleFrame(frame);</span><br><span class="line">                            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                                <span class="keyword">if</span> (isOpen()) &#123;</span><br><span class="line">                                    <span class="comment">// If we're still _running, but not isOpen(), then we</span></span><br><span class="line">                                    <span class="comment">// must be quiescing, which means any inbound frames</span></span><br><span class="line">                                    <span class="comment">// for non-zero channels (and any inbound commands on</span></span><br><span class="line">                                    <span class="comment">// channel zero that aren't Connection.CloseOk) must</span></span><br><span class="line">                                    <span class="comment">// be discarded.</span></span><br><span class="line">                                    ChannelManager cm = _channelManager;</span><br><span class="line">                                    <span class="keyword">if</span> (cm != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                        cm.getChannel(frame.channel).handleFrame(frame);</span><br><span class="line">                                    &#125;</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">// Socket timeout waiting for a frame. Maybe missed heartbeat.</span></span><br><span class="line">                        handleSocketTimeout();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (EOFException ex) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!_brokerInitiatedShutdown) shutdown(<span class="keyword">null</span>, <span class="keyword">false</span>, ex, <span class="keyword">true</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                _exceptionHandler.handleUnexpectedConnectionDriverException(AMQConnection.<span class="keyword">this</span>, ex);</span><br><span class="line">                shutdown(<span class="keyword">null</span>, <span class="keyword">false</span>, ex, <span class="keyword">true</span>);</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="comment">// Finally, shut down our underlying data connection.</span></span><br><span class="line">                _frameHandler.close();</span><br><span class="line">                _appContinuation.set(<span class="keyword">null</span>);</span><br><span class="line">                notifyListeners();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** 创建Channel*/</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Channel <span class="title">createChannel</span><span class="params">(<span class="keyword">int</span> channelNumber)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        ensureIsOpen();</span><br><span class="line">        ChannelManager cm = _channelManager;</span><br><span class="line">        <span class="keyword">if</span> (cm == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">return</span> cm.createChannel(<span class="keyword">this</span>, channelNumber);</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">    .........</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建Connection的工厂类：ConnectionFactory<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Connection <span class="title">newConnection</span><span class="params">(ExecutorService executor, Address[] addrs)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, TimeoutException </span>&#123;</span><br><span class="line">        <span class="comment">// make sure we respect the provided thread factory</span></span><br><span class="line">    FrameHandlerFactory fhFactory = createFrameHandlerFactory();</span><br><span class="line">    ConnectionParams params = params(executor);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isAutomaticRecoveryEnabled()) &#123;</span><br><span class="line">        <span class="comment">// see com.rabbitmq.client.impl.recovery.RecoveryAwareAMQConnectionFactory#newConnection</span></span><br><span class="line">        AutorecoveringConnection conn = <span class="keyword">new</span> AutorecoveringConnection(params, fhFactory, addrs);</span><br><span class="line">        conn.init();</span><br><span class="line">        <span class="keyword">return</span> conn;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        IOException lastException = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (Address addr : addrs) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 从多个目标地址中创建连接，直到成功创建为止</span></span><br><span class="line">                FrameHandler handler = fhFactory.create(addr);</span><br><span class="line">                AMQConnection conn = <span class="keyword">new</span> AMQConnection(params, handler);</span><br><span class="line">                conn.start();</span><br><span class="line">                <span class="keyword">return</span> conn;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> (lastException != <span class="keyword">null</span>) ? lastException : <span class="keyword">new</span> IOException(<span class="string">"failed to connect"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><p>Channel只是AMQP协议中一个抽象的概念，AMQChannel是实现Channel接口的抽象类，ChannelN则是继承自AMQChannel实现类。</p>
+<p>Connection创建Channel最终都是委托给ChannelManager来创建的，核心代码如下：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChannelManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object monitor = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="comment">/** Mapping from &lt;code&gt;&lt;b&gt;1.._channelMax&lt;/b&gt;&lt;/code&gt; to &#123;<span class="doctag">@link</span> ChannelN&#125; instance */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Integer, ChannelN&gt; _channelMap = <span class="keyword">new</span> HashMap&lt;Integer, ChannelN&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelN <span class="title">getChannel</span><span class="params">(<span class="keyword">int</span> channelNumber)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>.monitor) &#123;</span><br><span class="line">            ChannelN ch = _channelMap.get(channelNumber);</span><br><span class="line">            <span class="keyword">if</span>(ch == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> UnknownChannelException(channelNumber);</span><br><span class="line">            <span class="keyword">return</span> ch;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建Channel</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelN <span class="title">createChannel</span><span class="params">(AMQConnection connection, <span class="keyword">int</span> channelNumber)</span> </span></span><br><span class="line"><span class="function">           <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        ChannelN ch;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>.monitor) &#123;</span><br><span class="line">            <span class="keyword">if</span> (channelNumberAllocator.reserve(channelNumber)) &#123;</span><br><span class="line">                ch = addNewChannel(connection, channelNumber);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ch.open(); <span class="comment">// now that it's been safely added</span></span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 回收Channel</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">releaseChannelNumber</span><span class="params">(ChannelN channel)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>.monitor) &#123;</span><br><span class="line">            <span class="keyword">int</span> channelNumber = channel.getChannelNumber();</span><br><span class="line">            ChannelN existing = _channelMap.remove(channelNumber);</span><br><span class="line">            <span class="comment">// Nothing to do here. Move along.</span></span><br><span class="line">            <span class="keyword">if</span> (existing == <span class="keyword">null</span>)</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            <span class="comment">// Oops, we've gone and stomped on someone else's channel. Put it</span></span><br><span class="line">            <span class="comment">// back and pretend we didn't touch it.</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (existing != channel) &#123;</span><br><span class="line">                _channelMap.put(channelNumber, existing);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            channelNumberAllocator.free(channelNumber);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> ChannelN <span class="title">addNewChannel</span><span class="params">(AMQConnection connection, <span class="keyword">int</span> channelNumber)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (_channelMap.containsKey(channelNumber)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"We have attempted to "</span></span><br><span class="line">                    + <span class="string">"create a channel with a number that is already in "</span></span><br><span class="line">                    + <span class="string">"use. This should never happen. "</span></span><br><span class="line">                    + <span class="string">"Please report this as a bug."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        ChannelN ch = instantiateChannel(connection, channelNumber, <span class="keyword">this</span>.workService);</span><br><span class="line">        _channelMap.put(ch.getChannelNumber(), ch);</span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> ChannelN <span class="title">instantiateChannel</span><span class="params">(AMQConnection connection, <span class="keyword">int</span> channelNumber, </span></span></span><br><span class="line"><span class="function"><span class="params">              ConsumerWorkService workService)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ChannelN(connection, channelNumber, workService);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>AMQChannel抽象类：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AMQChannel</span> <span class="keyword">extends</span> <span class="title">ShutdownNotifierComponent</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Object _channelMutex = <span class="keyword">new</span> Object();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** The connection this channel is associated with. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AMQConnection _connection;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** The current outstanding RPC request, if any. (Could become a queue in future.) */</span></span><br><span class="line">    <span class="keyword">private</span> RpcContinuation _activeRpc = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** This channel's channel number. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> _channelNumber;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AMQChannel</span><span class="params">(AMQConnection connection, <span class="keyword">int</span> channelNumber)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>._connection = connection;</span><br><span class="line">        <span class="keyword">this</span>._channelNumber = channelNumber;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// MainLoop循环从连接中获取输入流信息封装成Frame，然后分发给对应的Channel进行处理</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleFrame</span><span class="params">(Frame frame)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        AMQCommand command = _command;</span><br><span class="line">        <span class="keyword">if</span> (command.handleFrame(frame)) &#123; <span class="comment">// a complete command has rolled off the assembly line</span></span><br><span class="line">            _command = <span class="keyword">new</span> AMQCommand(); <span class="comment">// prepare for the next one</span></span><br><span class="line">            handleCompleteInboundCommand(command);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleCompleteInboundCommand</span><span class="params">(AMQCommand command)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// processAsync 处理Consumer中Basic.Deliver, Basic.Return and Channel.Close等回调方法</span></span><br><span class="line">        <span class="comment">// 具体参考ChannelN中processAsync实现</span></span><br><span class="line">        <span class="keyword">if</span> (!processAsync(command)) &#123;</span><br><span class="line">            <span class="comment">// The filter decided not to handle/consume the command,</span></span><br><span class="line">            <span class="comment">// so it must be some reply to an earlier RPC.</span></span><br><span class="line">            <span class="comment">// 触发回调同步阻塞请求的RpcContinuation，设置关联的BlockingCell实例中的_value值</span></span><br><span class="line">            <span class="comment">// 并notifyAll唤醒阻塞等待k.getReply()获取响应结果的线程</span></span><br><span class="line">            nextOutstandingRpc().handleCommand(command); </span><br><span class="line">            markRpcFinished();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">boolean</span> <span class="title">processAsync</span><span class="params">(Command command)</span> <span class="keyword">throws</span> IOException</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 比较经典的wait/notify/notifyAll用法 -入队</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enqueueRpc</span><span class="params">(RpcContinuation k)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            <span class="keyword">boolean</span> waitClearedInterruptStatus = <span class="keyword">false</span>;</span><br><span class="line">            <span class="comment">// 如果当前已经有正在活跃的RPC远程调用则进入wait等待，直到当前活跃_activeRpc为null</span></span><br><span class="line">            <span class="keyword">while</span> (_activeRpc != <span class="keyword">null</span>) &#123; </span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    _channelMutex.wait();<span class="comment">// 线程释放_channelMutex进入wait阻塞状态</span></span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    waitClearedInterruptStatus = <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (waitClearedInterruptStatus) &#123;</span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">            &#125;</span><br><span class="line">            _activeRpc = k;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 出队</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RpcContinuation <span class="title">nextOutstandingRpc</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            RpcContinuation result = _activeRpc;</span><br><span class="line">            _activeRpc = <span class="keyword">null</span>; <span class="comment">//置null关键点逻辑</span></span><br><span class="line">            _channelMutex.notifyAll(); <span class="comment">// 唤醒所有因_channelMutex.wait()阻塞的线程</span></span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">markRpcFinished</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// no-op</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> AMQCommand <span class="title">rpc</span><span class="params">(Method m)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, ShutdownSignalException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> privateRpc(m);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AMQCommand <span class="title">rpc</span><span class="params">(Method m, <span class="keyword">int</span> timeout)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, ShutdownSignalException, TimeoutException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> privateRpc(m, timeout);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> AMQCommand <span class="title">privateRpc</span><span class="params">(Method m, <span class="keyword">int</span> timeout)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException, ShutdownSignalException, TimeoutException </span>&#123;</span><br><span class="line">        SimpleBlockingRpcContinuation k = <span class="keyword">new</span> SimpleBlockingRpcContinuation();</span><br><span class="line">        rpc(m, k);</span><br><span class="line">        <span class="comment">// 同步超时等待响应结果，具体实现参考BlockingRpcContinuation，BlockingCell</span></span><br><span class="line">        <span class="keyword">return</span> k.getReply(timeout); </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rpc</span><span class="params">(Method m, RpcContinuation k)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            ensureIsOpen();</span><br><span class="line">            quiescingRpc(m, k);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quiescingRpc</span><span class="params">(Method m, RpcContinuation k)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            enqueueRpc(k);<span class="comment">// 将回调器入队</span></span><br><span class="line">            quiescingTransmit(m); <span class="comment">//并向broker提交消息</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quiescingTransmit</span><span class="params">(Method m)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            quiescingTransmit(<span class="keyword">new</span> AMQCommand(m));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Channel向broker发送消息</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">quiescingTransmit</span><span class="params">(AMQCommand c)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">            <span class="keyword">if</span> (c.getMethod().hasContent()) &#123;</span><br><span class="line">                <span class="keyword">while</span> (_blockContent) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        _channelMutex.wait();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InterruptedException ignored) &#123;&#125;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// This is to catch a situation when the thread wakes up during</span></span><br><span class="line">                    <span class="comment">// shutdown. Currently, no command that has content is allowed</span></span><br><span class="line">                    <span class="comment">// to send anything in a closing state.</span></span><br><span class="line">                    ensureIsOpen();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            c.transmit(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br></pre></td></tr></table></figure></p>
+<p>ChannelN核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChannelN</span> <span class="keyword">extends</span> <span class="title">AMQChannel</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">rabbitmq</span>.<span class="title">client</span>.<span class="title">Channel</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** The ReturnListener collection. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Collection&lt;ReturnListener&gt; returnListeners = <span class="keyword">new</span> CopyOnWriteArrayList&lt;ReturnListener&gt;();</span><br><span class="line">    <span class="comment">/** The FlowListener collection. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Collection&lt;FlowListener&gt; flowListeners = <span class="keyword">new</span> CopyOnWriteArrayList&lt;FlowListener&gt;();</span><br><span class="line">    <span class="comment">/** The ConfirmListener collection. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Collection&lt;ConfirmListener&gt; confirmListeners = <span class="keyword">new</span> CopyOnWriteArrayList&lt;ConfirmListener&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">processAsync</span><span class="params">(Command command)</span> <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Method method = command.getMethod();</span><br><span class="line">        <span class="comment">// we deal with channel.close in the same way, regardless</span></span><br><span class="line">        <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Channel.Close) &#123;</span><br><span class="line">            asyncShutdown(command);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isOpen()) &#123;</span><br><span class="line">            <span class="comment">// We're in normal running mode.</span></span><br><span class="line">            <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.Deliver) &#123; <span class="comment">//broker消息投递</span></span><br><span class="line">                processDelivery(command, (Basic.Deliver) method);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.Return) &#123;</span><br><span class="line">                <span class="comment">// 回调ReturnListene监听器</span></span><br><span class="line">                callReturnListeners(command, (Basic.Return) method);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Channel.Flow) &#123;</span><br><span class="line">                Channel.Flow channelFlow = (Channel.Flow) method;</span><br><span class="line">                <span class="keyword">synchronized</span> (_channelMutex) &#123;</span><br><span class="line">                    _blockContent = !channelFlow.getActive();</span><br><span class="line">                    transmit(<span class="keyword">new</span> Channel.FlowOk(!_blockContent));</span><br><span class="line">                    _channelMutex.notifyAll();</span><br><span class="line">                &#125;</span><br><span class="line">                callFlowListeners(command, channelFlow);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.Ack) &#123;</span><br><span class="line">                Basic.Ack ack = (Basic.Ack) method;</span><br><span class="line">                callConfirmListeners(command, ack);</span><br><span class="line">                handleAckNack(ack.getDeliveryTag(), ack.getMultiple(), <span class="keyword">false</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.Nack) &#123;</span><br><span class="line">                Basic.Nack nack = (Basic.Nack) method;</span><br><span class="line">                callConfirmListeners(command, nack);</span><br><span class="line">                handleAckNack(nack.getDeliveryTag(), nack.getMultiple(), <span class="keyword">true</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.RecoverOk) &#123;</span><br><span class="line">                <span class="keyword">for</span> (Map.Entry&lt;String, Consumer&gt; entry : _consumers.entrySet()) &#123;</span><br><span class="line">                    <span class="keyword">this</span>.dispatcher.handleRecoverOk(entry.getValue(), entry.getKey());</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// Unlike all the other cases we still want this RecoverOk to</span></span><br><span class="line">                <span class="comment">// be handled by whichever RPC continuation invoked Recover,</span></span><br><span class="line">                <span class="comment">// so return false</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.Cancel) &#123;</span><br><span class="line">                Basic.Cancel m = (Basic.Cancel)method;</span><br><span class="line">                String consumerTag = m.getConsumerTag();</span><br><span class="line">                Consumer callback = _consumers.remove(consumerTag);</span><br><span class="line">                <span class="keyword">if</span> (callback == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    callback = defaultConsumer;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">this</span>.dispatcher.handleCancel(callback, consumerTag);</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                        getConnection().getExceptionHandler().handleConsumerException(<span class="keyword">this</span>,</span><br><span class="line">                            ex, callback, consumerTag, <span class="string">"handleCancel"</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// We're in quiescing mode == !isOpen()</span></span><br><span class="line">            <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Channel.CloseOk) &#123;</span><br><span class="line">                <span class="comment">// We're quiescing, and we see a channel.close-ok:</span></span><br><span class="line">                <span class="comment">// this is our signal to leave quiescing mode and</span></span><br><span class="line">                <span class="comment">// finally shut down for good. Let it be handled as an</span></span><br><span class="line">                <span class="comment">// RPC reply one final time by returning false.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// We're quiescing, and this inbound command should be</span></span><br><span class="line">                <span class="comment">// discarded as per spec. "Consume" it by returning</span></span><br><span class="line">                <span class="comment">// true.</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">processDelivery</span><span class="params">(Command command, Basic.Deliver method)</span> </span>&#123;</span><br><span class="line">        Basic.Deliver m = method;</span><br><span class="line">        <span class="comment">// 根据consumerTag获取消费者回调器</span></span><br><span class="line">        Consumer callback = _consumers.get(m.getConsumerTag());</span><br><span class="line">        <span class="keyword">if</span> (callback == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (defaultConsumer == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Unsolicited delivery -"</span> +</span><br><span class="line">                        <span class="string">" see Channel.setDefaultConsumer to handle this"</span> +</span><br><span class="line">                        <span class="string">" case."</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                callback = defaultConsumer;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Envelope envelope = <span class="keyword">new</span> Envelope(m.getDeliveryTag(),</span><br><span class="line">                                         m.getRedelivered(),</span><br><span class="line">                                         m.getExchange(),</span><br><span class="line">                                         m.getRoutingKey());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 具体分发处理参考ConsumerDispatcher异步处理</span></span><br><span class="line">            <span class="keyword">this</span>.dispatcher.handleDelivery(callback,</span><br><span class="line">                                           m.getConsumerTag(),</span><br><span class="line">                                           envelope,</span><br><span class="line">                                           (BasicProperties) command.getContentHeader(),</span><br><span class="line">                                           command.getContentBody());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            getConnection().getExceptionHandler().handleConsumerException(<span class="keyword">this</span>,</span><br><span class="line">                ex,</span><br><span class="line">                callback,</span><br><span class="line">                m.getConsumerTag(),</span><br><span class="line">                <span class="string">"handleDelivery"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 回调ReturnListene监听器</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">callReturnListeners</span><span class="params">(Command command, Basic.Return basicReturn)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (ReturnListener l : <span class="keyword">this</span>.returnListeners) &#123;</span><br><span class="line">                l.handleReturn(basicReturn.getReplyCode(),</span><br><span class="line">                    basicReturn.getReplyText(),</span><br><span class="line">                    basicReturn.getExchange(),</span><br><span class="line">                    basicReturn.getRoutingKey(),</span><br><span class="line">                    (BasicProperties) command.getContentHeader(),</span><br><span class="line">                    command.getContentBody());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            getConnection().getExceptionHandler().handleReturnListenerException(<span class="keyword">this</span>, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ......</span><br><span class="line">    ..........</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Public API - &#123;<span class="doctag">@inheritDoc</span>&#125; */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> GetResponse <span class="title">basicGet</span><span class="params">(String queue, <span class="keyword">boolean</span> autoAck)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        validateQueueNameLength(queue);</span><br><span class="line">        <span class="comment">// rpc 同步阻塞调用</span></span><br><span class="line">        AMQCommand replyCommand = exnWrappingRpc(<span class="keyword">new</span> Basic.Get.Builder()</span><br><span class="line">                                                  .queue(queue)</span><br><span class="line">                                                  .noAck(autoAck)</span><br><span class="line">                                                 .build());</span><br><span class="line">        Method method = replyCommand.getMethod();</span><br><span class="line">        <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.GetOk) &#123;</span><br><span class="line">            Basic.GetOk getOk = (Basic.GetOk)method;</span><br><span class="line">            Envelope envelope = <span class="keyword">new</span> Envelope(getOk.getDeliveryTag(),</span><br><span class="line">                                             getOk.getRedelivered(),</span><br><span class="line">                                             getOk.getExchange(),</span><br><span class="line">                                             getOk.getRoutingKey());</span><br><span class="line">            BasicProperties props = (BasicProperties)replyCommand.getContentHeader();</span><br><span class="line">            <span class="keyword">byte</span>[] body = replyCommand.getContentBody();</span><br><span class="line">            <span class="keyword">int</span> messageCount = getOk.getMessageCount();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> GetResponse(envelope, props, body, messageCount);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method <span class="keyword">instanceof</span> Basic.GetEmpty) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UnexpectedMethodError(method);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Public API - &#123;<span class="doctag">@inheritDoc</span>&#125; */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">basicAck</span><span class="params">(<span class="keyword">long</span> deliveryTag, <span class="keyword">boolean</span> multiple)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// transmit提交 - 不用等返回结果的</span></span><br><span class="line">        transmit(<span class="keyword">new</span> Basic.Ack(deliveryTag, multiple));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Public API - &#123;<span class="doctag">@inheritDoc</span>&#125; */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">basicConsume</span><span class="params">(String queue, <span class="keyword">boolean</span> autoAck, String consumerTag,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">boolean</span> noLocal, <span class="keyword">boolean</span> exclusive, Map&lt;String, Object&gt; arguments,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">final</span> Consumer callback)</span> <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        BlockingRpcContinuation&lt;String&gt; k = <span class="keyword">new</span> BlockingRpcContinuation&lt;String&gt;() &#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> String <span class="title">transformReply</span><span class="params">(AMQCommand replyCommand)</span> </span>&#123;</span><br><span class="line">                String actualConsumerTag = </span><br><span class="line">                       ((Basic.ConsumeOk) replyCommand.getMethod()).getConsumerTag();</span><br><span class="line">                _consumers.put(actualConsumerTag, callback); <span class="comment">// 设置consumerTag与消费者回调器的映射关系</span></span><br><span class="line">                dispatcher.handleConsumeOk(callback, actualConsumerTag);</span><br><span class="line">                <span class="keyword">return</span> actualConsumerTag;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">// 同步阻塞创建消费者，成功之后回调BlockingRpcContinuation k</span></span><br><span class="line">        rpc(<span class="keyword">new</span> Basic.Consume.Builder()</span><br><span class="line">             .queue(queue)</span><br><span class="line">             .consumerTag(consumerTag)</span><br><span class="line">             .noLocal(noLocal)</span><br><span class="line">             .noAck(autoAck)</span><br><span class="line">             .exclusive(exclusive)</span><br><span class="line">             .arguments(arguments)</span><br><span class="line">            .build(),</span><br><span class="line">            k);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> k.getReply();</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ShutdownSignalException ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> wrap(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** Public API - &#123;<span class="doctag">@inheritDoc</span>&#125; */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">basicPublish</span><span class="params">(String exchange, String routingKey,</span></span></span><br><span class="line"><span class="function"><span class="params">                             <span class="keyword">boolean</span> mandatory, <span class="keyword">boolean</span> immediate,</span></span></span><br><span class="line"><span class="function"><span class="params">                             BasicProperties props, <span class="keyword">byte</span>[] body)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (nextPublishSeqNo &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            unconfirmedSet.add(getNextPublishSeqNo());</span><br><span class="line">            nextPublishSeqNo++;</span><br><span class="line">        &#125;</span><br><span class="line">        BasicProperties useProps = props;</span><br><span class="line">        <span class="keyword">if</span> (props == <span class="keyword">null</span>) &#123;</span><br><span class="line">            useProps = MessageProperties.MINIMAL_BASIC;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// transmit提交 - 不用等返回结果的</span></span><br><span class="line">        transmit(<span class="keyword">new</span> AMQCommand(<span class="keyword">new</span> Basic.Publish.Builder()</span><br><span class="line">                                        .exchange(exchange)</span><br><span class="line">                                        .routingKey(routingKey)</span><br><span class="line">                                        .mandatory(mandatory)</span><br><span class="line">                                        .immediate(immediate)</span><br><span class="line">                                        .build(),</span><br><span class="line">                                       useProps, body));</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">    ..........</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>ConsumerDispatcher异步分发处理MainLoop接收到的Consumer中Basic.Deliver, Basic.Return and Channel.Close逻辑<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerDispatcher</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConsumerWorkService workService;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AMQConnection connection;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Channel channel;</span><br><span class="line">    </span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleDelivery</span><span class="params">(<span class="keyword">final</span> Consumer delegate,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">final</span> String consumerTag,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">final</span> Envelope envelope,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">final</span> AMQP.BasicProperties properties,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">final</span> <span class="keyword">byte</span>[] body)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">// 收到来自broker的消息时，异步回调客户端Consumer监听器</span></span><br><span class="line">        executeUnlessShuttingDown(</span><br><span class="line">        <span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    delegate.handleDelivery(consumerTag,</span><br><span class="line">                            envelope,</span><br><span class="line">                            properties,</span><br><span class="line">                            body);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                    connection.getExceptionHandler().handleConsumerException(</span><br><span class="line">                            channel,</span><br><span class="line">                            ex,</span><br><span class="line">                            delegate,</span><br><span class="line">                            consumerTag,</span><br><span class="line">                            <span class="string">"handleDelivery"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 其他的handleCancel，handleCancelOk，handleConsumeOk，handleRecoverOk，handleShutdownSignal等</span></span><br><span class="line">    .....</span><br><span class="line">    .......</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">executeUnlessShuttingDown</span><span class="params">(Runnable r)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.shuttingDown) execute(r);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable r)</span> </span>&#123;</span><br><span class="line">        checkShutdown();</span><br><span class="line">        <span class="keyword">this</span>.workService.addWork(<span class="keyword">this</span>.channel, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">checkShutdown</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.shutdownSignal != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> Utility.fixStackTrace(<span class="keyword">this</span>.shutdownSignal);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Command"><a href="#Command" class="headerlink" title="Command"></a>Command</h3><p>具体实现类是AMQCommand，在业务层消息封装成Command进行传递（Channel API参数），最终被转换成Frame，写入TCP字节输出流。</p>
+<p>AMQCommand核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AMQCommand</span> <span class="keyword">implements</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommandAssembler assembler;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">handleFrame</span><span class="params">(Frame f)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.assembler.handleFrame(f);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 向broker提交消息命令</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transmit</span><span class="params">(AMQChannel channel)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> channelNumber = channel.getChannelNumber();</span><br><span class="line">        AMQConnection connection = channel.getConnection();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">synchronized</span> (assembler) &#123;</span><br><span class="line">            Method m = <span class="keyword">this</span>.assembler.getMethod();</span><br><span class="line">            connection.writeFrame(m.toFrame(channelNumber));</span><br><span class="line">            <span class="keyword">if</span> (m.hasContent()) &#123;</span><br><span class="line">                <span class="keyword">byte</span>[] body = <span class="keyword">this</span>.assembler.getContentBody();</span><br><span class="line"></span><br><span class="line">                connection.writeFrame(<span class="keyword">this</span>.assembler.getContentHeader()</span><br><span class="line">                        .toFrame(channelNumber, body.length));</span><br><span class="line"></span><br><span class="line">                <span class="keyword">int</span> frameMax = connection.getFrameMax();</span><br><span class="line">                <span class="keyword">int</span> bodyPayloadMax = (frameMax == <span class="number">0</span>) ? body.length : frameMax</span><br><span class="line">                        - EMPTY_FRAME_SIZE;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> offset = <span class="number">0</span>; offset &lt; body.length; offset += bodyPayloadMax) &#123;</span><br><span class="line">                    <span class="keyword">int</span> remaining = body.length - offset;</span><br><span class="line">                    <span class="keyword">int</span> fragmentLength = (remaining &lt; bodyPayloadMax) ? remaining</span><br><span class="line">                            : bodyPayloadMax;</span><br><span class="line">                    Frame frame = Frame.fromBodyFragment(channelNumber, body,</span><br><span class="line">                            offset, fragmentLength);</span><br><span class="line">                    connection.writeFrame(frame);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        connection.flush();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Frame"><a href="#Frame" class="headerlink" title="Frame"></a>Frame</h3><p>Frame是AMQP协议的关键，包含了具体是如何将一个Frame转化为网络中可传输的字节流的过程，可以说Frame.writeTo和Frame.readFrom两部分是整个socket通讯协议的关键。</p>
+<p>Frame核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Frame</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** Frame type code */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> type;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Frame channel number, 0-65535 */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> channel;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Frame payload bytes (for inbound frames) */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">byte</span>[] payload;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Frame payload (for outbound frames) */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ByteArrayOutputStream accumulator;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constructs a frame for output with a type and a channel number and a</span></span><br><span class="line"><span class="comment">     * fresh accumulator waiting for payload.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Frame</span><span class="params">(<span class="keyword">int</span> type, <span class="keyword">int</span> channel)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.type = type;</span><br><span class="line">        <span class="keyword">this</span>.channel = channel;</span><br><span class="line">        <span class="keyword">this</span>.payload = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">this</span>.accumulator = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constructs a frame for input with a type, a channel number and a</span></span><br><span class="line"><span class="comment">     * payload byte array.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Frame</span><span class="params">(<span class="keyword">int</span> type, <span class="keyword">int</span> channel, <span class="keyword">byte</span>[] payload)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.type = type;</span><br><span class="line">        <span class="keyword">this</span>.channel = channel;</span><br><span class="line">        <span class="keyword">this</span>.payload = payload;</span><br><span class="line">        <span class="keyword">this</span>.accumulator = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Frame <span class="title">fromBodyFragment</span><span class="params">(<span class="keyword">int</span> channelNumber, <span class="keyword">byte</span>[] body, </span></span></span><br><span class="line"><span class="function"><span class="params">                                         <span class="keyword">int</span> offset, <span class="keyword">int</span> length)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        Frame frame = <span class="keyword">new</span> Frame(AMQP.FRAME_BODY, channelNumber);</span><br><span class="line">        DataOutputStream bodyOut = frame.getOutputStream();</span><br><span class="line">        bodyOut.write(body, offset, length);</span><br><span class="line">        <span class="keyword">return</span> frame;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Protected API - Factory method to instantiate a Frame by reading an</span></span><br><span class="line"><span class="comment">     * AMQP-wire-protocol frame from the given input stream.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> a new Frame if we read a frame successfully, otherwise null</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Frame <span class="title">readFrom</span><span class="params">(DataInputStream is)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> type;</span><br><span class="line">        <span class="keyword">int</span> channel;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            type = is.readUnsignedByte();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (SocketTimeoutException ste) &#123;</span><br><span class="line">            <span class="comment">// System.err.println("Timed out waiting for a frame.");</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>; <span class="comment">// failed</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (type == <span class="string">'A'</span>) &#123;</span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">             * Probably an AMQP.... header indicating a version</span></span><br><span class="line"><span class="comment">             * mismatch.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="comment">/*</span></span><br><span class="line"><span class="comment">             * Otherwise meaningless, so try to read the version,</span></span><br><span class="line"><span class="comment">             * and throw an exception, whether we read the version</span></span><br><span class="line"><span class="comment">             * okay or not.</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            protocolVersionMismatch(is);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        channel = is.readUnsignedShort(); <span class="comment">// 获取消息所属channel编号</span></span><br><span class="line">        <span class="keyword">int</span> payloadSize = is.readInt(); <span class="comment">//获取消息体长度</span></span><br><span class="line">        <span class="keyword">byte</span>[] payload = <span class="keyword">new</span> <span class="keyword">byte</span>[payloadSize];</span><br><span class="line">        is.readFully(payload);<span class="comment">// 从输入流中读取指定长度的字节数据</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> frameEndMarker = is.readUnsignedByte();</span><br><span class="line">        <span class="keyword">if</span> (frameEndMarker != AMQP.FRAME_END) &#123; <span class="comment">// 一个完整Frame结束标记FRAME_END = 206;</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> MalformedFrameException(<span class="string">"Bad frame end marker: "</span> + frameEndMarker);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Frame(type, channel, payload);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Public API - writes this Frame to the given DataOutputStream</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeTo</span><span class="params">(DataOutputStream os)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        os.writeByte(type); <span class="comment">// 将类型以字节的形式写入流</span></span><br><span class="line">        os.writeShort(channel); <span class="comment">// 写入channel编号</span></span><br><span class="line">        <span class="keyword">if</span> (accumulator != <span class="keyword">null</span>) &#123;</span><br><span class="line">            os.writeInt(accumulator.size()); <span class="comment">//写入消息体总大小</span></span><br><span class="line">            accumulator.writeTo(os);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            os.writeInt(payload.length);</span><br><span class="line">            os.write(payload); <span class="comment">// 写入消息字节数组</span></span><br><span class="line">        &#125;</span><br><span class="line">        os.write(AMQP.FRAME_END); <span class="comment">// 写入Frame结束标记</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Public API - retrieves a new DataInputStream streaming over the payload</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataInputStream <span class="title">getInputStream</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DataInputStream(<span class="keyword">new</span> ByteArrayInputStream(getPayload()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Public API - retrieves a fresh DataOutputStream streaming into the accumulator</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataOutputStream <span class="title">getOutputStream</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DataOutputStream(accumulator);</span><br><span class="line">    &#125;</span><br><span class="line">    .....</span><br><span class="line">    .......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>FrameHandlerFactory核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FrameHandlerFactory</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> connectionTimeout;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SocketFactory factory;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SocketConfigurator configurator;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> ssl;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FrameHandlerFactory</span><span class="params">(<span class="keyword">int</span> connectionTimeout, SocketFactory factory, </span></span></span><br><span class="line"><span class="function"><span class="params">           SocketConfigurator configurator, <span class="keyword">boolean</span> ssl)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.connectionTimeout = connectionTimeout;</span><br><span class="line">        <span class="keyword">this</span>.factory = factory;</span><br><span class="line">        <span class="keyword">this</span>.configurator = configurator;</span><br><span class="line">        <span class="keyword">this</span>.ssl = ssl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> FrameHandler <span class="title">create</span><span class="params">(Address addr)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        String hostName = addr.getHost();</span><br><span class="line">        <span class="keyword">int</span> portNumber = ConnectionFactory.portOrDefault(addr.getPort(), ssl);</span><br><span class="line">        Socket socket = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            socket = factory.createSocket();</span><br><span class="line">            configurator.configure(socket);</span><br><span class="line">            socket.connect(<span class="keyword">new</span> InetSocketAddress(hostName, portNumber),</span><br><span class="line">                    connectionTimeout);</span><br><span class="line">            <span class="keyword">return</span> create(socket);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException ioe) &#123;</span><br><span class="line">            quietTrySocketClose(socket);</span><br><span class="line">            <span class="keyword">throw</span> ioe;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> FrameHandler <span class="title">create</span><span class="params">(Socket sock)</span> <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SocketFrameHandler(sock);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">quietTrySocketClose</span><span class="params">(Socket socket)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (socket != <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">try</span> &#123; socket.close(); &#125; <span class="keyword">catch</span> (Exception _e) &#123;<span class="comment">/*ignore exceptions*/</span>&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ......</span><br><span class="line">    .........</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>SocketFrameHandler核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SocketFrameHandler</span> <span class="keyword">implements</span> <span class="title">FrameHandler</span> </span>&#123;</span><br><span class="line">    <span class="comment">/** The underlying socket */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Socket _socket;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Socket's inputstream - data from the broker - synchronized on */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DataInputStream _inputStream;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Socket's outputstream - data to the broker - synchronized on */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DataOutputStream _outputStream;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Time to linger before closing the socket forcefully. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> SOCKET_CLOSING_TIMEOUT = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> socket the socket to use</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SocketFrameHandler</span><span class="params">(Socket socket)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        _socket = socket;</span><br><span class="line"></span><br><span class="line">        _inputStream = <span class="keyword">new</span> DataInputStream(<span class="keyword">new</span> BufferedInputStream(socket.getInputStream()));</span><br><span class="line">        _outputStream = <span class="keyword">new</span> DataOutputStream(<span class="keyword">new</span> BufferedOutputStream(socket.getOutputStream()));</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    .....</span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Frame <span class="title">readFrame</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_inputStream) &#123; <span class="comment">//输入并发锁，防止多个Channel同时从输入流中读取数据时错乱</span></span><br><span class="line">            <span class="keyword">return</span> Frame.readFrom(_inputStream);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeFrame</span><span class="params">(Frame frame)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (_outputStream) &#123;  <span class="comment">//输出并发锁，防止多个Channel同时向输出流中写入数据时错乱</span></span><br><span class="line">            frame.writeTo(_outputStream);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">flush</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        _outputStream.flush();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unused"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123; _socket.setSoLinger(<span class="keyword">true</span>, SOCKET_CLOSING_TIMEOUT); &#125; <span class="keyword">catch</span> (Exception _e) &#123;&#125;</span><br><span class="line">        <span class="keyword">try</span> &#123; flush();                                           &#125; <span class="keyword">catch</span> (Exception _e) &#123;&#125;</span><br><span class="line">        <span class="keyword">try</span> &#123; _socket.close();                                   &#125; <span class="keyword">catch</span> (Exception _e) &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="BlockingCell"><a href="#BlockingCell" class="headerlink" title="BlockingCell"></a>BlockingCell</h3><p>BlockingCell是实现amqp-client同步阻塞等待请求broker服务的关键，比如：basic.get手动从queue中获取消息，以及Connection建立时与broker握手交互的通信等操作都是同步阻塞等待请求，那么如何让获取响应结果的线程阻塞，直到结果返回或请求超时才继续向下执行呢，下面将详细说明其实现原理：</p>
+<p>BlockingCell类核心逻辑：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlockingCell</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** Indicator of not-yet-filledness */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> _filled = <span class="keyword">false</span>; <span class="comment">// 判断请求是否已经返回响应结果</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** Will be null until a value is supplied, and possibly still then. */</span></span><br><span class="line">    <span class="keyword">private</span> T _value; <span class="comment">// 响应结果值</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Wait for a value, and when one arrives, return it (without clearing it). </span></span><br><span class="line"><span class="comment">     * If there's already a value present, there's no need to wait </span></span><br><span class="line"><span class="comment">     * - the existing value is returned.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> the waited-for value</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> InterruptedException if this thread is interrupted</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> T <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (!_filled) &#123; <span class="comment">// 如果响应结果没有返回则一直阻塞客户端</span></span><br><span class="line">            wait();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> _value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Wait for a value, and when one arrives, return it (without clearing it). If there's</span></span><br><span class="line"><span class="comment">     * already a value present, there's no need to wait - the existing value is returned.</span></span><br><span class="line"><span class="comment">     * If timeout is reached and value hasn't arrived, TimeoutException is thrown.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> timeout timeout in milliseconds. -1 effectively means infinity</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> the waited-for value</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> InterruptedException if this thread is interrupted</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> T <span class="title">get</span><span class="params">(<span class="keyword">long</span> timeout)</span> <span class="keyword">throws</span> InterruptedException, TimeoutException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (timeout == INFINITY) <span class="keyword">return</span> get();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (timeout &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">"Timeout cannot be less than zero"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">long</span> maxTime = System.currentTimeMillis() + timeout;</span><br><span class="line">        <span class="keyword">long</span> now;</span><br><span class="line">        <span class="keyword">while</span> (!_filled &amp;&amp; (now = System.currentTimeMillis()) &lt; maxTime) &#123;</span><br><span class="line">            wait(maxTime - now); <span class="comment">// 含响应超时时间的wait</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!_filled)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> _value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * As get(), but catches and ignores InterruptedException, retrying until a value appears.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> the waited-for value</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> T <span class="title">uninterruptibleGet</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> get();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ex) &#123;</span><br><span class="line">                <span class="comment">// no special handling necessary</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">     ......</span><br><span class="line">     .........</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Store a value in this BlockingCell, throwing AssertionError if the cell already has a value.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> newValue the new value to store</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T newValue)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (_filled) &#123; <span class="comment">// 如果已经设置过值则抛出异常，只能设置一次值</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">"BlockingCell can only be set once"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        _value = newValue; <span class="comment">// 设置响应结果</span></span><br><span class="line">        _filled = <span class="keyword">true</span>; <span class="comment">// 设置已响应标识</span></span><br><span class="line">        notifyAll();<span class="comment">// 唤醒因get操作而wait阻塞的线程，通知他们可以获取响应结果了</span></span><br><span class="line">        <span class="comment">// 这是wait/notify/notifyAll之间很好的实现线程协作的案例</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li><p>Connection中MainLoop循环从TCP输入流中读取Frame</p>
+<p>AMQConnection -&gt; MainLoop循环从socket中读取Frame，然后根据读取Frame的channel编号分发给指定AMQChannel.handleFrame()处理。</p>
+</li>
+<li><p>异步流程：消费者异步通知（例如：Consumer中Basic.Deliver, Basic.Return and Channel.Close等逻辑）</p>
+<p>AMQChannel -&gt; handleFrame() -&gt; handleCompleteInboundCommand() -&gt; processAsync() ；</p>
+</li>
+<li><p>同步流程：basic.get等（手动从broker拉取消息，同步阻塞流程）</p>
+<p>AMQChannel -&gt; handleFrame() -&gt; handleCompleteInboundCommand() -&gt; nextOutstandingRpc().handleCommand(command) -&gt; RpcContinuation.handleCommand(command) -&gt; BlockingCell.set(T newValue)；</p>
+</li>
+<li><p>数据写入输出流过程</p>
+<p>AMQChannel.transmit -&gt; AMQCommand.transmit -&gt; AMQConnection.writeFrame -&gt; FrameHandler.writeFrame -&gt; Frame.writeTo</p>
+<p>其中FrameHandler：真正读取Frame的包装类，最终给还是交由Frame读取和写入的，具体实现有SocketFrameHandler。</p>
+</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/19/rabbitmq 定位客户端connection经常断开问题/" rel="next" title="rabbitmq 定位客户端connection经常断开问题">
+                <i class="fa fa-chevron-left"></i> rabbitmq 定位客户端connection经常断开问题
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/23/redis 简介/" rel="prev" title="redis 简介">
+                redis 简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Connection"><span class="nav-number">2.</span> <span class="nav-text">Connection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Channel"><span class="nav-number">3.</span> <span class="nav-text">Channel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Command"><span class="nav-number">4.</span> <span class="nav-text">Command</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Frame"><span class="nav-number">5.</span> <span class="nav-text">Frame</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BlockingCell"><span class="nav-number">6.</span> <span class="nav-text">BlockingCell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 函数是对某个功能的封装，Python和其他脚本型语言一样，例如javascript，函数名称只是对函数的引用，并且函数是可以作为参数传递的，我们也可以将函数赋给另外一个变量，这一点是和java语言不同之处。接下来将围绕着内置函数，如何调用函数，以及如何自定义函数来展开学习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 函数">
+<meta property="og:url" content="http://www.pandan.xyz/2017/10/28/Python 函数/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 函数是对某个功能的封装，Python和其他脚本型语言一样，例如javascript，函数名称只是对函数的引用，并且函数是可以作为参数传递的，我们也可以将函数赋给另外一个变量，这一点是和java语言不同之处。接下来将围绕着内置函数，如何调用函数，以及如何自定义函数来展开学习。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-10-28T13:22:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 函数">
+<meta name="twitter:description" content="前言 函数是对某个功能的封装，Python和其他脚本型语言一样，例如javascript，函数名称只是对函数的引用，并且函数是可以作为参数传递的，我们也可以将函数赋给另外一个变量，这一点是和java语言不同之处。接下来将围绕着内置函数，如何调用函数，以及如何自定义函数来展开学习。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/10/28/Python 函数/"/>
+
+  <title> Python 函数 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Python 函数
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-10-28T22:19:56+08:00" content="2017-10-28">
+              2017-10-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Python系列/" itemprop="url" rel="index">
+                    <span itemprop="name">Python系列</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>函数是对某个功能的封装，Python和其他脚本型语言一样，例如javascript，函数名称只是对函数的引用，并且函数是可以作为参数传递的，我们也可以将函数赋给另外一个变量，这一点是和java语言不同之处。接下来将围绕着内置函数，如何调用函数，以及如何自定义函数来展开学习。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="内置函数"><a href="#内置函数" class="headerlink" title="内置函数"></a>内置函数</h3></blockquote>
+<p>和其他语言一样，对于比较常用的功能，Python已经为我们提供了内置函数，我们可以直接使用，下面将介绍一些经常使用的函数：</p>
+<ol>
+<li>取绝对值函数：abs(var0)</li>
+<li>取最小最大值函数：min(var0,var1,var2…)  ;max(var0,var1,var2…)</li>
+<li>类型转换函数：int(var0);str(var0);bool(var0);等</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">   Python 函数学习</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"></span><br><span class="line">__author__ = <span class="string">'Pan Li'</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">"绝对值："</span>, abs(<span class="number">-123</span>))</span><br><span class="line"></span><br><span class="line">print(<span class="string">"最小值："</span>, min(<span class="number">1</span>, <span class="number">2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">print(<span class="string">"最大值："</span>, max(<span class="number">1</span>, <span class="number">2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">print(<span class="string">"字符串转整形："</span>, int(<span class="string">"123"</span>))</span><br><span class="line"></span><br><span class="line">print(<span class="string">"整形转bool型："</span>, bool(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">print(<span class="string">"数值型转字符串："</span>, str(<span class="number">12.34</span>))</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="自定义函数"><a href="#自定义函数" class="headerlink" title="自定义函数"></a>自定义函数</h3></blockquote>
+<p>在Python中自定义函数需要使用def关键字进行声明。定义一个从1加到100的函数？<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#累加函数</span><br><span class="line">def accumulate(n):</span><br><span class="line">    if not isinstance(n, int):</span><br><span class="line">        raise TypeError(&quot;不合法的参数值，必须是整数&quot;)</span><br><span class="line">    elif n &lt; 0:</span><br><span class="line">        raise Exception(&quot;不合法的参数值，必须大于或等于0&quot;)</span><br><span class="line"></span><br><span class="line">    if n == 0:</span><br><span class="line">        return 0</span><br><span class="line">    elif n == 1:</span><br><span class="line">        return 1</span><br><span class="line">    else:</span><br><span class="line">        return n + accumulate(n-1)</span><br><span class="line">        </span><br><span class="line">print(&quot;从1加到100的：&quot;, accumulate(100))</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="空函数"><a href="#空函数" class="headerlink" title="空函数"></a>空函数</h3></blockquote>
+<p>什么是空函数呢？顾名思义，就是没有函数体的函数；Python定义空函数需要使用pass关键字，pass关键字告诉解释器什么都不做。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#定义一个名称为nop的空函数</span><br><span class="line">def nop():</span><br><span class="line">    pass</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="函数参数"><a href="#函数参数" class="headerlink" title="函数参数"></a>函数参数</h3></blockquote>
+<p>Python的函数具有非常灵活的参数形态，支持默认参数，可变参数，以及关键字参数等。必传参数在前，默认参数在后，否则Python解释器会报错。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#默认参数，其中angle就是个默认参数，我们可以传或者不传</span><br><span class="line">def move(x, y, step, angle=0):</span><br><span class="line">    nx = x + step * math.cos(angle)</span><br><span class="line">    ny = y - step * math.sin(angle)</span><br><span class="line">    return nx, ny</span><br><span class="line"></span><br><span class="line">print(&quot;使用默认参数值：&quot;, move(1, 2, 1))</span><br><span class="line">print(&quot;使用自定义参数值：&quot;, move(1, 2, 1, 30))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#可变参数。在函数内部，参数numbers接收到的是一个元组tuple</span><br><span class="line">def calc(*numbers):</span><br><span class="line">    sum = 0</span><br><span class="line">    for n in numbers:</span><br><span class="line">        sum = sum + n * n</span><br><span class="line">    return sum</span><br><span class="line"></span><br><span class="line">print(&quot;参数平方之和：&quot;, calc(1, 2))</span><br><span class="line"></span><br><span class="line">#将元组tuple或list变量前加*，做为可变参数传入</span><br><span class="line">params = [1, 2, 3];</span><br><span class="line">print(&quot;参数平方之和：&quot;, calc(*params))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#关键字参数</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">   可变参数允许你传入0个或任意个参数，这些可变参数在函数调用时自动组装为一个tuple。</span><br><span class="line">   而关键字参数允许你传入0个或任意个含参数名的参数，这些关键字参数在函数内部自动组装为一个dict。</span><br><span class="line">   元组tuple类似于Java中的数组Array，dict类似java中的Map。</span><br><span class="line">&quot;&quot;&quot;</span><br><span class="line">def person(name, age, **kw):</span><br><span class="line">    print(&apos;name:&apos;, name, &apos;age:&apos;, age, &apos;other:&apos;, kw)</span><br><span class="line"></span><br><span class="line">#name: Pan Li age: 26 other: &#123;&apos;city&apos;: &apos;Shen Zhen&apos;, &apos;job&apos;: &apos;IT&apos;&#125;</span><br><span class="line">person(&quot;Pan Li&quot;, 26, city=&apos;Shen Zhen&apos;, job=&apos;IT&apos;)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="函数返回值"><a href="#函数返回值" class="headerlink" title="函数返回值"></a>函数返回值</h3></blockquote>
+<p>Python的函数具有非常灵活的返回值形态，对于每个Python函数都是有返回值的，即使我们没有return，也会默认返回一个None。并且Python函数支持返回多个返回值，但其实就是一个元组tuple。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#空函数，会自动补上 return None</span><br><span class="line">#nop返回值： None</span><br><span class="line">print(&quot;nop返回值：&quot;, nop())</span><br><span class="line"></span><br><span class="line">#定义多返回值函数</span><br><span class="line">#move返回值： (1.154251449887584, 2.9880316240928617)</span><br><span class="line">result = move(1, 2, 1, 30)</span><br><span class="line">print(&quot;move返回值：&quot;, result)</span><br><span class="line">print(&quot;move返回值1：&quot;, result[0])</span><br><span class="line">print(&quot;move返回值2：&quot;, result[1])</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/16/http url查询字符串中含井号导致请求参数丢失的问题/" rel="next" title="http url查询字符串中含井号导致参数丢失的问题">
+                <i class="fa fa-chevron-left"></i> http url查询字符串中含井号导致参数丢失的问题
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/28/Python 异常/" rel="prev" title="Python 异常">
+                Python 异常 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内置函数"><span class="nav-number">2.</span> <span class="nav-text">内置函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义函数"><span class="nav-number">3.</span> <span class="nav-text">自定义函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#空函数"><span class="nav-number">4.</span> <span class="nav-text">空函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数参数"><span class="nav-number">5.</span> <span class="nav-text">函数参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数返回值"><span class="nav-number">6.</span> <span class="nav-text">函数返回值</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言在剖析Set，Map，List等集合类，序列化及反序列化的原理之前，先介绍一下transient关键字的作用，java提供了transient关键字，用于修饰变量，标明该变量不用序列化到字节流中。同时，java也提供了Serializable这样一个标志性接口(不含任何方法，仅仅只是标明该对象可以被序列化)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java 集合类序列化及反序列化原理剖析">
+<meta property="og:url" content="http://www.pandan.xyz/2016/08/28/java  集合类序列化及反序列化原理剖析/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言在剖析Set，Map，List等集合类，序列化及反序列化的原理之前，先介绍一下transient关键字的作用，java提供了transient关键字，用于修饰变量，标明该变量不用序列化到字节流中。同时，java也提供了Serializable这样一个标志性接口(不含任何方法，仅仅只是标明该对象可以被序列化)">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-03-15T14:10:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java 集合类序列化及反序列化原理剖析">
+<meta name="twitter:description" content="前言在剖析Set，Map，List等集合类，序列化及反序列化的原理之前，先介绍一下transient关键字的作用，java提供了transient关键字，用于修饰变量，标明该变量不用序列化到字节流中。同时，java也提供了Serializable这样一个标志性接口(不含任何方法，仅仅只是标明该对象可以被序列化)">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2016/08/28/java  集合类序列化及反序列化原理剖析/"/>
+
+  <title> java 集合类序列化及反序列化原理剖析 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                java 集合类序列化及反序列化原理剖析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-28T18:22:56+08:00" content="2016-08-28">
+              2016-08-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在剖析Set，Map，List等集合类，序列化及反序列化的原理之前，先介绍一下transient关键字的作用，java提供了transient关键字，用于修饰变量，标明该变量不用序列化到字节流中。同时，java也提供了Serializable这样一个标志性接口(不含任何方法，仅仅只是标明该对象可以被序列化)<br><a id="more"></a></p>
+<p>使用示例：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Serializable 标志性接口</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">1L</span>;  </span><br><span class="line">    <span class="keyword">private</span> String username = <span class="keyword">null</span>;  </span><br><span class="line">    <span class="comment">//使用 transient 关键字标明该变量值不会被序列化到字节流中</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> String password = <span class="keyword">null</span>; </span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getUsername</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function">    </span>&#123;  </span><br><span class="line">        <span class="keyword">return</span> username;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUsername</span><span class="params">(String username)</span>  </span></span><br><span class="line"><span class="function">    </span>&#123;  </span><br><span class="line">        <span class="keyword">this</span>.username = username;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPassword</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function">    </span>&#123;  </span><br><span class="line">        <span class="keyword">return</span> password;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPassword</span><span class="params">(String password)</span>  </span></span><br><span class="line"><span class="function">    </span>&#123;  </span><br><span class="line">        <span class="keyword">this</span>.password = password;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="特例剖析"><a href="#特例剖析" class="headerlink" title="特例剖析"></a>特例剖析</h3><p>了解了transient关键字及Serializable标志性接口的作用后，下面来看几个特殊的例子。Set，Map，List等集合类的序列化实现。</p>
+<p>JDK源码如下(HashMap为例)：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;  </span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">Map</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;, <span class="title">Cloneable</span>, <span class="title">Serializable</span>  </span></span><br><span class="line"><span class="class"></span>&#123;  </span><br><span class="line">    <span class="comment">// The default initial capacity - MUST be a power of two. </span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">16</span>;  </span><br><span class="line">          </span><br><span class="line">    <span class="comment">// The table, resized as necessary. Length MUST Always be a power of two. </span></span><br><span class="line">    <span class="keyword">transient</span> Entry[] table; <span class="comment">//存放数据的table  </span></span><br><span class="line">      </span><br><span class="line">    <span class="comment">// The number of key-value mappings contained in this map. </span></span><br><span class="line">    <span class="keyword">transient</span> <span class="keyword">int</span> size;<span class="comment">//数据的个数  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过JDK源码发现，HashMap对于存放数据的变量table和大小size，都使用了transient关键字修饰(即不序列化该变量)。那么HashMap又是如何完成对数据序列化的呢？继续阅读JDK源码，发现HashMap自己实现了一套writeObject，和readObject方法。<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">* Save the state of the &lt;tt&gt;HashMap&lt;/tt&gt; instance to a stream (i.e., </span></span><br><span class="line"><span class="comment">* serialize it). </span></span><br><span class="line"><span class="comment">* <span class="doctag">@serialData</span> The &lt;i&gt;capacity&lt;/i&gt; of the HashMap (the length of the </span></span><br><span class="line"><span class="comment">* bucket array) is emitted (int), followed by the </span></span><br><span class="line"><span class="comment">* &lt;i&gt;size&lt;/i&gt; (an int, the number of key-value </span></span><br><span class="line"><span class="comment">* mappings), followed by the key (Object) and value (Object) </span></span><br><span class="line"><span class="comment">* for each key-value mapping.  The key-value mappings are </span></span><br><span class="line"><span class="comment">* emitted in no particular order. </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">writeObject</span><span class="params">(java.io.ObjectOutputStream s)</span> <span class="keyword">throws</span> IOException  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    Iterator&lt;Map.Entry&lt;K,V&gt;&gt; i = (size &gt; <span class="number">0</span>) ? entrySet0().iterator() : <span class="keyword">null</span>;  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Write out the threshold, loadfactor, and any hidden stuff  </span></span><br><span class="line">    s.defaultWriteObject();  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Write out number of buckets  </span></span><br><span class="line">    s.writeInt(table.length);  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Write out size (number of Mappings)  </span></span><br><span class="line">    s.writeInt(size);  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Write out keys and values (alternating)  </span></span><br><span class="line">    <span class="keyword">if</span> (i != <span class="keyword">null</span>) </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">while</span> (i.hasNext()) &#123;  </span><br><span class="line">            Map.Entry&lt;K,V&gt; e = i.next();  </span><br><span class="line">            s.writeObject(e.getKey());  </span><br><span class="line">            s.writeObject(e.getValue());  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">     </span><br><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">* Reconstitute the &lt;tt&gt;HashMap&lt;/tt&gt; instance from a stream (i.e., </span></span><br><span class="line"><span class="comment">* deserialize it). </span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">readObject</span><span class="params">(java.io.ObjectInputStream s)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="comment">// Read in the threshold, loadfactor, and any hidden stuff  </span></span><br><span class="line">    s.defaultReadObject();  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Read in number of buckets and allocate the bucket array;  </span></span><br><span class="line">    <span class="keyword">int</span> numBuckets = s.readInt();  </span><br><span class="line">    table = <span class="keyword">new</span> Entry[numBuckets];  </span><br><span class="line">     </span><br><span class="line">    <span class="comment">// Give subclass a chance to do its thing.</span></span><br><span class="line">    init();    </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Read in size (number of Mappings)  </span></span><br><span class="line">    <span class="keyword">int</span> size = s.readInt();  </span><br><span class="line">      </span><br><span class="line">    <span class="comment">// Read the keys and values, and put the mappings in the HashMap  </span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;size; i++) &#123;  </span><br><span class="line">        K key = (K) s.readObject();  </span><br><span class="line">        V value = (V) s.readObject();  </span><br><span class="line">        putForCreate(key, value);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当使用ObjectOutputStream writeObject序列化对象时，如果该对象有writeObject方法则调用该对象的writeObject方法(通过反射实现)，这样达到序列化重写的目的。</p>
+<p>JDK源码如下：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">* Writes instance data for each serializable class of given object, from</span></span><br><span class="line"><span class="comment">* superclass to subclass. </span></span><br><span class="line"><span class="comment">* ObjectOutputStream writeObject会调用writeSerialData完成对实现Serializable标志性接口的序列化</span></span><br><span class="line"><span class="comment">*/</span>  </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">writeSerialData</span><span class="params">(Object obj, ObjectStreamClass desc)</span>   <span class="keyword">throws</span> IOException   </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    ObjectStreamClass.ClassDataSlot[] slots = desc.getClassDataLayout();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; slots.length; i++) &#123;  </span><br><span class="line">        ObjectStreamClass slotDesc = slots[i].desc;  </span><br><span class="line">        <span class="comment">//待序列化对象是否包含writeObject方法  </span></span><br><span class="line">        <span class="keyword">if</span> (slotDesc.hasWriteObjectMethod()) &#123;</span><br><span class="line">            PutFieldImpl oldPut = curPut;  </span><br><span class="line">            curPut = <span class="keyword">null</span>; </span><br><span class="line">            <span class="keyword">if</span> (extendedDebugInfo) &#123;  </span><br><span class="line">               debugInfoStack.push(<span class="string">"custom writeObject data (class \""</span> +</span><br><span class="line">               slotDesc.getName() + <span class="string">"\")"</span>);  </span><br><span class="line">            &#125;  </span><br><span class="line">      </span><br><span class="line">            SerialCallbackContext oldContext = curContext;  </span><br><span class="line">            <span class="keyword">try</span> &#123;  </span><br><span class="line">                curContext = <span class="keyword">new</span> SerialCallbackContext(obj, slotDesc);  </span><br><span class="line">                bout.setBlockDataMode(<span class="keyword">true</span>);</span><br><span class="line">                <span class="comment">//通过反射调用对象自己的writeObject方法</span></span><br><span class="line">                slotDesc.invokeWriteObject(obj, <span class="keyword">this</span>)</span><br><span class="line">                bout.setBlockDataMode(<span class="keyword">false</span>);  </span><br><span class="line">                bout.writeByte(TC_ENDBLOCKDATA);  </span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;  </span><br><span class="line">                curContext.setUsed();  </span><br><span class="line">                curContext = oldContext;  </span><br><span class="line">                <span class="keyword">if</span> (extendedDebugInfo) &#123;  </span><br><span class="line">                   debugInfoStack.pop();  </span><br><span class="line">                &#125;     </span><br><span class="line">            &#125;   </span><br><span class="line">            curPut = oldPut;  </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="comment">//待序列化的对象没有writeObject方法，则使用JDK默认的</span></span><br><span class="line">           defaultWriteFields(obj, slotDesc); </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Map，Set，List等都是使用transient关键字屏蔽变量，然后自己实现的序列化操作。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/27/haproxy 设置四层代理白名单/" rel="next" title="haproxy 四层代理白名单设置">
+                <i class="fa fa-chevron-left"></i> haproxy 四层代理白名单设置
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/28/haproxy 突破单IP端口限制/" rel="prev" title="haproxy 突破单IP端口限制">
+                haproxy 突破单IP端口限制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特例剖析"><span class="nav-number">2.</span> <span class="nav-text">特例剖析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言现代处理器为了提高访问数据的效率，在每个CPU核心上都会有多级容量小，速度快的缓存（分别称之为L1 cache，L2 cache，多核心共享L3  cache等），用于缓存常用的数据。由于内存的速度要比CPU慢将近100倍，数据被修改时也只是先更新cache，并不是直接写回到主存中（CPU是不能直接跟内存进行通信的，CPU只对接cache，然后由cache对接主存），这样一来就造成了缓存中的数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MESI 缓存一致性协议">
+<meta property="og:url" content="http://www.pandan.xyz/2016/09/23/mesi 缓存一致性协议/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言现代处理器为了提高访问数据的效率，在每个CPU核心上都会有多级容量小，速度快的缓存（分别称之为L1 cache，L2 cache，多核心共享L3  cache等），用于缓存常用的数据。由于内存的速度要比CPU慢将近100倍，数据被修改时也只是先更新cache，并不是直接写回到主存中（CPU是不能直接跟内存进行通信的，CPU只对接cache，然后由cache对接主存），这样一来就造成了缓存中的数">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201609222148.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201610071221.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201610071246.png">
+<meta property="og:updated_time" content="2017-03-16T13:53:10.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MESI 缓存一致性协议">
+<meta name="twitter:description" content="前言现代处理器为了提高访问数据的效率，在每个CPU核心上都会有多级容量小，速度快的缓存（分别称之为L1 cache，L2 cache，多核心共享L3  cache等），用于缓存常用的数据。由于内存的速度要比CPU慢将近100倍，数据被修改时也只是先更新cache，并不是直接写回到主存中（CPU是不能直接跟内存进行通信的，CPU只对接cache，然后由cache对接主存），这样一来就造成了缓存中的数">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201609222148.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2016/09/23/mesi 缓存一致性协议/"/>
+
+  <title> MESI 缓存一致性协议 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                MESI 缓存一致性协议
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-23T23:31:56+08:00" content="2016-09-23">
+              2016-09-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/计算机体系结构/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机体系结构</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>现代处理器为了提高访问数据的效率，在每个CPU核心上都会有多级容量小，速度快的缓存（分别称之为L1 cache，L2 cache，多核心共享L3  cache等），用于缓存常用的数据。由于内存的速度要比CPU慢将近100倍，数据被修改时也只是先更新cache，并不是直接写回到主存中（CPU是不能直接跟内存进行通信的，CPU只对接cache，然后由cache对接主存），这样一来就造成了缓存中的数据与内存不一致。如果系统是单核处理器，所有线程看到的都是缓存中的最新数据，当然没有问题。但如果系统是多核处理器，同一份主存数据可能会被缓存到多个核心 cache中，在运行中只要其中一个核心修改了缓存中的值，如果其他CPU核心没有得到及时的通知，就会造成缓存不一致的情况，影响系统的运行结果。MESI协议的出现，就是为了解决多核处理器时代，缓存不一致的问题的。<br><a id="more"></a></p>
+<h3 id="MESI缓存一致性协议"><a href="#MESI缓存一致性协议" class="headerlink" title="MESI缓存一致性协议"></a>MESI缓存一致性协议</h3><p><img src="/images/201609222148.png" alt="现代CPU架构图"></p>
+<p>由图可知，每个Socket代表一个CPU插槽，一个CPU包含多个核心core，每个核心有自己私有的L1，L2级缓存，同时每个核心共享L3级缓存，多个CPU共享主存。其中，缓存中的最小缓存单元称之为缓存行（cache-line），在X86架构下，cache-line长度为64字节。MESI就代表者cache-line的四种缓存状态。MESI协议是由LoadBuffer/StoreBuffer与Cache实现的，CPU不干预的。</p>
+<p>当CPU要读取数据时，只要缓存的状态不是I都可以从缓存中读，否则就要从主存中读取。这一读操作可能会被某个处于M或E状态的CPU截获，该CPU将修改的数据写出到内存，并将自己设为S状态后这一读操作才继续进行。只有缓存状态是E或M时，CPU才可以修改其中的数据，修改后缓存即处于M状态。如果CPU要修改数据时发现其缓存不处于E或M状态，则需要发出特殊的RFO指令（Read For Ownership），将其它CPU的缓存设为I状态。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">M: Modified（被修改的），处于这一状态的数据只在本CPU中有缓存，且其数据已被修改，没有更新到内存中 </span><br><span class="line">E: Exclusive（独占的），处于这一状态的数据只在本CPU中有缓存，且其数据没有被修改，与内存一致 </span><br><span class="line">S: Shared（共享的），处于这一状态的数据在多个CPU中有缓存 </span><br><span class="line">I: Invalid（无效的），本CPU中的这份缓存已经无效了。</span><br></pre></td></tr></table></figure>
+<h3 id="MESI状态转换说明"><a href="#MESI状态转换说明" class="headerlink" title="MESI状态转换说明"></a>MESI状态转换说明</h3><p><img src="/images/201610071221.png" alt="MESI状态转换图"></p>
+<p>转换过程说明：</p>
+<p>第一：某个CPU（CPU A）发起本地写请求（Local Write），比如对某个内存地址的变量赋值，如果此时如果所有CPU的Cache中都没加载此内存地址，即此内存地址对应的Cache Line为无效状态（Invalid），则CPU A中的Cache Line保存了最新内存变量值以后，其状态被修改为Modified。随后，如果CPU B发起对同一个变量的读操作（Remote Read），则CPU A在总线上嗅探到这个读请求以后，先将Cache Line里修改过的数据回写（Write Back）到Memory中，然后在内存总线上放一份Cache Line的拷贝作为应答，最后再将自身的Cache Line的状态修改为Shared，由此产生的结果是CPU A与CPU B里对应的Cache Line的状态都为Shared。</p>
+<p>第二：在第一点的基础上，CPU A发起本地写请求导致自身的Cache Line状态变为Modified以后，如果此时CPU B发起同一个内存地址的写请求（Remote Write），则我们看到状态图里此时CPU A的Cache Line状态为Invalid，其原因是如下：CPU B此时发出的是一个特殊的请求——“读并且打算修改数据”（read with intent to modify），当CPU A从总线上嗅探到这个请求后，会先阻止此请求并取得总线的控制权（Takes control of bus），随后将Cache Line里修改过的数据回写（Write Back）到Memory中，再将此Cache Line的状态修改为Invalid（这是因为其他CPU要改数据，所以没必要改为Shared了）。与此同时，CPU B发现之前的请求并没有得到响应，于是重新再发起一次请求，此时由于所有CPU的Cache里都没有内存副本了，所以CPU B的Cache就从Memory中加载最新的数据到Cache Line中，随后修改数据，然后改变Cache Line的状态为Modified。</p>
+<h3 id="缓存行伪共享问题"><a href="#缓存行伪共享问题" class="headerlink" title="缓存行伪共享问题"></a>缓存行伪共享问题</h3><p>MESI缓存一致性协议操作的最小单元是缓存行（cache line），缓存行内数据的修改、写入内存、写入其他缓存等操作都会改变其状态，这样，在共享缓存多核架构里，数据结构如果组织不好，就非常容易出现多个核线程反复修改同一条缓存行的数据导致缓存行状态频繁变化，从而导致严重性能问题,这就是伪共享现象。<br>下图就是一个伪共享的例子，core1上运行的线程想修改变量x,core2上运行的线程想修改变量y，但x和y刚好在一个缓存行上。每个线程都要去竞争缓存行的所有权来更新变量。如果core1获得了所有权，缓存控制器将会使core2中对应的缓存行失效。当core2获得了所有权然后执行更新操作，core1就要使自己对应的缓存行失效。这会来来回回的经过L3缓存，大大影响了性能。如果互相竞争的核心位于不同的插槽，就要额外横跨插槽连接，问题可能更加严重。</p>
+<p><img src="/images/201610071246.png" alt="缓存行伪共享"></p>
+<p>缓存行填充：解决缓存行伪共享导致性能问题的解决方案，就是缓存行填充，通过填充缓存行，使得某个核心线程频繁操作的数据独享缓存行，这样就不会出现伪共享问题了。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>每个CPU核心中都有寄存器，用于临时存储从缓存中加载的数据和cpu运算修改后的数据;</li>
+<li>由于速度差异较大，CPU是不直接和主存进行数据通信的，而是借助于各级缓存来完成的;</li>
+<li>在CPU核心中引入StoreBuffer（一个存放store存储指令的队列，队列长度为36），用于异步将寄存器中的值刷回缓存cache中，当CPU要写变量的时候，会将写操作封装成一个store指令，放入Store Buffer队列就立即返回了，其他的至于Store Buffer什么时候将store指令生效，CPU是不关心的；同理，Load Buffer是一个存放加载数据指令的队列，长度为64，当CPU要加载某个变量的值时，也是封装成一个load指令，放入LoadBuffer队列后，就立即返回，这些过程CPU都是异步操作的;</li>
+<li>根据MESI缓存一致性协议，CPU将数据写回到cache中后，就能够保证各CPU缓存数据的一致性;</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/31/linux 软连接和硬连接/" rel="next" title="linux 软连接和硬连接">
+                <i class="fa fa-chevron-left"></i> linux 软连接和硬连接
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/26/java hashCode与equals函数/" rel="prev" title="java hashCode与equals函数">
+                java hashCode与equals函数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MESI缓存一致性协议"><span class="nav-number">2.</span> <span class="nav-text">MESI缓存一致性协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MESI状态转换说明"><span class="nav-number">3.</span> <span class="nav-text">MESI状态转换说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存行伪共享问题"><span class="nav-number">4.</span> <span class="nav-text">缓存行伪共享问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

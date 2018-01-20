@@ -1,0 +1,674 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 Spring框架为开发者提供了很多可扩展的点，FactoryBean接口就是其中一个，常用于返回包装之后的Bean对象，例如实现指定注解的动态代理功能等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 扩展点之FactoryBean">
+<meta property="og:url" content="http://www.pandan.xyz/2017/11/19/Spring 扩展点之FactoryBean/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 Spring框架为开发者提供了很多可扩展的点，FactoryBean接口就是其中一个，常用于返回包装之后的Bean对象，例如实现指定注解的动态代理功能等。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-11-19T14:21:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring 扩展点之FactoryBean">
+<meta name="twitter:description" content="前言 Spring框架为开发者提供了很多可扩展的点，FactoryBean接口就是其中一个，常用于返回包装之后的Bean对象，例如实现指定注解的动态代理功能等。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/11/19/Spring 扩展点之FactoryBean/"/>
+
+  <title> Spring 扩展点之FactoryBean | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Spring 扩展点之FactoryBean
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-11-19T21:47:56+08:00" content="2017-11-19">
+              2017-11-19
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Spring框架为开发者提供了很多可扩展的点，FactoryBean接口就是其中一个，常用于返回包装之后的Bean对象，例如实现指定注解的动态代理功能等。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">FactoryBean</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">   	<span class="comment">/**</span></span><br><span class="line"><span class="comment">   	 * 当调用getBean时，底层调用此方法，获取包装之后的Bean对象</span></span><br><span class="line"><span class="comment">	 * Return an instance (possibly shared or independent) of the object</span></span><br><span class="line"><span class="comment">	 * managed by this factory.</span></span><br><span class="line"><span class="comment">	 * &lt;p&gt;As with a &#123;<span class="doctag">@link</span> BeanFactory&#125;, this allows support for both the</span></span><br><span class="line"><span class="comment">	 * Singleton and Prototype design pattern.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@throws</span> Exception in case of creation errors</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> FactoryBeanNotInitializedException</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function">T <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * 当调用applicationContext.getBean(xxx.class)，IOC容器进行类型匹配。</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the type of object that this FactoryBean creates,</span></span><br><span class="line"><span class="comment">	 * or &#123;<span class="doctag">@code</span> null&#125; if not known at the time of the call</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> ListableBeanFactory#getBeansOfType</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	Class&lt;?&gt; getObjectType();</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * 当前Bean是否是单例</span></span><br><span class="line"><span class="comment">	 * Is the object managed by this factory a singleton? That is,</span></span><br><span class="line"><span class="comment">	 * will &#123;<span class="doctag">@link</span> #getObject()&#125; always return the same object</span></span><br><span class="line"><span class="comment">	 * (a reference that can be cached)?</span></span><br><span class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> isSingleton()&#125; implementation returns &#123;<span class="doctag">@code</span> false&#125;.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> whether the exposed object is a singleton</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #getObject()</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> SmartFactoryBean#isPrototype()</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">isSingleton</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="自定义扩展实现"><a href="#自定义扩展实现" class="headerlink" title="自定义扩展实现"></a>自定义扩展实现</h3></blockquote>
+<p>本案例只是模拟Spring的动态代理功能，但是Spring并不是扩展FactoryBean接口实现的，而是扩展BeanPostProcessor接口实现，关于这个后续会讲到，不是本篇的重点。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyFactoryBean</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">FactoryBean</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 被代理的类className</span></span><br><span class="line">    <span class="keyword">private</span> String proxyClassName;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setProxyClassName</span><span class="params">(String proxyClassName)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.proxyClassName = proxyClassName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回代理类</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Class innerClass = Class.forName(proxyClassName);</span><br><span class="line">        <span class="comment">// 如果是接口则返回JDK动态代理</span></span><br><span class="line">        <span class="keyword">if</span>(innerClass.isInterface()) &#123;</span><br><span class="line">            <span class="keyword">return</span> (T) InterfaceProxy.newInstance(innerClass);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 返回基于CGLIB的动态代理</span></span><br><span class="line">            Enhancer enhancer = <span class="keyword">new</span> Enhancer();</span><br><span class="line">            enhancer.setSuperclass(innerClass);</span><br><span class="line">            enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);</span><br><span class="line">            enhancer.setCallback(<span class="keyword">new</span> MethodInterceptorImpl());</span><br><span class="line">            <span class="keyword">return</span> (T) enhancer.create();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回实际的被代理对象类型，当调用getBean(xxx.class)时进行类型匹配</span></span><br><span class="line">    <span class="keyword">public</span> Class&lt;?&gt; getObjectType() &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> Class.forName(proxyClassName);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 默认是单例</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">InterfaceProxy</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"ObjectProxy execute:"</span> + method.getName());</span><br><span class="line">        <span class="keyword">return</span> method.invoke(proxy, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">newInstance</span><span class="params">(Class&lt;T&gt; innerInterface)</span> </span>&#123;</span><br><span class="line">        ClassLoader classLoader = innerInterface.getClassLoader();</span><br><span class="line">        Class[] interfaces = <span class="keyword">new</span> Class[]&#123;innerInterface&#125;;</span><br><span class="line">        InterfaceProxy proxy = <span class="keyword">new</span> InterfaceProxy();</span><br><span class="line">        <span class="keyword">return</span> (T) Proxy.newProxyInstance(classLoader, interfaces, proxy);</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MethodInterceptorImpl</span> <span class="keyword">implements</span> <span class="title">MethodInterceptor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">intercept</span><span class="params">(Object o, Method method, Object[] objects, MethodProxy methodProxy)</span> <span class="keyword">throws</span></span></span><br><span class="line"><span class="function">                Throwable </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"MethodInterceptorImpl:"</span> + method.getName());</span><br><span class="line">        <span class="keyword">return</span> methodProxy.invokeSuper(o, objects);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 创建IOC容器上下文</span></span><br><span class="line">    GenericApplicationContext context = <span class="keyword">new</span> GenericApplicationContext();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 定义GenericBeanDefinition</span></span><br><span class="line">    GenericBeanDefinition beanDefinition = <span class="keyword">new</span> GenericBeanDefinition();</span><br><span class="line">    beanDefinition.getPropertyValues().add(<span class="string">"proxyClassName"</span>, PrintClass.class.getName());</span><br><span class="line">    beanDefinition.setBeanClass(ProxyFactoryBean.class);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 向容器注入Bean并刷新上下文</span></span><br><span class="line">    context.registerBeanDefinition(<span class="string">"printClassBean"</span>, beanDefinition);</span><br><span class="line">    context.refresh();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从容器中获取代理proxyBean</span></span><br><span class="line">    PrintClass proxyBean = context.getBean(PrintClass.class);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行代理Bean的方法</span></span><br><span class="line">    proxyBean.print();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PrintClass</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"PrintClass"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">MethodInterceptorImpl:print</span><br><span class="line">PrintClass</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="实现原理分析"><a href="#实现原理分析" class="headerlink" title="实现原理分析"></a>实现原理分析</h3></blockquote>
+<p>核心类：AbstractBeanFactory 继承自 FactoryBeanRegistrySupport。当从IOC容器中调用getBean方法时，底层会调用AbstractBeanFactory的getObjectForBeanInstance方法，如果当前BeanDefinition关联的beanClass为FactoryBean类型则调用其getObject方法，如果是普通类型则直接返回该实例。</p>
+<p>AbstractBeanFactory 类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Get the object for the given bean instance, either the bean</span></span><br><span class="line"><span class="comment"> * instance itself or its created object in case of a FactoryBean.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> beanInstance the shared bean instance</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> name name that may include factory dereference prefix</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> beanName the canonical bean name</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> mbd the merged bean definition</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the object to expose for the bean</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">getObjectForBeanInstance</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">	Object beanInstance, String name, String beanName, RootBeanDefinition mbd)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Don't let calling code try to dereference the factory if the bean isn't a factory.</span></span><br><span class="line">	<span class="keyword">if</span> (BeanFactoryUtils.isFactoryDereference(name) &amp;&amp; !(beanInstance <span class="keyword">instanceof</span> FactoryBean)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> BeanIsNotAFactoryException(transformedBeanName(name), beanInstance.getClass());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Now we have the bean instance, which may be a normal bean or a FactoryBean.</span></span><br><span class="line">	<span class="comment">// If it's a FactoryBean, we use it to create a bean instance, unless the</span></span><br><span class="line">	<span class="comment">// caller actually wants a reference to the factory.</span></span><br><span class="line">	<span class="comment">// 关键之处：如果是普通的bean则直接返回，如果是FactoryBean则继续向下走</span></span><br><span class="line">	<span class="keyword">if</span> (!(beanInstance <span class="keyword">instanceof</span> FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) &#123;</span><br><span class="line">		<span class="keyword">return</span> beanInstance;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	Object object = <span class="keyword">null</span>;</span><br><span class="line">	<span class="keyword">if</span> (mbd == <span class="keyword">null</span>) &#123;</span><br><span class="line">		object = getCachedObjectForFactoryBean(beanName);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (object == <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="comment">// Return bean instance from factory.</span></span><br><span class="line">		FactoryBean&lt;?&gt; factory = (FactoryBean&lt;?&gt;) beanInstance;</span><br><span class="line">		<span class="comment">// Caches object obtained from FactoryBean if it is a singleton.</span></span><br><span class="line">		<span class="keyword">if</span> (mbd == <span class="keyword">null</span> &amp;&amp; containsBeanDefinition(beanName)) &#123;</span><br><span class="line">			mbd = getMergedLocalBeanDefinition(beanName);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">boolean</span> synthetic = (mbd != <span class="keyword">null</span> &amp;&amp; mbd.isSynthetic());</span><br><span class="line">		object = getObjectFromFactoryBean(factory, beanName, !synthetic);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> object;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isTypeMatch</span><span class="params">(String name, ResolvableType typeToMatch)</span> <span class="keyword">throws</span>   NoSuchBeanDefinitionException </span>&#123;</span><br><span class="line">	String beanName = transformedBeanName(name);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Check manually registered singletons.</span></span><br><span class="line">	Object beanInstance = getSingleton(beanName, <span class="keyword">false</span>);</span><br><span class="line">	<span class="keyword">if</span> (beanInstance != <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (beanInstance <span class="keyword">instanceof</span> FactoryBean) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!BeanFactoryUtils.isFactoryDereference(name)) &#123;</span><br><span class="line">			    <span class="comment">// 如果是FactoryBean则获取实际被代理的Class类型</span></span><br><span class="line">				Class&lt;?&gt; type = getTypeForFactoryBean((FactoryBean&lt;?&gt;) beanInstance);</span><br><span class="line">				<span class="keyword">return</span> (type != <span class="keyword">null</span> &amp;&amp; typeToMatch.isAssignableFrom(type));</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> typeToMatch.isInstance(beanInstance);</span><br><span class="line">			&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span> (!BeanFactoryUtils.isFactoryDereference(name)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (typeToMatch.isInstance(beanInstance)) &#123;</span><br><span class="line">				<span class="comment">// Direct match for exposed instance?</span></span><br><span class="line">				<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		.....</span><br><span class="line">		.........</span><br><span class="line">		............</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FactoryBeanRegistrySupport类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Obtain an object to expose from the given FactoryBean.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> factory the FactoryBean instance</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> beanName the name of the bean</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the object obtained from the FactoryBean</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> BeanCreationException if FactoryBean object creation failed</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@see</span> org.springframework.beans.factory.FactoryBean#getObject()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Object <span class="title">doGetObjectFromFactoryBean</span><span class="params">(<span class="keyword">final</span> FactoryBean&lt;?&gt; factory, <span class="keyword">final</span> String beanName)</span></span></span><br><span class="line"><span class="function">		<span class="keyword">throws</span> BeanCreationException </span>&#123;</span><br><span class="line"></span><br><span class="line">	Object object;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (System.getSecurityManager() != <span class="keyword">null</span>) &#123;</span><br><span class="line">			AccessControlContext acc = getAccessControlContext();</span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				object = AccessController.doPrivileged(<span class="keyword">new</span> PrivilegedExceptionAction&lt;Object&gt;() &#123;</span><br><span class="line">					<span class="meta">@Override</span></span><br><span class="line">					<span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">						 <span class="comment">// 调用factory的getObject()方法生成动态代理类</span></span><br><span class="line">						 <span class="keyword">return</span> factory.getObject();</span><br><span class="line">				    &#125;</span><br><span class="line">				&#125;, acc);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">catch</span> (PrivilegedActionException pae) &#123;</span><br><span class="line">				<span class="keyword">throw</span> pae.getException();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// 调用factory的getObject()方法生成动态代理类</span></span><br><span class="line">			object = factory.getObject();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (FactoryBeanNotInitializedException ex) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> BeanCurrentlyInCreationException(beanName, ex.toString());</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> BeanCreationException(beanName, <span class="string">"FactoryBean threw exception on object creation"</span>, ex);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Do not accept a null value for a FactoryBean that's not fully</span></span><br><span class="line">	<span class="comment">// initialized yet: Many FactoryBeans just return null then.</span></span><br><span class="line">	<span class="keyword">if</span> (object == <span class="keyword">null</span> &amp;&amp; isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> BeanCurrentlyInCreationException(</span><br><span class="line">			beanName, <span class="string">"FactoryBean which is currently in creation returned null from getObject"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	<span class="keyword">return</span> object;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Determine the type for the given FactoryBean.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> factoryBean the FactoryBean instance to check</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the FactoryBean's object type,</span></span><br><span class="line"><span class="comment"> * or &#123;<span class="doctag">@code</span> null&#125; if the type cannot be determined yet</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; getTypeForFactoryBean(<span class="keyword">final</span> FactoryBean&lt;?&gt; factoryBean) &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (System.getSecurityManager() != <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> AccessController.doPrivileged(<span class="keyword">new</span> PrivilegedAction&lt;Class&lt;?&gt;&gt;() &#123;</span><br><span class="line">				<span class="meta">@Override</span></span><br><span class="line">				<span class="keyword">public</span> Class&lt;?&gt; run() &#123;</span><br><span class="line">				    <span class="comment">// 返回被代理类的Class类型</span></span><br><span class="line">					<span class="keyword">return</span> factoryBean.getObjectType();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;, getAccessControlContext());</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">		    <span class="comment">// 返回被代理类的Class类型</span></span><br><span class="line">			<span class="keyword">return</span> factoryBean.getObjectType();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">		<span class="comment">// Thrown from the FactoryBean's getObjectType implementation.</span></span><br><span class="line">		logger.warn(<span class="string">"FactoryBean threw exception from getObjectType, despite the contract saying "</span> +</span><br><span class="line">				<span class="string">"that it should return null if the type of its object cannot be determined yet"</span>, ex);</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/31/Python 数据类型/" rel="next" title="Python 数据类型">
+                <i class="fa fa-chevron-left"></i> Python 数据类型
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/20/Spring 扩展点之ObjectFactory/" rel="prev" title="Spring 扩展点之ObjectFactory">
+                Spring 扩展点之ObjectFactory <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接口定义"><span class="nav-number">2.</span> <span class="nav-text">接口定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义扩展实现"><span class="nav-number">3.</span> <span class="nav-text">自定义扩展实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试用例"><span class="nav-number">4.</span> <span class="nav-text">测试用例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现原理分析"><span class="nav-number">5.</span> <span class="nav-text">实现原理分析</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

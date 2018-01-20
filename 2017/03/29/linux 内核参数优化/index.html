@@ -1,0 +1,686 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言通过调整内核参数，我们可以设置端口使用范围，单进程最大可打开的文件描述符数量，tcp收发缓冲区大小，设置TCP连接队列和半连接队列的大小等来优化服务器的性能，尽可能在硬件条件有限的情况下，压榨服务器的性能，使其达到最优。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux 内核参数优化">
+<meta property="og:url" content="http://www.pandan.xyz/2017/03/29/linux 内核参数优化/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言通过调整内核参数，我们可以设置端口使用范围，单进程最大可打开的文件描述符数量，tcp收发缓冲区大小，设置TCP连接队列和半连接队列的大小等来优化服务器的性能，尽可能在硬件条件有限的情况下，压榨服务器的性能，使其达到最优。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-04-02T01:25:02.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux 内核参数优化">
+<meta name="twitter:description" content="前言通过调整内核参数，我们可以设置端口使用范围，单进程最大可打开的文件描述符数量，tcp收发缓冲区大小，设置TCP连接队列和半连接队列的大小等来优化服务器的性能，尽可能在硬件条件有限的情况下，压榨服务器的性能，使其达到最优。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/03/29/linux 内核参数优化/"/>
+
+  <title> linux 内核参数优化 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                linux 内核参数优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-29T23:10:36+08:00" content="2017-03-29">
+              2017-03-29
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>通过调整内核参数，我们可以设置端口使用范围，单进程最大可打开的文件描述符数量，tcp收发缓冲区大小，设置TCP连接队列和半连接队列的大小等来优化服务器的性能，尽可能在硬件条件有限的情况下，压榨服务器的性能，使其达到最优。<br><a id="more"></a></p>
+<h3 id="修改内核参数方法"><a href="#修改内核参数方法" class="headerlink" title="修改内核参数方法"></a>修改内核参数方法</h3><ol>
+<li><p>使用echo value方式直接追加到文件里，如echo “1” &gt; /proc/sys/net/ipv4/tcp_syn_retries，但这种方法机器重启后又会恢复为默认值，不具备永久性。</p>
+</li>
+<li><p>使用sysctl命令动态修改内核参数值，例如：sysctl -w net.ipv4.ip_forward=1，重启后又会恢复为默认值，不具备永久性。</p>
+</li>
+<li><p>把参数添加到/etc/sysctl.conf中，然后执行sysctl -p使参数生效，永久生效。</p>
+</li>
+</ol>
+<h3 id="sysctl命令"><a href="#sysctl命令" class="headerlink" title="sysctl命令"></a>sysctl命令</h3><p>sysctl命令被用于在内核运行时动态地修改内核的运行参数，可用的内核参数在目录/proc/sys中。它包含一些TCP/IP内核参数和虚拟内存系统的高级选项。</p>
+<ol>
+<li><p>打印所有的内核参数变量和值</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sysctl -a</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查询某一内核参数值</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sysctl -a | grep net.ipv4.ip_forward</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>从配置文件“/etc/sysctl.conf”加载内核参数设置</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sysctl -p</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>动态修改内核参数值（重启后恢复默认值，不具备永久性）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sysctl -w net.ipv4.ip_forward=1</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>模糊查询TCP/IP相关内核参数值（1：启用，0：禁用）</strong>：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@iZ94degopx4Z ~]# sysctl -a | grep &apos;net.ipv4.tcp_*&apos;</span><br><span class="line">net.ipv4.tcp_timestamps = 1</span><br><span class="line">net.ipv4.tcp_window_scaling = 1</span><br><span class="line">net.ipv4.tcp_sack = 1</span><br><span class="line">net.ipv4.tcp_retrans_collapse = 1</span><br><span class="line">net.ipv4.tcp_syn_retries = 5</span><br><span class="line">net.ipv4.tcp_synack_retries = 2</span><br><span class="line">net.ipv4.tcp_max_orphans = 65536</span><br><span class="line">net.ipv4.tcp_max_tw_buckets = 5000</span><br><span class="line">net.ipv4.tcp_keepalive_time = 7200</span><br><span class="line">net.ipv4.tcp_keepalive_probes = 9</span><br><span class="line">net.ipv4.tcp_keepalive_intvl = 75</span><br><span class="line">net.ipv4.tcp_retries1 = 3</span><br><span class="line">net.ipv4.tcp_retries2 = 15</span><br><span class="line">net.ipv4.tcp_fin_timeout = 60</span><br><span class="line">net.ipv4.tcp_syncookies = 1</span><br><span class="line">net.ipv4.tcp_tw_recycle = 0</span><br><span class="line">net.ipv4.tcp_abort_on_overflow = 0</span><br><span class="line">net.ipv4.tcp_stdurg = 0</span><br><span class="line">net.ipv4.tcp_rfc1337 = 0</span><br><span class="line">net.ipv4.tcp_max_syn_backlog = 1024</span><br><span class="line">net.ipv4.tcp_orphan_retries = 0</span><br><span class="line">net.ipv4.tcp_fack = 1</span><br><span class="line">net.ipv4.tcp_reordering = 3</span><br><span class="line">net.ipv4.tcp_ecn = 2</span><br><span class="line">net.ipv4.tcp_dsack = 1</span><br><span class="line">net.ipv4.tcp_mem = 93504	124672	187008</span><br><span class="line">net.ipv4.tcp_wmem = 4096	16384	3989504</span><br><span class="line">net.ipv4.tcp_rmem = 4096	87380	3989504</span><br><span class="line">net.ipv4.tcp_app_win = 31</span><br><span class="line">net.ipv4.tcp_adv_win_scale = 2</span><br><span class="line">net.ipv4.tcp_tw_reuse = 0</span><br><span class="line">net.ipv4.tcp_frto = 2</span><br><span class="line">net.ipv4.tcp_frto_response = 0</span><br><span class="line">net.ipv4.tcp_low_latency = 0</span><br><span class="line">net.ipv4.tcp_no_metrics_save = 0</span><br><span class="line">net.ipv4.tcp_moderate_rcvbuf = 1</span><br><span class="line">net.ipv4.tcp_tso_win_divisor = 3</span><br><span class="line">net.ipv4.tcp_congestion_control = cubic</span><br><span class="line">net.ipv4.tcp_abc = 0</span><br><span class="line">net.ipv4.tcp_mtu_probing = 0</span><br><span class="line">net.ipv4.tcp_base_mss = 512</span><br><span class="line">net.ipv4.tcp_workaround_signed_windows = 0</span><br><span class="line">net.ipv4.tcp_challenge_ack_limit = 100</span><br><span class="line">net.ipv4.tcp_limit_output_bytes = 131072</span><br><span class="line">net.ipv4.tcp_dma_copybreak = 4096</span><br><span class="line">net.ipv4.tcp_slow_start_after_idle = 1</span><br><span class="line">net.ipv4.tcp_available_congestion_control = cubic reno</span><br><span class="line">net.ipv4.tcp_allowed_congestion_control = cubic reno</span><br><span class="line">net.ipv4.tcp_max_ssthresh = 0</span><br><span class="line">net.ipv4.tcp_thin_linear_timeouts = 0</span><br><span class="line">net.ipv4.tcp_thin_dupack = 0</span><br><span class="line">net.ipv4.tcp_min_tso_segs = 2</span><br></pre></td></tr></table></figure></p>
+<h3 id="TCP-IP内核相关优化"><a href="#TCP-IP内核相关优化" class="headerlink" title="TCP/IP内核相关优化"></a>TCP/IP内核相关优化</h3><p>编辑内核配置文件：vim /etc/sysctl.conf<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">net.ipv4.tcp_syncookies=1</span><br><span class="line">表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookie来处理，可防范</span><br><span class="line">少量的ddos SYN攻击。默认为0，表示关闭。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_tw_reuse=1</span><br><span class="line">表示开启重用。允许将TIME_WAIT套接字重新用于新的TCP连接。默认为0，表示</span><br><span class="line">关闭。重复利用端口和文件描述符资源，提升系统并发量。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_tw_recycle=1</span><br><span class="line">表示开启TCP连接中TIME_WAIT套接字的快速回收。默认为0，表示关闭。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_keepalive_time=7200</span><br><span class="line">表示当内核启用TCP keepalive启用时，发送keepalive心跳消息的频度。默认是2</span><br><span class="line">小时。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_keepalive_intvl=75</span><br><span class="line">TCP保活心跳包发送的时间间隔（单位：秒）</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_keepalive_probes=9</span><br><span class="line">尝试探测的最大次数，如果发送的探测包次数超过该值仍然没有收到对方响应，</span><br><span class="line">则认为连接已失效并关闭连接。</span><br><span class="line"></span><br><span class="line">net.ipv4.ip_local_port_range=10000 65000</span><br><span class="line">设置client建立连接，可使用端口的范围（每建立一条连接，都会随机为其分配</span><br><span class="line">一个端口）</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_max_syn_backlog=8192</span><br><span class="line">表示SYN队列的长度，默认为1024。增大队列长度为8192，可以容纳更多等待连</span><br><span class="line">接的TCP连接数 ——TCP半连接队列。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_max_tw_buckets=180000</span><br><span class="line">表示系统同时保持TIME_WAIT套接字的最大数量，如果超过这个数字，TIME_WAIT套接字将立刻被清除并打印警告信息；</span><br><span class="line">默认为180000。</span><br><span class="line"></span><br><span class="line">net.core.netdev_max_backlog=1000</span><br><span class="line">当网络接口接收数据包的速率比内核处理速率快时，允许送到缓冲队列的数据包</span><br><span class="line">最大数目。</span><br><span class="line"></span><br><span class="line">net.core.somaxconn=128</span><br><span class="line">TCP连接队列的大小，用于存放已经建立好的TCP连接，等待服务端应用listener </span><br><span class="line">accept进行处理，默认128 ——TCP连接队列。</span><br><span class="line">   </span><br><span class="line">net.ipv4.tcp_synack_retries=2</span><br><span class="line">为了打开对端的连接，内核需要发送一个SYN并附带一个回应前面一个SYN的ACK。</span><br><span class="line">也就是所谓三次握手中的第二次握手。这个设置决定了内核放弃连接之前发送SYN+ACK包的数量。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_syn_retries=2</span><br><span class="line">在内核放弃建立连接之前发送SYN包的数量。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_fin_timeout=60</span><br><span class="line">对于本端断开的TCP连接，保持在FIN-WAIT-2状态的时间（秒）。对方可能会断开</span><br><span class="line">连接或一直不结束连接或不可预料的进程死亡，默认60秒。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_window_scaling=1</span><br><span class="line">启用RFC 1323定义的window scaling，要支持超过64KB的TCP窗口，必须启用该值（1表示启用），TCP窗口最大</span><br><span class="line">至1GB，TCP连接双方都启用时才生效，默认为1启用。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_timestamps=1</span><br><span class="line">TCP时间戳（会在TCP包头增加12个字节），以一种比重发超时更精确的方法（参考</span><br><span class="line">RFC 1323）来启用对RTT 的计算，为实现更好的性能应该启用这个选项。</span><br><span class="line"></span><br><span class="line">net.ipv4.ip_forward=0</span><br><span class="line">开启ip转发支持，内核开启NAT路由功能。默认值0关闭。</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_rmem=4096 87380 4194304</span><br><span class="line">第一个值是为socket接收缓冲区分配的最少字节数;</span><br><span class="line">第二个值是默认值(该值会被rmem_default覆盖)，缓冲区在系统负载不重的情况下可以增长到这个值;</span><br><span class="line">第三个值是接收缓冲区空间的最大字节数(该值会被rmem_max覆盖);</span><br><span class="line"></span><br><span class="line">net.ipv4.tcp_wmem=4096 16384 4194304</span><br><span class="line">第一个值是为socket发送缓冲区分配的最少字节数;</span><br><span class="line">第二个值是默认值(该值会被wmem_default覆盖)，缓冲区在系统负载不重的情况下可以增长到这个值;</span><br><span class="line">第三个值是发送缓冲区空间的最大字节数(该值会被wmem_max覆盖);</span><br><span class="line"> </span><br><span class="line">net.core.wmem_default=8388608</span><br><span class="line">默认的TCP发送缓冲区大小（字节）</span><br><span class="line">  </span><br><span class="line">net.core.rmem_default=8388608</span><br><span class="line">默认的TCP接收缓冲区大小（字节）</span><br><span class="line"></span><br><span class="line">net.core.rmem_max=16777216</span><br><span class="line">TCP最大接收缓冲区大小（字节）</span><br><span class="line"></span><br><span class="line">net.core.wmem_max=16777216</span><br><span class="line">TCP最大发送缓冲区大小（字节）</span><br></pre></td></tr></table></figure></p>
+<p><strong>使参数永久生效</strong>：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sysctl -p</span><br></pre></td></tr></table></figure></p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://www.centosdoc.com/linux/linux-kernel-para/" target="_blank" rel="noopener">http://www.centosdoc.com/linux/linux-kernel-para/</a></li>
+<li><a href="http://easwy.com/blog/archives/enable-ip-forward-on-linux/" target="_blank" rel="noopener">http://easwy.com/blog/archives/enable-ip-forward-on-linux/</a></li>
+<li><a href="http://11696974.blog.51cto.com/11686974/1812588" target="_blank" rel="noopener">http://11696974.blog.51cto.com/11686974/1812588</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/linux/l-hisock.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/l-hisock.html</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/25/linux 设置服务开机自启动/" rel="next" title="linux 设置服务开机自启动">
+                <i class="fa fa-chevron-left"></i> linux 设置服务开机自启动
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/17/redis 配置说明/" rel="prev" title="redis 配置说明">
+                redis 配置说明 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改内核参数方法"><span class="nav-number">2.</span> <span class="nav-text">修改内核参数方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sysctl命令"><span class="nav-number">3.</span> <span class="nav-text">sysctl命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP-IP内核相关优化"><span class="nav-number">4.</span> <span class="nav-text">TCP/IP内核相关优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

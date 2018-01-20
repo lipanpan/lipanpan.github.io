@@ -1,0 +1,681 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言本篇主要介绍redis常用配置的作用，以便后期对redis服务进行配置性的优化。redis可以在没有配置文件的情况下，通过内置的配置来启动，但是这种启动方式只适用于开发和测试。配置文件模板位于redis安装目录下，文件名为redis.conf。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis 配置说明">
+<meta property="og:url" content="http://www.pandan.xyz/2017/04/17/redis 配置说明/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言本篇主要介绍redis常用配置的作用，以便后期对redis服务进行配置性的优化。redis可以在没有配置文件的情况下，通过内置的配置来启动，但是这种启动方式只适用于开发和测试。配置文件模板位于redis安装目录下，文件名为redis.conf。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201703272250.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201704172031.png">
+<meta property="og:updated_time" content="2017-04-20T15:12:08.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis 配置说明">
+<meta name="twitter:description" content="前言本篇主要介绍redis常用配置的作用，以便后期对redis服务进行配置性的优化。redis可以在没有配置文件的情况下，通过内置的配置来启动，但是这种启动方式只适用于开发和测试。配置文件模板位于redis安装目录下，文件名为redis.conf。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201703272250.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/04/17/redis 配置说明/"/>
+
+  <title> redis 配置说明 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                redis 配置说明
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-04-17T23:10:36+08:00" content="2017-04-17">
+              2017-04-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本篇主要介绍redis常用配置的作用，以便后期对redis服务进行配置性的优化。redis可以在没有配置文件的情况下，通过内置的配置来启动，但是这种启动方式只适用于开发和测试。配置文件模板位于redis安装目录下，文件名为redis.conf。<br><a id="more"></a></p>
+<h3 id="CONFIG命令"><a href="#CONFIG命令" class="headerlink" title="CONFIG命令"></a>CONFIG命令</h3><p>我们可以使用CONFIG命令来查看及动态设置redis相关配置，具体语法如下：</p>
+<ol>
+<li><p><strong>查询配置</strong></p>
+<p>精确查询：</p>
+<p> CONFIG GET xxx（xxx指定配置名称）</p>
+<p>模糊查询：</p>
+<p> CONFIG GET *（模糊查询所有配置项）</p>
+<p> CONFIG GET a*（模糊查询以a开头的配置项）</p>
+<p> CONFIG GET *d（模糊查询以结尾的配置项）</p>
+<p><img src="/images/201703272250.png" alt="image"></p>
+<p>上图中：1)表示配置名称，2)表示配置值。</p>
+</li>
+<li><p><strong>修改配置</strong></p>
+<p>CONFIG SET xxx</p>
+</li>
+</ol>
+<p>备注：有些配置（例如：daemonize，pidfile，port等）不支持动态修改。<br><img src="/images/201704172031.png" alt="image"></p>
+<h3 id="redis-conf"><a href="#redis-conf" class="headerlink" title="redis.conf"></a>redis.conf</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">include /path/to/local.conf</span><br><span class="line">类似于jsp中的include标签，便于嵌入其他配置文件</span><br><span class="line"></span><br><span class="line">daemonize</span><br><span class="line"> redis服务默认不是以守护进程的方式运行，可以通过修改该配置项，使用yes启用守护进程，默认值no</span><br><span class="line">   </span><br><span class="line">pidfile</span><br><span class="line"> 当redis以守护进程方式运行时，默认会把pid写入/var/run/redis_6379.pid文件，可以通过设置pidfile指定pid文件存放位置</span><br><span class="line"></span><br><span class="line">dbfilename</span><br><span class="line"> 指定数据库文件名称，默认值dump.rdb</span><br><span class="line"></span><br><span class="line">dir</span><br><span class="line"> 指定数据库文件存放目录，默认值./</span><br><span class="line"> </span><br><span class="line">bind 192.168.1.100 10.0.0.1</span><br><span class="line"> 默认情况下，redis服务会监听服务器上所有可用的网络接口；我们可以通过bind</span><br><span class="line"> 指定监听一个或多个网络接口IP。</span><br><span class="line">   </span><br><span class="line">port</span><br><span class="line"> redis服务对外监听的端口，默认值6379。</span><br><span class="line">   </span><br><span class="line">timeout</span><br><span class="line"> 当client空闲timeout秒后（0：禁用该功能），redis将主动关闭TCP连接。</span><br><span class="line">   </span><br><span class="line">tcp-backlog</span><br><span class="line"> 设置tcp连接队列的大小，受限于内核参数&quot;/proc/sys/net/core/somaxconn&quot;值的限制，两者取最小值。</span><br><span class="line"></span><br><span class="line">maxclients</span><br><span class="line"> 设置同一时间最大客户端连接数，默认10000（低版本默认是不限制），Redis可</span><br><span class="line"> 以同时打开的客户端连接数为Redis进程可以打开的最大文件描述符数，</span><br><span class="line"> 如果设置 maxclients 0，表示不作限制。当客户端连接数到达限制时，</span><br><span class="line"> Redis会关闭新的连 接并向客户端返回max number of clients reached错误信息。</span><br><span class="line"> </span><br><span class="line">loglevel notice</span><br><span class="line"> 设置日志的打印级别。debug &lt; verbose &lt; notice &lt; warning</span><br><span class="line"> </span><br><span class="line">databases</span><br><span class="line"> 设置redis数据库的数量，默认值16，dbid值在0至15之间；默认数据库为0，可以</span><br><span class="line"> 使用SELECT &lt;dbid&gt;命令在连接上指定数据库id。</span><br><span class="line"></span><br><span class="line">rdbcompression</span><br><span class="line"> 指定存储至本地数据库时是否压缩数据，默认为yes，Redis采用LZF压缩，如果为</span><br><span class="line"> 了节省CPU时间，可以关闭该选项，但会导致数据库文件变的巨大。</span><br><span class="line"> </span><br><span class="line">save &lt;seconds&gt; &lt;changes&gt;</span><br><span class="line"> 指定在多长时间内，有多少次更新操作，就将数据同步到数据文件，可以多个条件配合。</span><br><span class="line"> redis默认配置文件中提供了三个条件：</span><br><span class="line"> save 900 1</span><br><span class="line"> save 300 10</span><br><span class="line"> save 60 10000</span><br><span class="line"> 分别表示900秒（15分钟）内有1个更改，300秒（5分钟）内有10个更改以及60秒</span><br><span class="line"> 内有10000个更改则将数据同步到数据文件。</span><br><span class="line"></span><br><span class="line">appendonly</span><br><span class="line"> 指定是否在每次更新操作后进行日志记录，Redis在默认情况下是异步的把数据写</span><br><span class="line"> 入磁盘，如果不开启，可能会在断电时导致一段时间内的数据丢失。因为 </span><br><span class="line"> redis本身同步数据文件是按上面save条件来同步的，所以有的数据会在一段时间</span><br><span class="line"> 内只存在于内存中。默认为no。</span><br><span class="line"> </span><br><span class="line">appendfilename</span><br><span class="line"> 指定更新操作日志文件名，默认为appendonly.aof。</span><br><span class="line"></span><br><span class="line">appendfsync</span><br><span class="line"> 指定更新日志文件策略，取值有：</span><br><span class="line"> no：表示等操作系统进行数据缓存同步到磁盘（快）</span><br><span class="line"> always：表示每次更新操作后手动调用fsync()将数据写到磁盘（慢，安全）</span><br><span class="line"> everysec：表示每秒同步一次（折衷，默认值）</span><br><span class="line"> </span><br><span class="line">requirepass</span><br><span class="line"> 设置Redis连接密码，如果配置了连接密码，客户端在连接Redis时需要通过AUTH &lt;password&gt;命令提供密码，默认关闭。</span><br><span class="line"></span><br><span class="line">slaveof &lt;masterip&gt; &lt;masterport&gt;</span><br><span class="line"> 当本机为slav服务时，设置master服务的IP地址及端口，在Redis启动时，它会自动从master进行数据同步。</span><br><span class="line"> </span><br><span class="line">masterauth &lt;master-password&gt;</span><br><span class="line"> 当master服务设置了密码保护时，slav服务连接master的密码。</span><br><span class="line"></span><br><span class="line">glueoutputbuf</span><br><span class="line"> 设置在向客户端应答时，是否把较小的包合并为一个包发送，默认值yes（开启）。</span><br><span class="line"></span><br><span class="line">maxmemory &lt;bytes&gt;</span><br><span class="line"> 指定Redis最大内存限制，Redis在启动时会把数据加载到内存中，达到最大内存</span><br><span class="line"> 后，Redis会先尝试清除已到期或即将到期的Key，当此方法处理 </span><br><span class="line"> 后，仍然到达最大内存设置，将无法再进行写入操作，但仍然可以进行读取操作。</span><br><span class="line"> Redis新的vm机制，会把Key存放内存，Value会存放在swap区。</span><br><span class="line"> </span><br><span class="line">maxmemory-policy</span><br><span class="line"> volatile-lru：从设置了过期时间的缓存key中，使用lru策略移除key</span><br><span class="line"> allkeys-lru：从所有缓存key中，使用lru策略移除key</span><br><span class="line"> volatile-random：从设置了过期时间的缓存key中随机移除</span><br><span class="line"> allkeys-random：从所有缓存key中随机移除</span><br><span class="line"> volatile-ttl：移除即将要过期的key</span><br><span class="line"> noeviction：不移除任何key，对于写操作直接返回一个错误，读操作正常处理</span><br><span class="line"> 默认处理策略是volatile-lru。</span><br><span class="line"></span><br><span class="line">maxmemory-samples</span><br><span class="line"> lru和ttl算法不是精确的算法，可以指定样本key的个数来提高精确度，默认值3。</span><br><span class="line"></span><br><span class="line">vm-enabled</span><br><span class="line"> 指定是否启用虚拟内存机制，默认值为no，简单的介绍一下，VM机制将数据分页</span><br><span class="line"> 存放，由Redis将访问量较少的页即冷数据swap到磁盘上，访问多的页面由磁盘自动换出到内存中。</span><br><span class="line"></span><br><span class="line">lua-time-limit</span><br><span class="line"> 设置lua脚本执行的最长时间（毫秒），设置0或负数时表示不做限制；默认值5秒。</span><br><span class="line"> </span><br><span class="line">....</span><br><span class="line">........</span><br></pre></td></tr></table></figure>
+<p>更多配置详情参考<a href="https://raw.githubusercontent.com/antirez/redis/2.8/redis.conf" target="_blank" rel="noopener">《官方配置文档》</a>。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="http://www.runoob.com/redis/redis-conf.html" target="_blank" rel="noopener">http://www.runoob.com/redis/redis-conf.html</a></li>
+<li><a href="http://www.redis.net.cn/tutorial/3504.html" target="_blank" rel="noopener">http://www.redis.net.cn/tutorial/3504.html</a></li>
+<li><a href="https://raw.githubusercontent.com/antirez/redis/2.8/redis.conf" target="_blank" rel="noopener">https://raw.githubusercontent.com/antirez/redis/2.8/redis.conf</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/29/linux 内核参数优化/" rel="next" title="linux 内核参数优化">
+                <i class="fa fa-chevron-left"></i> linux 内核参数优化
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/20/redis 控制台操作命令/" rel="prev" title="redis 控制台操作命令">
+                redis 控制台操作命令 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CONFIG命令"><span class="nav-number">2.</span> <span class="nav-text">CONFIG命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis-conf"><span class="nav-number">3.</span> <span class="nav-text">redis.conf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

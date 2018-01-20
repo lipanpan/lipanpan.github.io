@@ -1,0 +1,685 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 在Python中，常见的数据类型有：数值型number，布尔型bool，字符串str，元组tuple，列表list，集合set，字典dict等。下面将对比java数据类型一一介绍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 数据类型">
+<meta property="og:url" content="http://www.pandan.xyz/2017/10/31/Python 数据类型/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 在Python中，常见的数据类型有：数值型number，布尔型bool，字符串str，元组tuple，列表list，集合set，字典dict等。下面将对比java数据类型一一介绍。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-11-04T04:33:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 数据类型">
+<meta name="twitter:description" content="前言 在Python中，常见的数据类型有：数值型number，布尔型bool，字符串str，元组tuple，列表list，集合set，字典dict等。下面将对比java数据类型一一介绍。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/10/31/Python 数据类型/"/>
+
+  <title> Python 数据类型 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Python 数据类型
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-10-31T22:19:56+08:00" content="2017-10-31">
+              2017-10-31
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Python系列/" itemprop="url" rel="index">
+                    <span itemprop="name">Python系列</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>在Python中，常见的数据类型有：数值型number，布尔型bool，字符串str，元组tuple，列表list，集合set，字典dict等。下面将对比java数据类型一一介绍。</p>
+<a id="more"></a>
+<blockquote>
+<h3 id="数值型number"><a href="#数值型number" class="headerlink" title="数值型number"></a>数值型number</h3></blockquote>
+<p>数值型number，包括：整形int，长整形long，浮点数型：float，复数complex类型。Python支持复数，复数由实数部分和虚数部分构成，可以用a + bj,或者complex(a,b)表示， 复数的实部a和虚部b都是浮点型。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">intValue = <span class="number">100</span></span><br><span class="line">longValue = <span class="number">100L</span></span><br><span class="line">floatValue = <span class="number">100.00</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="布尔型bool"><a href="#布尔型bool" class="headerlink" title="布尔型bool"></a>布尔型bool</h3></blockquote>
+<p>在Python2.7以下版本，是没有布尔类型bool类型的，都是使用1和0来代表True或False的，而在Python3.0版本以上才出现的。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">bool1 = <span class="keyword">True</span></span><br><span class="line">bool2 = <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：True</span></span><br><span class="line">print(bool1 == <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出：False</span></span><br><span class="line">print(bool2 == <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="字符串str"><a href="#字符串str" class="headerlink" title="字符串str"></a>字符串str</h3></blockquote>
+<p>任何一种语言都有字符串类型，Python也不例外，这里只是简单介绍在Python语言中，对字符串常见的操作的使用。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 单引号或双引号都行</span></span><br><span class="line">mystr = <span class="string">"lipan"</span></span><br><span class="line">或</span><br><span class="line">mystr = <span class="string">'lipan'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 字符串拼接</span></span><br><span class="line">print(mystr + <span class="string">', welcome to python!'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取字符串的长度</span></span><br><span class="line">print(len(mystr))</span><br><span class="line"></span><br><span class="line"><span class="comment"># * 重复输出字符串，输出：lipanlipan</span></span><br><span class="line">print(mystr * <span class="number">2</span>) </span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过索引获取字符串中字符，输出：i</span></span><br><span class="line">print(mystr[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 截取字符串中的一部分，输出：pan</span></span><br><span class="line">print(mystr[<span class="number">2</span>:len(mystr)])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字符串中包含给定的子字符串串返回 True</span></span><br><span class="line">print(<span class="string">'li'</span> <span class="keyword">in</span> mystr)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字符串中不包含给定的子字符串串返回 True</span></span><br><span class="line">print(<span class="string">'li'</span> <span class="keyword">not</span> <span class="keyword">in</span> mystr)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在字符串前使用r或R，将字符串原样输出，包括转义字符,\r\n等，输出：lipan\r\n</span></span><br><span class="line">print(<span class="string">r'lipan\r\n'</span>)</span><br><span class="line">或者</span><br><span class="line">print(R<span class="string">'lipan\r\n'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以xxx开始或结束</span></span><br><span class="line">print(mystr.startswith(<span class="string">'li'</span>))</span><br><span class="line">print(mystr.endswith(<span class="string">'pan'</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字符串大小写转换</span></span><br><span class="line">print(<span class="string">'大写：'</span>, mystr.upper())</span><br><span class="line">print(<span class="string">'小写：'</span>, mystr.lower())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 子字符串替换</span></span><br><span class="line">print(mystr.replace(<span class="string">'pan'</span>, <span class="string">'dan'</span>))</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="元组tuple"><a href="#元组tuple" class="headerlink" title="元组tuple"></a>元组tuple</h3></blockquote>
+<p>元组tuple，类似于java中的数组Array，初始化时指定数组的长度。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建一个空的元组</span></span><br><span class="line">mytuple = ()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个元组tuple</span></span><br><span class="line">mytuple = (<span class="string">'lipan'</span>, <span class="number">26</span>, <span class="string">'广东深圳'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取索引处元素值</span></span><br><span class="line">print(mytuple[<span class="number">0</span>], mytuple[<span class="number">1</span>], mytuple[<span class="number">2</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 判断元组长度</span></span><br><span class="line">len(mytuple)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历元组tuple</span></span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> mytuple:</span><br><span class="line">    print(item)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="列表list"><a href="#列表list" class="headerlink" title="列表list"></a>列表list</h3></blockquote>
+<p>列表List，类似于java中的List，有序但不保证元素重复，和元组tuple的区别是元素个数是可以动态添加和删除的。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建一个列表list</span></span><br><span class="line">mylist = [<span class="string">'li'</span>, <span class="string">'pan'</span>, <span class="string">'panpan'</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在指定索引处，插入元素</span></span><br><span class="line">mylist.insert(<span class="number">1</span>, <span class="string">"lipan"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在列表末尾，追加元素</span></span><br><span class="line">mylist.append(<span class="string">"lipan"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 弹出列表指定索引处元素并删除</span></span><br><span class="line">mylist.pop(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除列表中指定元素，不存在则报错，存在多个相同元素则仅删除第一个</span></span><br><span class="line">mylist.remove(<span class="string">"lipan"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空列表</span></span><br><span class="line">mylist.clear()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取列表元素个数</span></span><br><span class="line">len(mylist)</span><br><span class="line"></span><br><span class="line"><span class="comment"># list遍历的元素</span></span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> mylist:</span><br><span class="line">    print(<span class="string">"列表中的元素:"</span>, item)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="集合set"><a href="#集合set" class="headerlink" title="集合set"></a>集合set</h3></blockquote>
+<p>集合set，类似于java中的Set，无序并保证元素不会重复。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建一个集合set</span></span><br><span class="line">mylist = [<span class="string">'lipan'</span>, <span class="number">26</span>, <span class="string">'广东深圳'</span>]</span><br><span class="line">myset = set(mylist) 或 myset = set([<span class="string">'lipan'</span>, <span class="number">26</span>, <span class="string">'广东深圳'</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加元素，自动去重</span></span><br><span class="line">myset.add(<span class="string">"lipan"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除元素</span></span><br><span class="line">myset.remove(<span class="number">26</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空集合</span></span><br><span class="line">myset.clear()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取集合元素个数</span></span><br><span class="line">len(myset)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历元素，无序的</span></span><br><span class="line"><span class="keyword">for</span> value <span class="keyword">in</span> myset:</span><br><span class="line">  print(value)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="字典dict"><a href="#字典dict" class="headerlink" title="字典dict"></a>字典dict</h3></blockquote>
+<p>字典dict，类似于java中的Map，以Key:Value形式存储数据。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 创建一个字典dict</span></span><br><span class="line">mydict = &#123;<span class="string">'Michael'</span>: <span class="number">95</span>, <span class="string">'Bob'</span>: <span class="number">75</span>, <span class="string">'Tracy'</span>: <span class="number">85</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取字段中的指定key对应的值</span></span><br><span class="line">mydict[<span class="string">'Michael'</span>] 或 mydict.get(<span class="string">'Michael'</span>) 或 如果不存在返回默认值的mydict.get(<span class="string">'xxx'</span>, <span class="number">80</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加元素Key-Value</span></span><br><span class="line">mydict[Key] = Value</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改元素值Key-Value</span></span><br><span class="line">mydict[Key] = Value</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除指定元素Key</span></span><br><span class="line">mydict.pop(<span class="string">'Michael'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取字典dict长度</span></span><br><span class="line">len(mydict)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空字典</span></span><br><span class="line">mydict.clear()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历字典dict-keys</span></span><br><span class="line"><span class="keyword">for</span> key <span class="keyword">in</span> d.keys():</span><br><span class="line">    print(<span class="string">"key:"</span>, key, <span class="string">", value:"</span>, d[key])</span><br><span class="line"></span><br><span class="line">或者</span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> d.items():</span><br><span class="line">    print(<span class="string">"key:"</span>, item[<span class="number">0</span>], <span class="string">", value:"</span>, item[<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历字典dict-values</span></span><br><span class="line"><span class="keyword">for</span> value <span class="keyword">in</span> d.values():</span><br><span class="line">    print(value)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/28/Python 异常/" rel="next" title="Python 异常">
+                <i class="fa fa-chevron-left"></i> Python 异常
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/19/Spring 扩展点之FactoryBean/" rel="prev" title="Spring 扩展点之FactoryBean">
+                Spring 扩展点之FactoryBean <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数值型number"><span class="nav-number">2.</span> <span class="nav-text">数值型number</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#布尔型bool"><span class="nav-number">3.</span> <span class="nav-text">布尔型bool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串str"><span class="nav-number">4.</span> <span class="nav-text">字符串str</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#元组tuple"><span class="nav-number">5.</span> <span class="nav-text">元组tuple</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#列表list"><span class="nav-number">6.</span> <span class="nav-text">列表list</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集合set"><span class="nav-number">7.</span> <span class="nav-text">集合set</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字典dict"><span class="nav-number">8.</span> <span class="nav-text">字典dict</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

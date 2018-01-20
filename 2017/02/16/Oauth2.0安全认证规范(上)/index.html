@@ -1,0 +1,681 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言所谓OAuth（即Open Authorization，开放授权），是一个开放标准，允许用户授权第三方应用访问他们存储在另外的服务提供者上的信息，而不需要将用户名和密码提供给第三方应用。而OAuth2.0是OAuth协议的下一版本，但不向后兼容OAuth 1.0。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oauth2.0安全认证规范(上)">
+<meta property="og:url" content="http://www.pandan.xyz/2017/02/16/Oauth2.0安全认证规范(上)/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言所谓OAuth（即Open Authorization，开放授权），是一个开放标准，允许用户授权第三方应用访问他们存储在另外的服务提供者上的信息，而不需要将用户名和密码提供给第三方应用。而OAuth2.0是OAuth协议的下一版本，但不向后兼容OAuth 1.0。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201702242207.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201702242216.png">
+<meta property="og:updated_time" content="2017-07-23T02:23:28.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Oauth2.0安全认证规范(上)">
+<meta name="twitter:description" content="前言所谓OAuth（即Open Authorization，开放授权），是一个开放标准，允许用户授权第三方应用访问他们存储在另外的服务提供者上的信息，而不需要将用户名和密码提供给第三方应用。而OAuth2.0是OAuth协议的下一版本，但不向后兼容OAuth 1.0。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201702242207.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/02/16/Oauth2.0安全认证规范(上)/"/>
+
+  <title> Oauth2.0安全认证规范(上) | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Oauth2.0安全认证规范(上)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-02-16T21:30:36+08:00" content="2017-02-16">
+              2017-02-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/web开发/" itemprop="url" rel="index">
+                    <span itemprop="name">web开发</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>所谓OAuth（即Open Authorization，开放授权），是一个开放标准，允许用户授权第三方应用访问他们存储在另外的服务提供者上的信息，而不需要将用户名和密码提供给第三方应用。而OAuth2.0是OAuth协议的下一版本，但不向后兼容OAuth 1.0。<br><a id="more"></a></p>
+<h3 id="Auth2-0认证流程"><a href="#Auth2-0认证流程" class="headerlink" title="Auth2.0认证流程"></a>Auth2.0认证流程</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 跳转到第三方账号登录授权页，由用户输入用户名+密码进行授权，获取授权码auth_token；</span><br><span class="line">   </span><br><span class="line">2. 根据授权码获取访问码access_token和刷新码refresh_token；</span><br><span class="line">      </span><br><span class="line">3. 根据access_token调用开放平台接口获取数据； </span><br><span class="line">      </span><br><span class="line">4. 如果access_token过期失效，可以通过refresh_token获取一个新的access_token；</span><br></pre></td></tr></table></figure>
+<p>token有效期及作用说明：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">auth_token（授权码）：仅能使用一次即失效（类似于CAS单点登录中的票据ticket），</span><br><span class="line">用于获取access_token和refresh_token；</span><br><span class="line"></span><br><span class="line">access_token（访问码）：有效期一般为2小时（自行定义），</span><br><span class="line">用于作为调用开放平台接口凭证；</span><br><span class="line"></span><br><span class="line">refresh_token（刷新码）：有效期一般为3个月（自行定义），</span><br><span class="line">当access_token失效后，通过refresh_token获取一个新的refresh_token；</span><br></pre></td></tr></table></figure></p>
+<p>ps：如果不需要用户进行第三方登录授权的，则可以省略步骤1，直接通过用户名+密<br>码获取access_token和refresh_token;步骤1主要是针对类似第三方授权登录的场景，例如：QQ第三方授权登录等;  </p>
+<h3 id="QQ网页版OAuth2-0授权登录"><a href="#QQ网页版OAuth2-0授权登录" class="headerlink" title="QQ网页版OAuth2.0授权登录"></a>QQ网页版OAuth2.0授权登录</h3><p>现在很多web网站登录页，都有第三方账号登录。例如：QQ，淘宝(taobao)，微信(wechat)，百度(baidu)，新浪(sina) 等第三方账号授权登录；下面以QQ为例，介绍第三方账号授权登录的实现过程。</p>
+<ol>
+<li><p>点击QQ第三方登录，跳转到QQ授权页面<br><img src="/images/201702242207.png" alt="image"></p>
+</li>
+<li><p>用户授权成功后，浏览器重定向到redirect_uri?code=xxx<br><img src="/images/201702242216.png" alt="image"></p>
+</li>
+<li><p>第三方应用服务器拿到授权码code之后，根据授权码获取access_token和refresh_token</p>
+</li>
+<li><p>第三方应用服务器根据access_token调用QQ开放平台接口，获取用户信息及openId等信息</p>
+</li>
+<li><p>第三方应用服务器判断该openId是否绑定过自身账号，如果没有则跳转到绑定页面，有则直接根据绑定账号的用户名+密码登录第三方应用系统</p>
+</li>
+</ol>
+<h3 id="QQ授权登录的坑"><a href="#QQ授权登录的坑" class="headerlink" title="QQ授权登录的坑"></a>QQ授权登录的坑</h3><p>   腾讯开放平台针对web和app提供了两种接入方式：网站应用和移动应用，但是有一个比较坑爹的地方是，同一个QQ账号通过网站应用和移动应用返回的唯一标识是不一样的。这样就会导致同一个QQ账号在我们应用中绑定了多个账号，产生数据的错乱。</p>
+<p>解决方式：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">情况1：QQ授权登录是新功能，没有冲突数据入库</span><br><span class="line">   移动端和web端都以网站应用接入,当在移动端点击&quot;QQ登录&quot;时，</span><br><span class="line">跳到web浏览器(html5页面)进行授权</span><br><span class="line">   或者联系腾讯技术支持，将网站应用和移动应用之间关系打通，并选择其中一个为&quot;主&quot;，</span><br><span class="line">另一个为&quot;从&quot;；这样如果通过&quot;从&quot;获取用户唯一标识，返回的都是&quot;主&quot;的用户唯一标识。</span><br><span class="line"></span><br><span class="line">情况2：QQ授权登录已经使用且有冲突数据入库</span><br><span class="line">   联系腾讯技术支持，将网站应用和移动应用之间关系打通，并选择其中一个为&quot;主&quot;，</span><br><span class="line">另一个为&quot;从&quot;；这样如果通过&quot;从&quot;获取用户唯一标识，返回的都是&quot;主&quot;的用户唯一标识。</span><br><span class="line">  冲突数据兼容处理：</span><br><span class="line">  在两个应用打通之前，需要确定哪一个为&quot;主&quot;,哪一个为&quot;从&quot;,</span><br><span class="line">并且要把之前通过&quot;从&quot;绑定的唯一标识导出来，交给腾讯技术支持，</span><br><span class="line">他们会返回这部分&quot;从&quot;唯一标志和&quot;主&quot;唯一标志之间的一一映射关系的。</span><br><span class="line">这样我们就可以对程序进行兼容处理;</span><br></pre></td></tr></table></figure></p>
+<p>ps：腾讯只支持两个应用之间的打通,不支持多个应用之间的互通,也就是说三个以上应用不能互通，只能大家都以一个为主，进行两两打通(比如A,B,C三个应用，共用一套账户体系，要实现QQ第三方账号登录，解决方案是比如大家都以A为主，A与B打通之后，然后A再与C打通);</p>
+<p>相比于QQ开放平台，wechat微信则设计的更为合理，除了有一个应用内唯一Id(openId)，同时还有个全局唯一Id(unionId：即针对所有应用，同一个微信账号返回的unionId都是相同的)，这样unionId就可以保证同一个应用在移动应用和网站应用都返回相同的Id，从而保证不会出现同一个Id绑定多个第三方应用账号的情况。</p>
+<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><ol>
+<li><a href="https://oauth.net/2/" target="_blank" rel="noopener">https://oauth.net/2/</a></li>
+<li><a href="http://wiki.open.qq.com/wiki/mobile/OAuth2.0%E7%AE%80%E4%BB%8B" target="_blank" rel="noopener">http://wiki.open.qq.com/wiki/mobile/OAuth2.0%E7%AE%80%E4%BB%8B</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/15/spring @Autowired注解与@Resource注解的区别/" rel="next" title="spring @Autowired注解与@Resource注解的区别">
+                <i class="fa fa-chevron-left"></i> spring @Autowired注解与@Resource注解的区别
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/18/ajax异步提交form表单/" rel="prev" title="ajax通过FormData构造form表单异步提交">
+                ajax通过FormData构造form表单异步提交 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Auth2-0认证流程"><span class="nav-number">2.</span> <span class="nav-text">Auth2.0认证流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#QQ网页版OAuth2-0授权登录"><span class="nav-number">3.</span> <span class="nav-text">QQ网页版OAuth2.0授权登录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#QQ授权登录的坑"><span class="nav-number">4.</span> <span class="nav-text">QQ授权登录的坑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文档"><span class="nav-number">5.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

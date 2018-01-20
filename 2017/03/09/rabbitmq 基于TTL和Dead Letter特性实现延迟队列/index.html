@@ -1,0 +1,722 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言首先，rabbitmq并没有直接支持延迟队列这样的特性，我们必须通过rabbitmq提供的TTL（Time-To-Live：用于设置消息和队列的有效时间）和 Dead Letter（死信队列DLX ，寓意是存放那些不可送达消息的队列）这两个特性来间接的实现延迟队列的效果；接下来，将详细介绍TTL和 Dead Letter特性，以及如何使用它们来实现延迟队列的效果。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rabbitmq 基于TTL和Dead Letter特性实现延迟队列">
+<meta property="og:url" content="http://www.pandan.xyz/2017/03/09/rabbitmq 基于TTL和Dead Letter特性实现延迟队列/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言首先，rabbitmq并没有直接支持延迟队列这样的特性，我们必须通过rabbitmq提供的TTL（Time-To-Live：用于设置消息和队列的有效时间）和 Dead Letter（死信队列DLX ，寓意是存放那些不可送达消息的队列）这两个特性来间接的实现延迟队列的效果；接下来，将详细介绍TTL和 Dead Letter特性，以及如何使用它们来实现延迟队列的效果。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201703092211.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201703111155.png">
+<meta property="og:updated_time" content="2017-03-16T13:45:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rabbitmq 基于TTL和Dead Letter特性实现延迟队列">
+<meta name="twitter:description" content="前言首先，rabbitmq并没有直接支持延迟队列这样的特性，我们必须通过rabbitmq提供的TTL（Time-To-Live：用于设置消息和队列的有效时间）和 Dead Letter（死信队列DLX ，寓意是存放那些不可送达消息的队列）这两个特性来间接的实现延迟队列的效果；接下来，将详细介绍TTL和 Dead Letter特性，以及如何使用它们来实现延迟队列的效果。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201703092211.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2017/03/09/rabbitmq 基于TTL和Dead Letter特性实现延迟队列/"/>
+
+  <title> rabbitmq 基于TTL和Dead Letter特性实现延迟队列 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rabbitmq 基于TTL和Dead Letter特性实现延迟队列
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-09T23:10:36+08:00" content="2017-03-09">
+              2017-03-09
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>首先，rabbitmq并没有直接支持延迟队列这样的特性，我们必须通过rabbitmq提供的TTL（Time-To-Live：用于设置消息和队列的有效时间）和 Dead Letter（死信队列DLX ，寓意是存放那些不可送达消息的队列）这两个特性来间接的实现延迟队列的效果；接下来，将详细介绍TTL和 Dead Letter特性，以及如何使用它们来实现延迟队列的效果。<br><a id="more"></a></p>
+<h3 id="TTL"><a href="#TTL" class="headerlink" title="TTL"></a>TTL</h3><p>rabbitmq支持设置队列和消息的有效期（即Time-To-Live）。</p>
+<p><strong>Per-Queue Message TTL</strong>（设置queue中所有消息的有效期）：</p>
+<ol>
+<li><p>通过queue.declare声明队列的时候，在args参数中设置x-message-ttl的值指定</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">args.put(<span class="string">"x-message-ttl"</span>, <span class="number">60000</span>); <span class="comment">//单位：毫秒</span></span><br><span class="line">channel.queueDeclare(<span class="string">"myqueue"</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, args);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过添加policy的方式指定</p>
+<p><img src="/images/201703092211.png" alt="image"></p>
+<p>或通过命令行   </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./rabbitmqctl set_policy -p /test TTL-Policy &quot;^ttl-&quot; &apos;&#123;&quot;message-ttl&quot;:60000&#125;&apos; --apply-to queues --priority 1</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>Per-Message TTL</strong>（设置单条消息的有效期）：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] messageBodyBytes = <span class="string">"Hello, world!"</span>.getBytes();</span><br><span class="line">AMQP.BasicProperties properties = <span class="keyword">new</span> AMQP.BasicProperties();</span><br><span class="line">properties.setExpiration(<span class="string">"60000"</span>); <span class="comment">//设置单个消息有效期为60秒</span></span><br><span class="line">channel.basicPublish(<span class="string">"my-exchange"</span>, <span class="string">"routing-key"</span>, properties, messageBodyBytes);</span><br></pre></td></tr></table></figure></p>
+<p>如果在单条消息上设置了有效期，又在队列中设置了queue scope域的消息有效期，则取两者之间的最小值作为消息实际的有效期。</p>
+<p>同时，我们可以对已经存在消息的队列使用TTL策略，但这涉及一些注意事项。TTL策略会应用到这些已经存在的消息上，并且<strong>只有当过期的消息到达queue的head头部时，才会被丢弃或转发到下面所说的DLX中</strong>。消费者是不会收到过期的消息的，但是有一点必须记住，在信息过期和消费者投放之间可能存在竞争条件，例如消息可以在它被写入套接字之后但在它到达消费者之前过期等，同时过期的消息也会被计入到queue消息数量的统计中。</p>
+<p>如果设置<strong>Per-Queue Message TTL</strong>不会有问题，因为快要过期的消息总是在队列的前边；但是如果使用<strong>Per-Message TTL</strong>的话，过期的消息有可能会在未过期的消息后边，直到前边的消息过期或者被消费。因为RabbitMQ保证过期的消息一定不会被消费者消费，但是不能保证消息过期就会从队列中移除。</p>
+<p><strong>Queue TTL</strong>，我们除了可以设置队列消息的TTL之外，还可以设置queue的TTL。</p>
+<ol>
+<li><p>通过queue.declare声明队列的时候，在args参数中设置x-expires的值指定</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">args.put(<span class="string">"x-expires"</span>, <span class="number">1800000</span>);<span class="comment">// 有效期30分钟</span></span><br><span class="line">channel.queueDeclare(<span class="string">"myqueue"</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, args);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过添加policy的方式指定</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./rabbitmqctl set_policy -p /test TTL-Queue-Policy &quot;^ttl-queue-&quot; &apos;&#123;&quot;expires&quot;:1800000&#125;&apos; --apply-to queues --priority 1</span><br></pre></td></tr></table></figure>
+<p>具体在管理界面的操作，请参考<strong>Per-Queue Message TTL</strong>设置。</p>
+</li>
+</ol>
+<p>意思是指在x-expires时间内，如果队列没有活跃（即没有被使用），服务器将会删除该队列。有点类似于java中线程池对线程管理的最大空闲时间。</p>
+<p>应用场景：可以作为RPC远程过程调用的答复队列等。</p>
+<h3 id="Dead-Letter"><a href="#Dead-Letter" class="headerlink" title="Dead Letter"></a>Dead Letter</h3><p>队列中的消息可以是“死信”（即不可送达的信息），一般在发生以下事件时会将这种消息重新发布到另一个exchange：</p>
+<ol>
+<li>消费端调用basic.reject或basic.nack拒绝消息且requeue=false不重新放回队列；</li>
+<li>队列中的消息过期；</li>
+<li>队列中消息长度达到最大限制；</li>
+</ol>
+<p>官方原文：</p>
+<ol>
+<li>rejected - the message was rejected with requeue=false;</li>
+<li>expired - the TTL of the message expired; </li>
+<li>maxlen - the maximum allowed queue length was exceeded;</li>
+</ol>
+<p>Dead Letter exchanges（DLXs）就是一种普通的exchange，可以是fanout，direct，topic，headers中的任意一种类型。我们在声明一个队列的时候，可以为这个队列指定一个Dead Letter exchanges（DLXs），当这个队列中的消息被拒绝且requeue=false，过期，或达到队列最大长度时，这些消息将被转发到此队列配置的DLXs。</p>
+<p>具体配置如下：</p>
+<ol>
+<li><p>通过queue.declare声明队列的时候，在args参数中设置x-dead-letter-exchange的值指定</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 声明一个普通direct模式的exchange作为DLXs</span></span><br><span class="line">channel.exchangeDeclare(<span class="string">"some.exchange.name"</span>, <span class="string">"direct"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line"><span class="comment">// 将上述声明的exchange作为此队列的Dead Letter exchanges（DLXs）</span></span><br><span class="line">args.put(<span class="string">"x-dead-letter-exchange"</span>, <span class="string">"some.exchange.name"</span>);</span><br><span class="line"><span class="comment">// 重新设置队列中所产生dead-letter message的route-key</span></span><br><span class="line">args.put(<span class="string">"x-dead-letter-routing-key"</span>, <span class="string">"some-routing-key"</span>); </span><br><span class="line">channel.queueDeclare(<span class="string">"myqueue"</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, args);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过添加policy的方式指定</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./rabbitmqctl set_policy -p /test DLX-Queue-Policy &quot;^dlx-queue-&quot; &apos;&#123;&quot;dead-letter-exchange&quot;:&quot;some.exchange.name&quot;, </span><br><span class="line">&quot;dead-letter-routing-key&quot;:&quot;some-routing-key&quot;&#125;&apos; --apply-to queues --priority 1</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>注1：当队列queue.declare声明时，Dead Letter exchanges（DLXs）并不是必须要声明的，但是如果有dead-lettered message产生的时候，则DLXs必须要存在，如果不存在的话，就会出现dead-lettered message被直接丢弃。在转发dead-lettered message时，我们可以通过在声明queue时指定x-dead-letter-routing-key属性值为其重新设置route-key，如果没有设置的话，则使用message自己的route-key（即最初publish时指定的route-key）。</p>
+<p>注2：Dead-lettered messages被重新publish时，是开启了publisher confirms模式的；也就是说，只有当dead-letter queues(DLX routing targets)确认收到了Dead-lettered messages之后，才会通知原队列删除该message，以确保消息不会丢失。</p>
+<h3 id="延迟队列"><a href="#延迟队列" class="headerlink" title="延迟队列"></a>延迟队列</h3><p>实现原理图：<br><img src="/images/201703111155.png" alt="image"></p>
+<p>下面是使用rabbitmq TTL和Dead Letter特性实现的延迟队列的示例代码：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"># producer client: </span><br><span class="line"><span class="comment">// 声明一个普通direct模式的exchange作为DLXs</span></span><br><span class="line">channel.exchangeDeclare(<span class="string">"dlxs-exchange"</span>, <span class="string">"direct"</span>);</span><br><span class="line"></span><br><span class="line">Map&lt;String, Object&gt; args = <span class="keyword">new</span> HashMap&lt;String, Object&gt;();</span><br><span class="line">args.put(<span class="string">"x-dead-letter-exchange"</span>, <span class="string">"dlxs-exchange"</span>);</span><br><span class="line">args.put(<span class="string">"x-dead-letter-routing-key"</span>, <span class="string">"main-queue"</span>); </span><br><span class="line">channel.queueDeclare(<span class="string">"delay-queue"</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, args);</span><br><span class="line"></span><br><span class="line"><span class="comment">// define and send delay-message（TTL = 60 seconds）</span></span><br><span class="line">AMQP.BasicProperties.Builder builder = <span class="keyword">new</span> AMQP.BasicProperties.Builder();  </span><br><span class="line">AMQP.BasicProperties properties = builder.expiration(<span class="string">"60000"</span>).deliveryMode(<span class="number">2</span>).build();  </span><br><span class="line">channel.basicPublish(<span class="string">""</span>, <span class="string">"delay-queue"</span>, properties, <span class="string">"nop"</span>.getBytes());</span><br><span class="line"></span><br><span class="line"># consumer client:</span><br><span class="line"><span class="comment">// 声明消费者</span></span><br><span class="line"><span class="keyword">boolean</span> autoAck = <span class="keyword">false</span>;</span><br><span class="line">channel.basicConsume(<span class="string">"main-queue"</span>, autoAck, <span class="string">"myConsumerTag"</span>,</span><br><span class="line">    <span class="keyword">new</span> DefaultConsumer(channel) &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleDelivery</span><span class="params">(String consumerTag,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   Envelope envelope,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   AMQP.BasicProperties properties,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">byte</span>[] body)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException</span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            String routingKey = envelope.getRoutingKey();</span><br><span class="line">            String contentType = properties.getContentType();</span><br><span class="line">            <span class="keyword">long</span> deliveryTag = envelope.getDeliveryTag();</span><br><span class="line">            channel.basicAck(deliveryTag, <span class="keyword">false</span>); <span class="comment">// 消费端确认成功处理消息</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure></p>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><ol>
+<li>用户注册成功后，1分钟之后给用户发送欢迎邮件；</li>
+<li>2分钟后再次尝试回调；</li>
+<li>……</li>
+</ol>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
+<li><a href="https://www.rabbitmq.com/ttl.html" target="_blank" rel="noopener">https://www.rabbitmq.com/ttl.html</a></li>
+<li><a href="https://www.rabbitmq.com/dlx.html" target="_blank" rel="noopener">https://www.rabbitmq.com/dlx.html</a></li>
+<li><a href="http://www.rabbitmq.com/ttl.html#per-queue-message-ttl" target="_blank" rel="noopener">http://www.rabbitmq.com/ttl.html#per-queue-message-ttl</a></li>
+<li><a href="https://www.rabbitmq.com/parameters.html#policies" target="_blank" rel="noopener">https://www.rabbitmq.com/parameters.html#policies</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/08/rabbitmq 事务机制/" rel="next" title="rabbitmq 事务机制">
+                <i class="fa fa-chevron-left"></i> rabbitmq 事务机制
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/10/rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列/" rel="prev" title="rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列">
+                rabbitmq 基于rabbitmq-delayed-message-exchange插件实现延迟队列 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TTL"><span class="nav-number">2.</span> <span class="nav-text">TTL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dead-Letter"><span class="nav-number">3.</span> <span class="nav-text">Dead Letter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#延迟队列"><span class="nav-number">4.</span> <span class="nav-text">延迟队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用场景"><span class="nav-number">5.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">6.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
