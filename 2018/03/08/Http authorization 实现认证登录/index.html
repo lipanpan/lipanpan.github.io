@@ -1,0 +1,667 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 以前经常看到一些开源软件的管理后台，都是基于浏览器弹框实现的认证登录；比如: haproxy管理后台，elastic-job管理后台等。在此梳理下其实现原理，进一步加深自己的理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Http Authorization 实现认证登录">
+<meta property="og:url" content="http://www.pandan.xyz/2018/03/08/Http authorization 实现认证登录/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 以前经常看到一些开源软件的管理后台，都是基于浏览器弹框实现的认证登录；比如: haproxy管理后台，elastic-job管理后台等。在此梳理下其实现原理，进一步加深自己的理解。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-03-08T15:04:16.406Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Http Authorization 实现认证登录">
+<meta name="twitter:description" content="前言 以前经常看到一些开源软件的管理后台，都是基于浏览器弹框实现的认证登录；比如: haproxy管理后台，elastic-job管理后台等。在此梳理下其实现原理，进一步加深自己的理解。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2018/03/08/Http authorization 实现认证登录/"/>
+
+  <title> Http Authorization 实现认证登录 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Http Authorization 实现认证登录
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-03-08T22:25:56+08:00" content="2018-03-08">
+              2018-03-08
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/计算机网络/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机网络</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>以前经常看到一些开源软件的管理后台，都是基于浏览器弹框实现的认证登录；比如: haproxy管理后台，elastic-job管理后台等。在此梳理下其实现原理，进一步加深自己的理解。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="Authorization"><a href="#Authorization" class="headerlink" title="Authorization"></a>Authorization</h3></blockquote>
+<p>在http协议中请求头Authorization专门用于请求认证使用，用于透传凭证信息。Authorization有多种认证方式，最常见的一种就是Basic方式；通常开源软件管理后台也都是基于此方式实现的。</p>
+<p>Basic方式具体形式：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Authorization: 认证方式 认证信息</span><br><span class="line">示例：Authorization: Basic xxxxxx</span><br></pre></td></tr></table></figure></p>
+<p>其中xxxxxx是基于Base64编码的认证信息，具体格式为Base64.encode(“username:pwd”)</p>
+<blockquote>
+<h3 id="WWW-authenticate"><a href="#WWW-authenticate" class="headerlink" title="WWW-authenticate"></a>WWW-authenticate</h3></blockquote>
+<p>WWW-authenticate 用于当用户认证失败后，告知用户浏览器的弹框提示来自何处。Http-Code=401 表示认证失败。</p>
+<p>具体格式如下：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">response.setHeader(&quot;WWW-authenticate&quot;, &quot;Basic Realm=\&quot;Elastic Job Console Auth\&quot;&quot;);</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="Elastic-Job管理后台代码认证"><a href="#Elastic-Job管理后台代码认证" class="headerlink" title="Elastic-Job管理后台代码认证"></a>Elastic-Job管理后台代码认证</h3></blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">WwwAuthFilter</span> <span class="keyword">implements</span> <span class="title">Filter</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String FILE_SEPARATOR = System.getProperty(<span class="string">"file.separator"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String AUTH_PREFIX = <span class="string">"Basic "</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ROOT_IDENTIFY = <span class="string">"root"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ROOT_DEFAULT_USERNAME = <span class="string">"root"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ROOT_DEFAULT_PASSWORD = <span class="string">"root"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String GUEST_IDENTIFY = <span class="string">"guest"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String GUEST_DEFAULT_USERNAME = <span class="string">"guest"</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String GUEST_DEFAULT_PASSWORD = <span class="string">"guest"</span>;</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String rootUsername;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String rootPassword;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String guestUsername;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String guestPassword;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">final</span> FilterConfig filterConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line">        Properties props = <span class="keyword">new</span> Properties();</span><br><span class="line">        URL classLoaderURL = Thread.currentThread().getContextClassLoader().getResource(<span class="string">""</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> != classLoaderURL) &#123;</span><br><span class="line">            String configFilePath = Joiner.on(FILE_SEPARATOR).join(classLoaderURL.getPath(), <span class="string">"conf"</span>, <span class="string">"auth.properties"</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                props.load(<span class="keyword">new</span> FileInputStream(configFilePath));</span><br><span class="line">            &#125; <span class="keyword">catch</span> (<span class="keyword">final</span> IOException ex) &#123;</span><br><span class="line">                log.warn(<span class="string">"Cannot found auth config file, use default auth config."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        rootUsername = props.getProperty(<span class="string">"root.username"</span>, ROOT_DEFAULT_USERNAME);</span><br><span class="line">        rootPassword = props.getProperty(<span class="string">"root.password"</span>, ROOT_DEFAULT_PASSWORD);</span><br><span class="line">        guestUsername = props.getProperty(<span class="string">"guest.username"</span>, GUEST_DEFAULT_USERNAME);</span><br><span class="line">        guestPassword = props.getProperty(<span class="string">"guest.password"</span>, GUEST_DEFAULT_PASSWORD);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(<span class="keyword">final</span> ServletRequest request, <span class="keyword">final</span> ServletResponse response, <span class="keyword">final</span> FilterChain chain)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">        HttpServletRequest httpRequest = (HttpServletRequest) request;</span><br><span class="line">        HttpServletResponse httpResponse = (HttpServletResponse) response;</span><br><span class="line">        String authorization = httpRequest.getHeader(<span class="string">"authorization"</span>);</span><br><span class="line">        <span class="comment">// 认证成功后，浏览器每次请求都会携带认证信息</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> != authorization &amp;&amp; authorization.length() &gt; AUTH_PREFIX.length()) &#123;</span><br><span class="line">            authorization = authorization.substring(AUTH_PREFIX.length(), authorization.length());</span><br><span class="line">            <span class="keyword">if</span> ((rootUsername + <span class="string">":"</span> + rootPassword).equals(<span class="keyword">new</span> String(Base64.decodeBase64(authorization)))) &#123;</span><br><span class="line">                authenticateSuccess(httpResponse, <span class="keyword">false</span>);</span><br><span class="line">                chain.doFilter(httpRequest, httpResponse);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((guestUsername + <span class="string">":"</span> + guestPassword).equals(<span class="keyword">new</span> String(Base64.decodeBase64(authorization)))) &#123;</span><br><span class="line">                authenticateSuccess(httpResponse, <span class="keyword">true</span>);</span><br><span class="line">                chain.doFilter(httpRequest, httpResponse);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                needAuthenticate(httpResponse);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            needAuthenticate(httpResponse);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">authenticateSuccess</span><span class="params">(<span class="keyword">final</span> HttpServletResponse response, <span class="keyword">final</span> <span class="keyword">boolean</span> isGuest)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 认证成功</span></span><br><span class="line">        response.setStatus(<span class="number">200</span>);</span><br><span class="line">        response.setHeader(<span class="string">"Pragma"</span>, <span class="string">"No-cache"</span>);</span><br><span class="line">        response.setHeader(<span class="string">"Cache-Control"</span>, <span class="string">"no-store"</span>);</span><br><span class="line">        response.setDateHeader(<span class="string">"Expires"</span>, <span class="number">0</span>);</span><br><span class="line">        response.setHeader(<span class="string">"identify"</span>, isGuest ? GUEST_IDENTIFY : ROOT_IDENTIFY);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">needAuthenticate</span><span class="params">(<span class="keyword">final</span> HttpServletResponse response)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 告诉浏览器弹框提示认证失败</span></span><br><span class="line">        response.setStatus(<span class="number">401</span>);</span><br><span class="line">        response.setHeader(<span class="string">"Cache-Control"</span>, <span class="string">"no-store"</span>);</span><br><span class="line">        response.setDateHeader(<span class="string">"Expires"</span>, <span class="number">0</span>);</span><br><span class="line">        response.setHeader(<span class="string">"WWW-authenticate"</span>, AUTH_PREFIX + <span class="string">"Realm=\"Elastic Job Console Auth\""</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3></blockquote>
+<p>基于Http协议的认证方式，在http方式访问下是非常不安全的，毕竟只是采用了Base64编码处理，在公网环境下传输，无疑是裸奔。在https环境下传输还可以。Http协议认证方式一般用于一些仅供内网可以访问的后台系统，例如：haproxy管理后台，elastic-job管理后台等。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/27/Spring 进程内事件驱动/" rel="next" title="Spring 进程内事件驱动">
+                <i class="fa fa-chevron-left"></i> Spring 进程内事件驱动
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">121</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Authorization"><span class="nav-number">2.</span> <span class="nav-text">Authorization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WWW-authenticate"><span class="nav-number">3.</span> <span class="nav-text">WWW-authenticate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Elastic-Job管理后台代码认证"><span class="nav-number">4.</span> <span class="nav-text">Elastic-Job管理后台代码认证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
