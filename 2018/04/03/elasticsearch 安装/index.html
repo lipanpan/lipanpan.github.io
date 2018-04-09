@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="lpp`s blog">
 <meta property="og:description" content="前言 Elasticsearch是一个基于Apache Lucene(TM)的开源搜索引擎。无论在开源还是专有领域，Lucene可以被认为是迄今为止最先进、性能最好的、功能最全的搜索引擎库。Elasticsearch使用Java开发并以Lucene作为其核心来实现所有索引和搜索的功能，但是它的目的是通过简单的RESTful API来隐藏Lucene的复杂性，从而让全文搜索变得简单。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-05T05:33:09.090Z">
+<meta property="og:updated_time" content="2018-04-09T14:37:36.530Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="elasticsearch 安装">
 <meta name="twitter:description" content="前言 Elasticsearch是一个基于Apache Lucene(TM)的开源搜索引擎。无论在开源还是专有领域，Lucene可以被认为是迄今为止最先进、性能最好的、功能最全的搜索引擎库。Elasticsearch使用Java开发并以Lucene作为其核心来实现所有索引和搜索的功能，但是它的目的是通过简单的RESTful API来隐藏Lucene的复杂性，从而让全文搜索变得简单。">
@@ -358,6 +358,10 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[lipanpan@localhost bin]$ ./elasticsearch</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM warning: INFO: os::commit_memory(0x0000000085330000, 2060255232, 0) failed; error=&apos;Cannot allocate memory&apos; (errno=12)</span><br><span class="line">#</span><br><span class="line"># There is insufficient memory for the Java Runtime Environment to continue.</span><br><span class="line"># Native memory allocation (mmap) failed to map 2060255232 bytes for committing reserved memory.</span><br><span class="line"># An error report file with more information is saved as:</span><br><span class="line"># /usr/local/elasticsearch-5.6.8/bin/hs_err_pid1638.log</span><br></pre></td></tr></table></figure>
 <p>报错原因：内存不足，导致启动失败，调整elasticsearch启动内存即可。</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim config/jvm.options</span><br><span class="line">-Xms2g 调整成 512m</span><br><span class="line">-Xmx2g 调整成 512m</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ERROR: [2] bootstrap checks failed</span><br><span class="line">[1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65536]</span><br><span class="line">[2]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]</span><br></pre></td></tr></table></figure>
+<p>报错原因：linux内核参数默认设置过小，调整内核参数大于最低值即可。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 修改操作系统文件描述符限制</span><br><span class="line">vim /etc/security/limits.conf</span><br><span class="line">*     soft     nofile    65536</span><br><span class="line">*     hard     nofile    65536</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 添加下面配置</span><br><span class="line">vim /etc/sysctl.conf</span><br><span class="line">vm.max_map_count=655360</span><br><span class="line"># 执行命令使其永久生效</span><br><span class="line">sysctl -p</span><br></pre></td></tr></table></figure>
 <blockquote>
 <h3 id="验证安装"><a href="#验证安装" class="headerlink" title="验证安装"></a>验证安装</h3></blockquote>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[lipanpan@localhost bin]$ curl &apos;http://localhost:9200/?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;XCSxTQC&quot;,</span><br><span class="line">  &quot;cluster_name&quot; : &quot;elasticsearch&quot;,</span><br><span class="line">  &quot;cluster_uuid&quot; : &quot;AnOqZ_d4RpOa7MuyL4hiog&quot;,</span><br><span class="line">  &quot;version&quot; : &#123;</span><br><span class="line">    &quot;number&quot; : &quot;5.6.8&quot;,</span><br><span class="line">    &quot;build_hash&quot; : &quot;688ecce&quot;,</span><br><span class="line">    &quot;build_date&quot; : &quot;2018-02-16T16:46:30.010Z&quot;,</span><br><span class="line">    &quot;build_snapshot&quot; : false,</span><br><span class="line">    &quot;lucene_version&quot; : &quot;6.6.1&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;tagline&quot; : &quot;You Know, for Search&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -393,16 +397,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/08/Http authorization 实现认证登录/" rel="next" title="Http Authorization 实现认证登录">
-                <i class="fa fa-chevron-left"></i> Http Authorization 实现认证登录
+              <a href="/2018/04/03/elasticsearch 基本概念/" rel="next" title="elasticsearch 基本概念">
+                <i class="fa fa-chevron-left"></i> elasticsearch 基本概念
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/04/03/elasticsearch 基本概念/" rel="prev" title="elasticsearch 基本概念">
-                elasticsearch 基本概念 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/04/03/linux 用户分组权限/" rel="prev" title="linux 用户分组权限">
+                linux 用户分组权限 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -471,7 +475,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">124</span>
+              <span class="site-state-item-count">125</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

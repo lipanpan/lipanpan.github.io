@@ -276,6 +276,121 @@
             
               
                 
+                <a class="post-title-link" href="/2017/01/02/haproxy 实现七层动静分离和负载均衡/" itemprop="url">
+                  haproxy 实现七层动静分离和负载均衡
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-02T14:12:36+08:00" content="2017-01-02">
+              2017-01-02
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/haproxy/" itemprop="url" rel="index">
+                    <span itemprop="name">haproxy</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一般web网站请求大致分为两类: ajax动态请求和静态资源请求(css, js, 图片资源及视频资源等)。而nginx是处理静态资源的一大神器，开启sendfile机制，使用linux内核提供的零拷贝技术，减少资源文件在用户态和内核态之间的内存拷贝和上下文切换带来的性能开销，并支持反向代理，可以很方便的控制静态资源文件缓存有效期等。同时利用tomcat应用服务器的特性，处理动态请求，比如ajax请求，http接口请求等，然后在流量接入层利用haproxy做动静分离和负载均衡，将动态请求分流到tomcat应用服务器集群，将静态资源请求分流到nginx静态资源服务器集群。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/01/02/haproxy 实现七层动静分离和负载均衡/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/12/30/go 开发环境安装及配置/" itemprop="url">
                   go 开发环境安装及配置
                 </a>
@@ -736,121 +851,6 @@
             
               
                 
-                <a class="post-title-link" href="/2016/12/03/如何实现form表单提交和ajax异步操作相似效果/" itemprop="url">
-                  如何实现form表单提交和ajax异步操作相似效果
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-12-03T22:43:56+08:00" content="2016-12-03">
-              2016-12-03
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/web开发/" itemprop="url" rel="index">
-                    <span itemprop="name">web开发</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>下面介绍如何使用form表单提交数据后，页面不跳转，实现与ajax异步操作相似的效果。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/12/03/如何实现form表单提交和ajax异步操作相似效果/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
                 <a class="post-title-link" href="/2016/12/03/sessionStorage和localStorage的应用/" itemprop="url">
                   sessionStorage和localStorage的应用
                 </a>
@@ -966,8 +966,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/12/03/tomcat远程调试技术/" itemprop="url">
-                  tomcat远程调试技术
+                <a class="post-title-link" href="/2016/12/03/如何实现form表单提交和ajax异步操作相似效果/" itemprop="url">
+                  如何实现form表单提交和ajax异步操作相似效果
                 </a>
               
             
@@ -980,7 +980,7 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-12-03T19:43:56+08:00" content="2016-12-03">
+            <time itemprop="dateCreated" datetime="2016-12-03T22:43:56+08:00" content="2016-12-03">
               2016-12-03
             </time>
           </span>
@@ -1028,124 +1028,9 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>有些情况下，测试环境运行的程序出现问题，通过日志很难分析出问题时，我们可以启用测试环境的远程调试功能，进行远程调试定位bug。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>下面介绍如何使用form表单提交数据后，页面不跳转，实现与ajax异步操作相似的效果。<br>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/12/03/tomcat远程调试技术/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/12/03/jquery两种绑定点击事件的click与live区别/" itemprop="url">
-                  jquery两种绑定点击事件的click与live区别
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-12-03T19:43:56+08:00" content="2016-12-03">
-              2016-12-03
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/web开发/" itemprop="url" rel="index">
-                    <span itemprop="name">web开发</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在jquery中绑定点击事件的方法有click(function)以及live(‘click’,function)等，下面说明一下这两种绑定点击事件的区别与联系，以及应用场景。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/12/03/jquery两种绑定点击事件的click与live区别/#more" rel="contents">
+            <a class="btn" href="/2016/12/03/如何实现form表单提交和ajax异步操作相似效果/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1261,6 +1146,121 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本篇主要介绍linux常用命令的使用<br>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/12/03/linux 常用命令使用(一)/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/12/03/jquery两种绑定点击事件的click与live区别/" itemprop="url">
+                  jquery两种绑定点击事件的click与live区别
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-03T19:43:56+08:00" content="2016-12-03">
+              2016-12-03
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/web开发/" itemprop="url" rel="index">
+                    <span itemprop="name">web开发</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在jquery中绑定点击事件的方法有click(function)以及live(‘click’,function)等，下面说明一下这两种绑定点击事件的区别与联系，以及应用场景。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/12/03/jquery两种绑定点击事件的click与live区别/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1450,7 +1450,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">124</span>
+              <span class="site-state-item-count">125</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
