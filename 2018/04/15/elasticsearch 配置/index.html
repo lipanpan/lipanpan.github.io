@@ -84,19 +84,17 @@
 
 
 
-<meta name="description" content="前言dos2unix是将Windows格式文件转换为Unix、Linux格式的实用命令。Windows格式文件的换行符为\r\n ,而Unix&amp;amp;Linux文件的换行符为\n。 dos2unix命令其实就是将文件中的\r\n 转换为\n。而unix2dos则是和dos2unix互为孪生的一个命令，它是将Linux&amp;amp;Unix格式文件转换为Windows格式文件的命令。">
+<meta name="description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux dos2unix命令安装及使用">
-<meta property="og:url" content="http://www.pandan.xyz/2017/05/13/linux dos2unix命令安装及使用/index.html">
+<meta property="og:title" content="elasticsearch 配置">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/15/elasticsearch 配置/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言dos2unix是将Windows格式文件转换为Unix、Linux格式的实用命令。Windows格式文件的换行符为\r\n ,而Unix&amp;amp;Linux文件的换行符为\n。 dos2unix命令其实就是将文件中的\r\n 转换为\n。而unix2dos则是和dos2unix互为孪生的一个命令，它是将Linux&amp;amp;Unix格式文件转换为Windows格式文件的命令。">
+<meta property="og:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://www.pandan.xyz/images/201705141422.png">
-<meta property="og:updated_time" content="2017-05-14T14:39:26.000Z">
+<meta property="og:updated_time" content="2018-04-16T06:13:18.206Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="linux dos2unix命令安装及使用">
-<meta name="twitter:description" content="前言dos2unix是将Windows格式文件转换为Unix、Linux格式的实用命令。Windows格式文件的换行符为\r\n ,而Unix&amp;amp;Linux文件的换行符为\n。 dos2unix命令其实就是将文件中的\r\n 转换为\n。而unix2dos则是和dos2unix互为孪生的一个命令，它是将Linux&amp;amp;Unix格式文件转换为Windows格式文件的命令。">
-<meta name="twitter:image" content="http://www.pandan.xyz/images/201705141422.png">
+<meta name="twitter:title" content="elasticsearch 配置">
+<meta name="twitter:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
 
 
 
@@ -117,9 +115,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2017/05/13/linux dos2unix命令安装及使用/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/15/elasticsearch 配置/"/>
 
-  <title> linux dos2unix命令安装及使用 | lpp`s blog </title>
+  <title> elasticsearch 配置 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -279,7 +277,7 @@
             
             
               
-                linux dos2unix命令安装及使用
+                elasticsearch 配置
               
             
           </h1>
@@ -291,8 +289,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-05-13T13:14:36+08:00" content="2017-05-13">
-              2017-05-13
+            <time itemprop="dateCreated" datetime="2018-04-15T21:27:56+08:00" content="2018-04-15">
+              2018-04-15
             </time>
           </span>
 
@@ -305,8 +303,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
                   </a>
                 </span>
 
@@ -338,12 +336,39 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>dos2unix是将Windows格式文件转换为Unix、Linux格式的实用命令。Windows格式文件的换行符为\r\n ,而Unix&amp;Linux文件的换行符为\n。 dos2unix命令其实就是将文件中的\r\n 转换为\n。<br>而unix2dos则是和dos2unix互为孪生的一个命令，它是将Linux&amp;Unix格式文件转换为Windows格式文件的命令。<br><a id="more"></a></p>
-<h3 id="问题现状"><a href="#问题现状" class="headerlink" title="问题现状"></a>问题现状</h3><p>在linux环境下运行window格式的.sh脚本时，报如下错误：<br><img src="/images/201705141422.png" alt="image"></p>
-<h3 id="命令安装"><a href="#命令安装" class="headerlink" title="命令安装"></a>命令安装</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#安装dos2unix命令</span><br><span class="line">yum install dos2unix</span><br><span class="line"></span><br><span class="line">#安装unix2dos命令</span><br><span class="line">yum install unix2dos</span><br><span class="line"></span><br><span class="line">#查看安装命令版本</span><br><span class="line">dos2unix -V</span><br></pre></td></tr></table></figure>
-<h3 id="命令使用"><a href="#命令使用" class="headerlink" title="命令使用"></a>命令使用</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#转换单个文件</span><br><span class="line">dos2unix fileName</span><br><span class="line"></span><br><span class="line">#转换多个文件</span><br><span class="line">dos2unix fileName1 fileName2 fileName3 ...</span><br><span class="line"></span><br><span class="line">#模糊匹配转换文件</span><br><span class="line">dos2unix *.sh</span><br></pre></td></tr></table></figure>
-<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
-<li><a href="https://yq.aliyun.com/articles/34906" target="_blank" rel="noopener">https://yq.aliyun.com/articles/34906</a></li>
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="位置"><a href="#位置" class="headerlink" title="位置"></a>位置</h3></blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">elasticsearch-5.6.8/config/elasticsearch.yml</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>常规配置</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># es集群的名称</span><br><span class="line">cluster.name：lipanpan</span><br><span class="line"></span><br><span class="line"># 当前节点的名称</span><br><span class="line">node.name：elasticsearch_005_data</span><br><span class="line"></span><br><span class="line"># 数据存放目录</span><br><span class="line">path.data：/path/to/data1,/path/to/data2</span><br><span class="line">备注：数据目录支持配置多个，以逗号分隔；最好将数据，日志，插件目录放置到安装目录之外的路径下，防止重新安装Elasticsearch的时候不小心把安装目录覆盖。</span><br><span class="line"></span><br><span class="line"># 日志存放目录</span><br><span class="line">path.logs: /path/to/logs</span><br><span class="line"></span><br><span class="line"># 插件存放目录</span><br><span class="line">path.plugins: /path/to/plugins</span><br><span class="line"></span><br><span class="line"># 是否master候选节点</span><br><span class="line">node.master: true</span><br><span class="line"></span><br><span class="line"># 是否数据存储节点</span><br><span class="line">node.data：false</span><br><span class="line"></span><br><span class="line"># 绑定ip</span><br><span class="line">network.host: 192.168.1.111</span><br><span class="line">注：设置es服务支持访问的绑定IP</span><br><span class="line"></span><br><span class="line"># 是否启用restful访问</span><br><span class="line">http.enabled：true</span><br><span class="line"></span><br><span class="line"># restful访问端口</span><br><span class="line">http.port：9200</span><br><span class="line"></span><br><span class="line"># restful跨域支持</span><br><span class="line">http.cors.enabled：true</span><br><span class="line">http.cors.allowed.origin: &quot;*&quot;</span><br><span class="line"></span><br><span class="line"># 节点间通信端口</span><br><span class="line">transport.tcp.port：9300</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>集群发现配置</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 最少的的主节点数</span><br><span class="line">discovery.zen.minimum_master_nodes：2</span><br><span class="line">注：法定个数就是 ( master 候选节点个数 / 2) + 1，少于此值则无法完成选举。</span><br><span class="line"></span><br><span class="line"># 集群单播列表</span><br><span class="line">discovery.zen.ping.unicast.hosts：[&quot;192.168.1.111&quot;,&quot;192.168.1.112&quot;]</span><br><span class="line">注：可指定端口，默认是9300；示例：[&quot;192.168.1.111:9300&quot;]</span><br><span class="line"></span><br><span class="line"># 是否启用多播发现节点</span><br><span class="line">discovery.zen.ping.multicast.enabled：false</span><br><span class="line">注：在同一网段的情况下，可以使用多播发现集群节点；集群名称相同则自动加入该集群，所以使用多播发现节点时，强烈建议使用特殊的集群名称，禁止使用默认的名称elasticsearch，防止新安装的节点自动加入集群，影响数据的分片等；</span><br><span class="line"></span><br><span class="line"># 选举通信超时时间</span><br><span class="line">discovery.zen.ping_timeout：5s</span><br><span class="line">注：默认3秒，提高一点以应对网络不好的时候，防止脑裂。</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>集群恢复配置</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 设置集群中总节点数</span><br><span class="line">gateway.expected_nodes: 10</span><br><span class="line"></span><br><span class="line"># 等待集群至少存在8个节点时，启动分片数据恢复</span><br><span class="line">gateway.recover_after_nodes: 8</span><br><span class="line"></span><br><span class="line"># 等待5分钟后，启动分片数据恢复</span><br><span class="line">gateway.recover_after_time: 5m</span><br></pre></td></tr></table></figure>
+<p>注： 哪个条件先达到，则触发数据恢复。</p>
+<blockquote>
+<h3 id="脑裂"><a href="#脑裂" class="headerlink" title="脑裂"></a>脑裂</h3></blockquote>
+<p>脑裂：集群中同时存在两个master节点的现象；</p>
+<p>危害：如果你的集群发生了脑裂，那么你的集群就会处在丢失数据的危险中，因为主节点被认为是这个集群的最高统治者，它决定了什么时候新的索引可以创建，分片是如何移动的等等。如果你有两个masters节点， 你的数据完整性将得不到保证，因为你有两个节点认为他们有集群的控制权。</p>
+<p>如果你有两个节点，你遇到难题了。法定数当然是 2 ，但是这意味着如果有一个节点挂掉，你整个集群就不可用了（因为无法进行master选举了）。 设置成1可以保证集群的功能，但是就无法保证集群脑裂了（因为可能存在集群节点间通信问题，导致2个节点各自选举为master节点），像这样的情况，最好至少保证有3个节点。</p>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/important-configuration-changes.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/important-configuration-changes.html</a></li>
+<li><a href="https://www.ibm.com/support/knowledgecenter/zh/SSFPJS_8.5.6/com.ibm.wbpm.main.doc/topics/rfps_esearch_configoptions.html" target="_blank" rel="noopener">https://www.ibm.com/support/knowledgecenter/zh/SSFPJS_8.5.6/com.ibm.wbpm.main.doc/topics/rfps_esearch_configoptions.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html</a></li>
 </ol>
 
       
@@ -370,17 +395,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/04/23/redis 数据类型之字符串/" rel="next" title="redis 数据类型之字符串">
-                <i class="fa fa-chevron-left"></i> redis 数据类型之字符串
+              <a href="/2018/04/09/elasticsearch 内网IP拒绝访问/" rel="next" title="elasticsearch 内网IP拒绝访问">
+                <i class="fa fa-chevron-left"></i> elasticsearch 内网IP拒绝访问
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/07/23/nginx 安装配置/" rel="prev" title="nginx 安装配置">
-                nginx 安装配置 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -528,7 +549,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题现状"><span class="nav-number">2.</span> <span class="nav-text">问题现状</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令安装"><span class="nav-number">3.</span> <span class="nav-text">命令安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令使用"><span class="nav-number">4.</span> <span class="nav-text">命令使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#位置"><span class="nav-number">2.</span> <span class="nav-text">位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#脑裂"><span class="nav-number">4.</span> <span class="nav-text">脑裂</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>
