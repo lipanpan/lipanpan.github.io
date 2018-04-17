@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="lpp`s blog">
 <meta property="og:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-16T06:13:18.206Z">
+<meta property="og:updated_time" content="2018-04-17T04:05:11.194Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="elasticsearch 配置">
 <meta name="twitter:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
@@ -347,6 +347,10 @@
 </blockquote>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># es集群的名称</span><br><span class="line">cluster.name：lipanpan</span><br><span class="line"></span><br><span class="line"># 当前节点的名称</span><br><span class="line">node.name：elasticsearch_005_data</span><br><span class="line"></span><br><span class="line"># 数据存放目录</span><br><span class="line">path.data：/path/to/data1,/path/to/data2</span><br><span class="line">备注：数据目录支持配置多个，以逗号分隔；最好将数据，日志，插件目录放置到安装目录之外的路径下，防止重新安装Elasticsearch的时候不小心把安装目录覆盖。</span><br><span class="line"></span><br><span class="line"># 日志存放目录</span><br><span class="line">path.logs: /path/to/logs</span><br><span class="line"></span><br><span class="line"># 插件存放目录</span><br><span class="line">path.plugins: /path/to/plugins</span><br><span class="line"></span><br><span class="line"># 是否master候选节点</span><br><span class="line">node.master: true</span><br><span class="line"></span><br><span class="line"># 是否数据存储节点</span><br><span class="line">node.data：false</span><br><span class="line"></span><br><span class="line"># 绑定ip</span><br><span class="line">network.host: 192.168.1.111</span><br><span class="line">注：设置es服务支持访问的绑定IP</span><br><span class="line"></span><br><span class="line"># 是否启用restful访问</span><br><span class="line">http.enabled：true</span><br><span class="line"></span><br><span class="line"># restful访问端口</span><br><span class="line">http.port：9200</span><br><span class="line"></span><br><span class="line"># restful跨域支持</span><br><span class="line">http.cors.enabled：true</span><br><span class="line">http.cors.allowed.origin: &quot;*&quot;</span><br><span class="line"></span><br><span class="line"># 节点间通信端口</span><br><span class="line">transport.tcp.port：9300</span><br></pre></td></tr></table></figure>
 <blockquote>
+<p>索引配置</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 索引的主分片数</span><br><span class="line">index.number_of_shards：5</span><br><span class="line">注：每个索引的主分片数，默认值是 5 。这个配置在索引创建后不能修改。</span><br><span class="line"></span><br><span class="line"># 每个主分片的副本数</span><br><span class="line">index.number_of_replicas：1</span><br><span class="line">注：每个主分片的副本数，默认值是1。对于活动的索引库，这个配置可以随时修改。</span><br><span class="line"></span><br><span class="line"># 索引刷新间隔时间</span><br><span class="line">index.refresh_interval：1s</span><br><span class="line">注：默认值1s，意味着数据写入1秒后就可以被检索到。</span><br></pre></td></tr></table></figure>
+<blockquote>
 <p>集群发现配置</p>
 </blockquote>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 最少的的主节点数</span><br><span class="line">discovery.zen.minimum_master_nodes：2</span><br><span class="line">注：法定个数就是 ( master 候选节点个数 / 2) + 1，少于此值则无法完成选举。</span><br><span class="line"></span><br><span class="line"># 集群单播列表</span><br><span class="line">discovery.zen.ping.unicast.hosts：[&quot;192.168.1.111&quot;,&quot;192.168.1.112&quot;]</span><br><span class="line">注：可指定端口，默认是9300；示例：[&quot;192.168.1.111:9300&quot;]</span><br><span class="line"></span><br><span class="line"># 是否启用多播发现节点</span><br><span class="line">discovery.zen.ping.multicast.enabled：false</span><br><span class="line">注：在同一网段的情况下，可以使用多播发现集群节点；集群名称相同则自动加入该集群，所以使用多播发现节点时，强烈建议使用特殊的集群名称，禁止使用默认的名称elasticsearch，防止新安装的节点自动加入集群，影响数据的分片等；</span><br><span class="line"></span><br><span class="line"># 选举通信超时时间</span><br><span class="line">discovery.zen.ping_timeout：5s</span><br><span class="line">注：默认3秒，提高一点以应对网络不好的时候，防止脑裂。</span><br></pre></td></tr></table></figure>
@@ -369,6 +373,7 @@
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html</a></li>
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html</a></li>
 <li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/index-modules.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/5.6/index-modules.html</a></li>
 </ol>
 
       
