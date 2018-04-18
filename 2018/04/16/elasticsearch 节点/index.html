@@ -84,20 +84,17 @@
 
 
 
-<meta name="description" content="前言有些情况下，测试环境运行的程序出现问题，通过日志很难分析出问题时，我们可以启用测试环境的远程调试功能，进行远程调试定位bug。">
+<meta name="description" content="前言 在elasticsearch集群中存在哪些类型的节点，它们分别承担不同的功能职责。Master-eligible node，Data node，Client node，Ingest node，Tribe node，还有基于X-Pack的机器学习节点等等。本篇仅介绍常用的集群节点及其功能职责。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="tomcat远程调试技术">
-<meta property="og:url" content="http://www.pandan.xyz/2016/12/03/tomcat远程调试技术/index.html">
+<meta property="og:title" content="elasticsearch 节点">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/16/elasticsearch 节点/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言有些情况下，测试环境运行的程序出现问题，通过日志很难分析出问题时，我们可以启用测试环境的远程调试功能，进行远程调试定位bug。">
+<meta property="og:description" content="前言 在elasticsearch集群中存在哪些类型的节点，它们分别承担不同的功能职责。Master-eligible node，Data node，Client node，Ingest node，Tribe node，还有基于X-Pack的机器学习节点等等。本篇仅介绍常用的集群节点及其功能职责。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://www.pandan.xyz/images/201612032206.png">
-<meta property="og:image" content="http://www.pandan.xyz/images/201612032215.png">
-<meta property="og:updated_time" content="2017-03-16T13:54:30.000Z">
+<meta property="og:updated_time" content="2018-04-18T03:42:33.870Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="tomcat远程调试技术">
-<meta name="twitter:description" content="前言有些情况下，测试环境运行的程序出现问题，通过日志很难分析出问题时，我们可以启用测试环境的远程调试功能，进行远程调试定位bug。">
-<meta name="twitter:image" content="http://www.pandan.xyz/images/201612032206.png">
+<meta name="twitter:title" content="elasticsearch 节点">
+<meta name="twitter:description" content="前言 在elasticsearch集群中存在哪些类型的节点，它们分别承担不同的功能职责。Master-eligible node，Data node，Client node，Ingest node，Tribe node，还有基于X-Pack的机器学习节点等等。本篇仅介绍常用的集群节点及其功能职责。">
 
 
 
@@ -118,9 +115,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2016/12/03/tomcat远程调试技术/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/16/elasticsearch 节点/"/>
 
-  <title> tomcat远程调试技术 | lpp`s blog </title>
+  <title> elasticsearch 节点 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -280,7 +277,7 @@
             
             
               
-                tomcat远程调试技术
+                elasticsearch 节点
               
             
           </h1>
@@ -292,8 +289,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-12-03T19:43:56+08:00" content="2016-12-03">
-              2016-12-03
+            <time itemprop="dateCreated" datetime="2018-04-16T20:27:58+08:00" content="2018-04-16">
+              2018-04-16
             </time>
           </span>
 
@@ -306,8 +303,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/web开发/" itemprop="url" rel="index">
-                    <span itemprop="name">web开发</span>
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
                   </a>
                 </span>
 
@@ -339,19 +336,50 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>有些情况下，测试环境运行的程序出现问题，通过日志很难分析出问题时，我们可以启用测试环境的远程调试功能，进行远程调试定位bug。<br><a id="more"></a></p>
-<h3 id="具体操作"><a href="#具体操作" class="headerlink" title="具体操作"></a>具体操作</h3><ol>
-<li><p>修改tomcat远程调试端口（例如：8009）</p>
-<p>vim catalina.sh</p>
-<p><img src="/images/201612032206.png" alt="image"></p>
-</li>
-<li><p>将tomcat以调试模式启动</p>
-<p>./catalina.sh jpda start </p>
-</li>
-<li><p>本地eclipse debug指定的端口</p>
-<p>选中要调试的类右键 -&gt; Debug As -&gt; Debug Configurations -&gt; Remote Java Application</p>
-<p><img src="/images/201612032215.png" alt="image"></p>
-</li>
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>在elasticsearch集群中存在哪些类型的节点，它们分别承担不同的功能职责。Master-eligible node，Data node，Client node，Ingest node，Tribe node，还有基于X-Pack的机器学习节点等等。本篇仅介绍常用的集群节点及其功能职责。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="节点类型"><a href="#节点类型" class="headerlink" title="节点类型"></a>节点类型</h3><p>Master-eligible node</p>
+</blockquote>
+<p>主节点负责轻量级集群范围的操作，例如创建或删除索引，跟踪哪些节点是集群的一部分，以及决定将哪些碎片分配给哪些节点。集群健康有一个稳定的主节点是很重要的，Master-eligible node（有资格的主节点）可参与master选举。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">node.master: true</span><br><span class="line">node.data: false</span><br><span class="line">node.ingest: false</span><br><span class="line">search.remote.connect: false</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Data node</p>
+</blockquote>
+<p>数据节点保存数据并执行数据相关的操作，如CRUD，搜索和聚合。这些操作是I / O，内存和CPU密集型的。监视这些资源并在过载时添加更多数据节点。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">node.master: false</span><br><span class="line">node.data: true</span><br><span class="line">node.ingest: false</span><br><span class="line">search.remote.connect: false</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Client node</p>
+</blockquote>
+<p>其实任何一个节点都是协调节点，当把以下属性都设置为false时，该节点则只负责协调客户端请求的负载均衡，分发聚合。不再承担其他类似索引创建及删除，数据存储等功能职责，单一职责原则。但是，在集群中过多的添加Client node会增加整个集群的负担，因为集群选举master是需要得到集群中所有节点返回确认消息的，其实完全可以使用Data node代替Client node，因为Data node也是协调节点并且还能提高整个集群的存储能力。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">node.master: false</span><br><span class="line">node.data: false</span><br><span class="line">node.ingest: false</span><br><span class="line">search.remote.connect: false</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Ingest node</p>
+</blockquote>
+<p>预处理节点是elasticsearch 5.x版本出来的特性，支持在文档数据入库前，对数据做管道预处理。比如，向文档数据中添加字段或者重命名字段等操作，一个管道pipeline中支持添加多个处理器processor，按顺序流处理。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">node.master: false</span><br><span class="line">node.data: false</span><br><span class="line">node.ingest: true</span><br><span class="line">search.remote.connect: false</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Tribe node</p>
+</blockquote>
+<p>  部落节点，通过tribe.*配置，是一种特殊类型的协调节点，可以连接到多个集群并在所有连接集群中执行搜索和其他操作。</p>
+<blockquote>
+<h3 id="默认配置"><a href="#默认配置" class="headerlink" title="默认配置"></a>默认配置</h3></blockquote>
+<p>在以上节点的四个配置中，默认情况下都是true，也就是说在不手动调整配置的情况下，任何一个es节点，既可以参与master选举，也可以存储数据，支持管道预处理等操作。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">node.master: true</span><br><span class="line">node.data: true</span><br><span class="line">node.ingest: true</span><br><span class="line">search.remote.connect: true</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="通信方式"><a href="#通信方式" class="headerlink" title="通信方式"></a>通信方式</h3></blockquote>
+<ul>
+<li>HTTP REST</li>
+<li>Transport (Java TransportClient)</li>
+</ul>
+<p>默认情况下，集群中的每个节点都可以处理HTTP REST 和 Transport请求。Transport 专门用于处理集群节点和Java TransportClient之间的通信；而HTTP REST则被用于外部Rest-Client通信。</p>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html</a></li>
+<li><a href="https://elasticsearch.cn/book/elasticsearch_definitive_guide_2.x/_transport_client_versus_node_client.html" target="_blank" rel="noopener">https://elasticsearch.cn/book/elasticsearch_definitive_guide_2.x/_transport_client_versus_node_client.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/master/ingest.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/master/ingest.html</a></li>
+<li><a href="https://www.felayman.com/articles/2017/12/09/1512830107116.html" target="_blank" rel="noopener">https://www.felayman.com/articles/2017/12/09/1512830107116.html</a></li>
 </ol>
 
       
@@ -378,17 +406,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/12/03/jquery两种绑定点击事件的click与live区别/" rel="next" title="jquery两种绑定点击事件的click与live区别">
-                <i class="fa fa-chevron-left"></i> jquery两种绑定点击事件的click与live区别
+              <a href="/2018/04/15/elasticsearch 配置/" rel="next" title="elasticsearch 配置">
+                <i class="fa fa-chevron-left"></i> elasticsearch 配置
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/12/03/linux 常用命令使用(一)/" rel="prev" title="linux 常用命令使用(一)">
-                linux 常用命令使用(一) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -536,7 +560,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体操作"><span class="nav-number">2.</span> <span class="nav-text">具体操作</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#节点类型"><span class="nav-number">2.</span> <span class="nav-text">节点类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#默认配置"><span class="nav-number">3.</span> <span class="nav-text">默认配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通信方式"><span class="nav-number">4.</span> <span class="nav-text">通信方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>
