@@ -84,19 +84,20 @@
 
 
 
-<meta name="description" content="前言 在springboot项目中，使用alibaba druid数据库连接池，通过Servlet3.0提供的注解启用数据监控配置；在Servlet3.0中提供了@WebServlet, @WebFilter, @WebListener等注解来替代web.xml配置文件，下面以druid监控配置为例，说明如何在springboot项目中使用Servlet3.0提供的新注解。">
+<meta name="description" content="前言 elasticsearch 是一个集分布式存储 + 分布式搜索的引擎，分布式搜索是基于Lucene实现的；其存储天然支持数据的路由分片水平扩展的方式，满足海量数据的水平弹性伸缩，同时支持数据多副本的形式，数据冗余，副本类似于mysql中的从库，对读请求起到负载均衡的作用。从而满足大型互联网架构中的高可用，弹性伸缩，水平扩容以及高并发等特性。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="自动扫描servlet3.0注解配置">
-<meta property="og:url" content="http://www.pandan.xyz/2017/08/29/自动扫描servlet3.0注解配置/index.html">
+<meta property="og:title" content="elasticsearch 路由分片">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/16/elasticsearch 路由分片/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言 在springboot项目中，使用alibaba druid数据库连接池，通过Servlet3.0提供的注解启用数据监控配置；在Servlet3.0中提供了@WebServlet, @WebFilter, @WebListener等注解来替代web.xml配置文件，下面以druid监控配置为例，说明如何在springboot项目中使用Servlet3.0提供的新注解。">
+<meta property="og:description" content="前言 elasticsearch 是一个集分布式存储 + 分布式搜索的引擎，分布式搜索是基于Lucene实现的；其存储天然支持数据的路由分片水平扩展的方式，满足海量数据的水平弹性伸缩，同时支持数据多副本的形式，数据冗余，副本类似于mysql中的从库，对读请求起到负载均衡的作用。从而满足大型互联网架构中的高可用，弹性伸缩，水平扩容以及高并发等特性。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://www.pandan.xyz/images/201708292211.png">
-<meta property="og:updated_time" content="2017-09-03T03:39:40.000Z">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804182142.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804182144.png">
+<meta property="og:updated_time" content="2018-04-18T14:24:27.251Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="自动扫描servlet3.0注解配置">
-<meta name="twitter:description" content="前言 在springboot项目中，使用alibaba druid数据库连接池，通过Servlet3.0提供的注解启用数据监控配置；在Servlet3.0中提供了@WebServlet, @WebFilter, @WebListener等注解来替代web.xml配置文件，下面以druid监控配置为例，说明如何在springboot项目中使用Servlet3.0提供的新注解。">
-<meta name="twitter:image" content="http://www.pandan.xyz/images/201708292211.png">
+<meta name="twitter:title" content="elasticsearch 路由分片">
+<meta name="twitter:description" content="前言 elasticsearch 是一个集分布式存储 + 分布式搜索的引擎，分布式搜索是基于Lucene实现的；其存储天然支持数据的路由分片水平扩展的方式，满足海量数据的水平弹性伸缩，同时支持数据多副本的形式，数据冗余，副本类似于mysql中的从库，对读请求起到负载均衡的作用。从而满足大型互联网架构中的高可用，弹性伸缩，水平扩容以及高并发等特性。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201804182142.png">
 
 
 
@@ -117,9 +118,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2017/08/29/自动扫描servlet3.0注解配置/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/16/elasticsearch 路由分片/"/>
 
-  <title> 自动扫描servlet3.0注解配置 | lpp`s blog </title>
+  <title> elasticsearch 路由分片 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -279,7 +280,7 @@
             
             
               
-                自动扫描servlet3.0注解配置
+                elasticsearch 路由分片
               
             
           </h1>
@@ -291,8 +292,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-08-29T21:27:56+08:00" content="2017-08-29">
-              2017-08-29
+            <time itemprop="dateCreated" datetime="2018-04-16T22:27:58+08:00" content="2018-04-16">
+              2018-04-16
             </time>
           </span>
 
@@ -305,8 +306,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/spring-boot系列/" itemprop="url" rel="index">
-                    <span itemprop="name">spring boot系列</span>
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
                   </a>
                 </span>
 
@@ -340,27 +341,46 @@
       
         <blockquote>
 <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
-<p>在springboot项目中，使用alibaba druid数据库连接池，通过Servlet3.0提供的注解启用数据监控配置；在Servlet3.0中提供了@WebServlet, @WebFilter, @WebListener等注解来替代web.xml配置文件，下面以druid监控配置为例，说明如何在springboot项目中使用Servlet3.0提供的新注解。<br><a id="more"></a></p>
+<p>elasticsearch 是一个集分布式存储 + 分布式搜索的引擎，分布式搜索是基于Lucene实现的；其存储天然支持数据的路由分片水平扩展的方式，满足海量数据的水平弹性伸缩，同时支持数据多副本的形式，数据冗余，副本类似于mysql中的从库，对读请求起到负载均衡的作用。从而满足大型互联网架构中的高可用，弹性伸缩，水平扩容以及高并发等特性。</p>
+<a id="more"></a>
 <blockquote>
-<h3 id="pom-xml配置"><a href="#pom-xml配置" class="headerlink" title="pom.xml配置"></a>pom.xml配置</h3></blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;dependencies&gt;</span><br><span class="line">     &lt;!-- 核心模块,集成自动配置支持，日志和YAML等核心功能 --&gt;</span><br><span class="line">     &lt;dependency&gt;</span><br><span class="line">         &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">         &lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">     &lt;/dependency&gt;</span><br><span class="line">     </span><br><span class="line">     &lt;!-- web微服务开发模块 ,集成了web容器功能 --&gt;</span><br><span class="line">     &lt;dependency&gt;</span><br><span class="line">         &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">         &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">     &lt;/dependency&gt;</span><br><span class="line">     </span><br><span class="line">     &lt;!-- JPA 数据库操作配置 --&gt;</span><br><span class="line">       &lt;dependency&gt;</span><br><span class="line">           &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">           &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;</span><br><span class="line">       &lt;/dependency&gt;</span><br><span class="line">       &lt;dependency&gt;</span><br><span class="line">           &lt;groupId&gt;mysql&lt;/groupId&gt;</span><br><span class="line">           &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;</span><br><span class="line">     &lt;/dependency&gt;  </span><br><span class="line">     </span><br><span class="line">     &lt;!-- 数据库连接池 --&gt;</span><br><span class="line">     &lt;dependency&gt;</span><br><span class="line">         &lt;groupId&gt;com.alibaba&lt;/groupId&gt;</span><br><span class="line">         &lt;artifactId&gt;druid&lt;/artifactId&gt;</span><br><span class="line">         &lt;version&gt;1.0.18&lt;/version&gt;</span><br><span class="line">     &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="分片规则"><a href="#分片规则" class="headerlink" title="分片规则"></a>分片规则</h3></blockquote>
+<p>当索引一个文档的时候，文档会被存储到一个主分片中。 Elasticsearch 如何知道一个文档应该存放到哪个分片中呢？当我们创建文档时，它如何决定这个文档应当被存储在分片 1 还是分片 2 中呢？</p>
+<p>首先这肯定不会是随机的，否则将来要获取文档的时候我们就不知道从何处寻找了。实际上，这个过程是根据下面这个公式决定的：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">shard = hash(routing) % number_of_primary_shards</span><br></pre></td></tr></table></figure>
+<p>routing 是一个可变值，默认是文档的 _id ，也可以设置成一个自定义的值。 routing 通过 hash 函数生成一个数字，然后这个数字再除以 number_of_primary_shards （主分片的数量）后得到 余数 。这个分布在 0 到 number_of_primary_shards-1 之间的余数，就是我们所寻求的文档所在分片的位置。</p>
+<p>这就解释了为什么我们要在创建索引的时候就确定好主分片的数量 并且永远不会改变这个数量：因为如果数量变化了，那么所有之前路由的值都会无效，文档也再也找不到了。</p>
+<p>所有的文档 API（ get 、 index 、 delete 、 bulk 、 update 以及 mget ）都接受一个叫做 routing 的路由参数 ，通过这个参数我们可以自定义文档到分片的映射。一个自定义的路由参数可以用来确保所有相关的文档——例如所有属于同一个用户的文档——都被存储到同一个分片中。</p>
 <blockquote>
-<h3 id="添加Servlet"><a href="#添加Servlet" class="headerlink" title="添加Servlet"></a>添加Servlet</h3></blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebServlet</span>(name = <span class="string">"DruidStatViewServlet"</span>, urlPatterns = <span class="string">"/druid/*"</span>, initParams = &#123;</span><br><span class="line">        <span class="meta">@WebInitParam</span>(name = <span class="string">"allow"</span>, value = <span class="string">"127.0.0.1,192.168.0.1"</span>),<span class="comment">// IP白名单 (没有配置或者为空，则允许所有访问)</span></span><br><span class="line">        <span class="meta">@WebInitParam</span>(name = <span class="string">"deny"</span>, value = <span class="string">"192.168.0.103"</span>),<span class="comment">// IP黑名单 (存在共同时，deny优先于allow)</span></span><br><span class="line">        <span class="meta">@WebInitParam</span>(name = <span class="string">"loginUsername"</span>, value = <span class="string">"root"</span>),<span class="comment">// 用户名</span></span><br><span class="line">        <span class="meta">@WebInitParam</span>(name = <span class="string">"loginPassword"</span>, value = <span class="string">"123456"</span>),<span class="comment">// 密码</span></span><br><span class="line">        <span class="meta">@WebInitParam</span>(name = <span class="string">"resetEnable"</span>, value = <span class="string">"false"</span>) <span class="comment">// 禁用HTML页面上的“Reset All”功能</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DruidStatViewServlet</span> <span class="keyword">extends</span> <span class="title">StatViewServlet</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="索引文档"><a href="#索引文档" class="headerlink" title="索引文档"></a>索引文档</h3></blockquote>
+<p><img src="http://www.pandan.xyz/images/201804182142.png" alt="image"></p>
+<p>索引文档的步骤：</p>
+<ol>
+<li>客户端向Node-1发送索引文档请求；</li>
+<li>节点使用文档的_id确定文档属于分片2 。请求会被转发到Node-3，因为分片2 的主分片被分配在Node-3上；</li>
+<li>Node-3在主分片上执行请求。如果成功了，它将请求并行转发到所有节点的副本分片上（这里仅Node-2）。一旦所有的副本分片都报告成功, Node-3将向协调节点（Node-1）报告成功，协调节点向客户端报告成功。</li>
+</ol>
+<p>在客户端收到成功响应时，文档变更已经在主分片和所有副本分片执行完成，变更是安全的。</p>
 <blockquote>
-<h3 id="添加Filter"><a href="#添加Filter" class="headerlink" title="添加Filter"></a>添加Filter</h3></blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@WebFilter</span>(filterName = <span class="string">"DruidStatFilter"</span>, urlPatterns = <span class="string">"/*"</span>, initParams = &#123;</span><br><span class="line">       <span class="meta">@WebInitParam</span>(name = <span class="string">"exclusions"</span>, value = <span class="string">"*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"</span>)<span class="comment">// 忽略资源</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DruidStatFilter</span> <span class="keyword">extends</span> <span class="title">WebStatFilter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="检索文档"><a href="#检索文档" class="headerlink" title="检索文档"></a>检索文档</h3></blockquote>
+<p>可以从主分片或者从其它任意副本分片检索文档。</p>
+<p><img src="http://www.pandan.xyz/images/201804182144.png" alt="image"></p>
+<p>检索文档的步骤：</p>
+<ol>
+<li>客户端向Node-1发送检索文档请求；</li>
+<li>节点使用文档的 _id 来确定文档属于分片2 。分片2的副本分片R2存在节点Node-2上。 基于负载均衡将请求转发到Node-2。</li>
+<li>Node-2将文档返回给协调节点Node-1，协调节点再将文档返回给客户端；</li>
+</ol>
+<p>在处理读取请求时，协调结点在每次请求的时候都会通过轮询主分片或者其它任意副本分片来达到负载均衡。</p>
 <blockquote>
-<h3 id="启用Servlet3-0注解自动扫描"><a href="#启用Servlet3-0注解自动扫描" class="headerlink" title="启用Servlet3.0注解自动扫描"></a>启用Servlet3.0注解自动扫描</h3></blockquote>
-<p>添加好了@WebServlet, @WebFilter, @WebListener等之后，接下来就是启用Servlet3.0注解的自动扫描功能了，这里使用springboot提供的@ServletComponentScan注解。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@ServletComponentScan</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> <span class="keyword">extends</span> <span class="title">WebMvcConfigurerAdapter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<h3 id="数据源配置"><a href="#数据源配置" class="headerlink" title="数据源配置"></a>数据源配置</h3></blockquote>
-<p>application.properties：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">spring.datasource.type=com.alibaba.druid.pool.DruidDataSource</span><br><span class="line">spring.datasource.url=jdbc:mysql://127.0.0.1:3306/lpp-web</span><br><span class="line">spring.datasource.username=root</span><br><span class="line">spring.datasource.password=123456</span><br><span class="line">spring.datasource.driver-class-name=com.mysql.jdbc.Driver</span><br><span class="line">spring.datasource.initialSize=5</span><br><span class="line">spring.datasource.minIdle=5</span><br><span class="line">spring.datasource.maxActive=20</span><br><span class="line">spring.datasource.maxWait=60000</span><br><span class="line">spring.datasource.minEvictableIdleTimeMillis=300000</span><br><span class="line">spring.datasource.validationQuery=SELECT 1 FROM DUAL</span><br><span class="line">spring.datasource.testWhileIdle=true</span><br><span class="line">spring.datasource.testOnBorrow=false</span><br><span class="line">spring.datasource.testOnReturn=false</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<h3 id="监控看板"><a href="#监控看板" class="headerlink" title="监控看板"></a>监控看板</h3></blockquote>
-<p>访问：<a href="http://127.0.0.1/druid/index.html" target="_blank" rel="noopener">http://127.0.0.1/druid/index.html</a></p>
-<p><img src="http://www.pandan.xyz/images/201708292211.png" alt="image"></p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/routing-value.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/routing-value.html</a></li>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/how-primary-and-replica-shards-interact.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/how-primary-and-replica-shards-interact.html</a></li>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-read.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-read.html</a></li>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/_partial_updates_to_a_document.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/_partial_updates_to_a_document.html</a></li>
+<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-write.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-write.html</a></li>
+</ol>
 
       
     </div>
@@ -386,17 +406,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/26/跨域资源共享CORS详解/" rel="next" title="跨域资源共享CORS详解">
-                <i class="fa fa-chevron-left"></i> 跨域资源共享CORS详解
+              <a href="/2018/04/16/elasticsearch 节点/" rel="next" title="elasticsearch 节点">
+                <i class="fa fa-chevron-left"></i> elasticsearch 节点
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/09/09/mysql 存储过程/" rel="prev" title="mysql 存储过程">
-                mysql 存储过程 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -544,7 +560,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pom-xml配置"><span class="nav-number">2.</span> <span class="nav-text">pom.xml配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加Servlet"><span class="nav-number">3.</span> <span class="nav-text">添加Servlet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#添加Filter"><span class="nav-number">4.</span> <span class="nav-text">添加Filter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启用Servlet3-0注解自动扫描"><span class="nav-number">5.</span> <span class="nav-text">启用Servlet3.0注解自动扫描</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据源配置"><span class="nav-number">6.</span> <span class="nav-text">数据源配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#监控看板"><span class="nav-number">7.</span> <span class="nav-text">监控看板</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分片规则"><span class="nav-number">2.</span> <span class="nav-text">分片规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引文档"><span class="nav-number">3.</span> <span class="nav-text">索引文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#检索文档"><span class="nav-number">4.</span> <span class="nav-text">检索文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>

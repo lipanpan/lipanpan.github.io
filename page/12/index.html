@@ -276,6 +276,121 @@
             
               
                 
+                <a class="post-title-link" href="/2016/09/23/mesi 缓存一致性协议/" itemprop="url">
+                  MESI 缓存一致性协议
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-23T23:31:56+08:00" content="2016-09-23">
+              2016-09-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/计算机体系结构/" itemprop="url" rel="index">
+                    <span itemprop="name">计算机体系结构</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>现代处理器为了提高访问数据的效率，在每个CPU核心上都会有多级容量小，速度快的缓存（分别称之为L1 cache，L2 cache，多核心共享L3  cache等），用于缓存常用的数据。由于内存的速度要比CPU慢将近100倍，数据被修改时也只是先更新cache，并不是直接写回到主存中（CPU是不能直接跟内存进行通信的，CPU只对接cache，然后由cache对接主存），这样一来就造成了缓存中的数据与内存不一致。如果系统是单核处理器，所有线程看到的都是缓存中的最新数据，当然没有问题。但如果系统是多核处理器，同一份主存数据可能会被缓存到多个核心 cache中，在运行中只要其中一个核心修改了缓存中的值，如果其他CPU核心没有得到及时的通知，就会造成缓存不一致的情况，影响系统的运行结果。MESI协议的出现，就是为了解决多核处理器时代，缓存不一致的问题的。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/23/mesi 缓存一致性协议/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/08/31/linux 软连接和硬连接/" itemprop="url">
                   linux 软连接和硬连接
                 </a>
@@ -1291,121 +1406,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/08/28/java  集合类序列化及反序列化原理剖析/" itemprop="url">
-                  java 集合类序列化及反序列化原理剖析
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-28T18:22:56+08:00" content="2016-08-28">
-              2016-08-28
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/java/" itemprop="url" rel="index">
-                    <span itemprop="name">java</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在剖析Set，Map，List等集合类，序列化及反序列化的原理之前，先介绍一下transient关键字的作用，java提供了transient关键字，用于修饰变量，标明该变量不用序列化到字节流中。同时，java也提供了Serializable这样一个标志性接口(不含任何方法，仅仅只是标明该对象可以被序列化)<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/28/java  集合类序列化及反序列化原理剖析/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1451,7 +1451,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">128</span>
+              <span class="site-state-item-count">129</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
