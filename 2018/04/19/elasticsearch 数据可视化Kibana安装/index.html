@@ -84,20 +84,17 @@
 
 
 
-<meta name="description" content="前言在rabbitmq中，有两种集群模式：分别是普通集群模式和镜像队列集群模式，在《rabbitmq 集群搭建》这篇博文中已经介绍了普通集群模式的搭建方式，而镜像队列集群模式的搭建步骤和普通集群模式是基本相同的，唯一不同的是，镜像队列集群模式，多了一步配置policy 的步骤，本篇将介绍这两种集群模式的区别，以及镜像队列集群模式的配置方式。">
+<meta name="description" content="前言 Kibana是一个针对Elasticsearch的开源分析及可视化平台，用来搜索、查看交互存储在Elasticsearch索引中的数据。使用Kibana，可以通过各种图表进行高级数据分析及展示。Kibana让海量数据更容易理解。它操作简单，基于浏览器的用户界面可以快速创建仪表板（dashboard）实时显示Elasticsearch查询动态。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="rabbitmq 镜像队列集群配置">
-<meta property="og:url" content="http://www.pandan.xyz/2017/02/28/rabbitmq 镜像队列集群配置/index.html">
+<meta property="og:title" content="elasticsearch 数据可视化Kibana安装">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/19/elasticsearch 数据可视化Kibana安装/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言在rabbitmq中，有两种集群模式：分别是普通集群模式和镜像队列集群模式，在《rabbitmq 集群搭建》这篇博文中已经介绍了普通集群模式的搭建方式，而镜像队列集群模式的搭建步骤和普通集群模式是基本相同的，唯一不同的是，镜像队列集群模式，多了一步配置policy 的步骤，本篇将介绍这两种集群模式的区别，以及镜像队列集群模式的配置方式。">
+<meta property="og:description" content="前言 Kibana是一个针对Elasticsearch的开源分析及可视化平台，用来搜索、查看交互存储在Elasticsearch索引中的数据。使用Kibana，可以通过各种图表进行高级数据分析及展示。Kibana让海量数据更容易理解。它操作简单，基于浏览器的用户界面可以快速创建仪表板（dashboard）实时显示Elasticsearch查询动态。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://www.pandan.xyz/images/201702282248.png">
-<meta property="og:image" content="http://www.pandan.xyz/images/201703242023.png">
-<meta property="og:updated_time" content="2017-03-24T12:27:06.000Z">
+<meta property="og:updated_time" content="2018-04-19T13:44:34.086Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="rabbitmq 镜像队列集群配置">
-<meta name="twitter:description" content="前言在rabbitmq中，有两种集群模式：分别是普通集群模式和镜像队列集群模式，在《rabbitmq 集群搭建》这篇博文中已经介绍了普通集群模式的搭建方式，而镜像队列集群模式的搭建步骤和普通集群模式是基本相同的，唯一不同的是，镜像队列集群模式，多了一步配置policy 的步骤，本篇将介绍这两种集群模式的区别，以及镜像队列集群模式的配置方式。">
-<meta name="twitter:image" content="http://www.pandan.xyz/images/201702282248.png">
+<meta name="twitter:title" content="elasticsearch 数据可视化Kibana安装">
+<meta name="twitter:description" content="前言 Kibana是一个针对Elasticsearch的开源分析及可视化平台，用来搜索、查看交互存储在Elasticsearch索引中的数据。使用Kibana，可以通过各种图表进行高级数据分析及展示。Kibana让海量数据更容易理解。它操作简单，基于浏览器的用户界面可以快速创建仪表板（dashboard）实时显示Elasticsearch查询动态。">
 
 
 
@@ -118,9 +115,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2017/02/28/rabbitmq 镜像队列集群配置/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/19/elasticsearch 数据可视化Kibana安装/"/>
 
-  <title> rabbitmq 镜像队列集群配置 | lpp`s blog </title>
+  <title> elasticsearch 数据可视化Kibana安装 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -280,7 +277,7 @@
             
             
               
-                rabbitmq 镜像队列集群配置
+                elasticsearch 数据可视化Kibana安装
               
             
           </h1>
@@ -292,8 +289,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-02-28T23:10:36+08:00" content="2017-02-28">
-              2017-02-28
+            <time itemprop="dateCreated" datetime="2018-04-19T20:27:58+08:00" content="2018-04-19">
+              2018-04-19
             </time>
           </span>
 
@@ -306,8 +303,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
-                    <span itemprop="name">rabbitmq</span>
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
                   </a>
                 </span>
 
@@ -339,32 +336,31 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在rabbitmq中，有两种集群模式：分别是普通集群模式和镜像队列集群模式，在<a href="/2017/02/11/rabbitmq%20%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/">《rabbitmq 集群搭建》</a>这篇博文中已经介绍了普通集群模式的搭建方式，而镜像队列集群模式的搭建步骤和普通集群模式是基本相同的，唯一不同的是，镜像队列集群模式，多了一步配置<a href="http://www.rabbitmq.com/parameters.html#policies" target="_blank" rel="noopener">policy</a> 的步骤，本篇将介绍这两种集群模式的区别，以及镜像队列集群模式的配置方式。<br><a id="more"></a></p>
-<h3 id="普通集群模式"><a href="#普通集群模式" class="headerlink" title="普通集群模式"></a>普通集群模式</h3><p>普通模式：默认的集群模式。</p>
-<p>特点：在rabbitmq集群各节点中，tag，vhost，exchange，bind，queue等信息是完全一致的；但是queue中的消息数据，不会在多节点中同步，只存在于其中一个节点。例如现有A、B两个节点，当消息进入A节点的queue中后，consumer从B节点拉取消息时，RabbitMQ会临时在A、B两个节点间进行消息传输，把A中的消息取出并经过B发送给consumer。所以在普通集群模式下，consumer应尽量连接每一个节点，防止单节点性能瓶颈。</p>
-<p>优点：在普通集群中，通过增加节点能线性的增加性能（CPU、内存）和容量（内存、磁盘），因为机器能够容纳的消息数量是和节点数成正相关的 ——<strong>具有水平伸缩性</strong>。</p>
-<p>缺点：当A节点故障后，B节点无法取到A节点中还未消费的消息实体。如果做了消息持久化，那么只有等A节点恢复后，才可以继续被消费；如果没有持久化的话，消息就会丢失 ——<strong>没法保证高可用HA</strong>。</p>
-<h3 id="镜像队列集群模式"><a href="#镜像队列集群模式" class="headerlink" title="镜像队列集群模式"></a>镜像队列集群模式</h3><p>镜像模式：把需要的队列做成镜像队列，消息存在于多个节点，属于RabbitMQ的HA方案。</p>
-<p>特点：镜像队列集群与普通集群不同之处在于，queue中的消息数据会在镜像节点中同步，消息写入队列，都交由master节点进行写入，然后同步至各slave节点。当master节点宕机后，内部会从slave节点中重新选举出一个新的master节点，从而达到去中心化的目的。</p>
-<p>优点：由于镜像队列之间消息自动同步，且内部有选举master机制，即使master节点宕机也不会影响整个集群的使用，达到去中心化的目的，从而有效的防止消息丢失及服务不可用等问题 ——<strong>保证高可用HA</strong>。</p>
-<p>缺点：正所谓凡是有利亦有弊，正式因为涉及到主从节点之间消息的同步，当内部需要同步的镜像队列较多，数据量很大的时候，磁盘IO，网络带宽等都会成为当前master节点的瓶颈，进而影响到整个集群的性能。并且，由于各节点之间消息的同步（即各节点镜像队列数据完全一致），也丧失了通过新增节点线性增加性能（CPU、内存）和容量（内存、磁盘）的能力 ——<strong>不具备水平伸缩性</strong>。</p>
-<p>ps：rabbitmq镜像队列集群，可以参考fastdfs分布式文件系统的分组设计方式，具备水平伸缩性。</p>
-<h3 id="镜像队列policy配置"><a href="#镜像队列policy配置" class="headerlink" title="镜像队列policy配置"></a>镜像队列policy配置</h3><p>普通集群和镜像队列集群搭建步骤完全一样，唯一不同的是镜像队列集群多了一步Add policy。</p>
-<p>管理界面操作截图：</p>
-<p><img src="/images/201702282248.png" alt="image"></p>
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Kibana是一个针对Elasticsearch的开源分析及可视化平台，用来搜索、查看交互存储在Elasticsearch索引中的数据。使用Kibana，可以通过各种图表进行高级数据分析及展示。Kibana让海量数据更容易理解。它操作简单，基于浏览器的用户界面可以快速创建仪表板（dashboard）实时显示Elasticsearch查询动态。</p>
+<a id="more"></a>
+<blockquote>
+<h3 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h3></blockquote>
+<p>为了保证和elasticsearch的兼容性，最好将Kibana安装版本和Elasticsearch的安装版本保持一致。这里我们使用5.6.8版本。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 下载tar安装包</span><br><span class="line">   wget https://artifacts.elastic.co/downloads/kibana/kibana-5.6.8-linux-x86_64.tar.gz</span><br><span class="line"></span><br><span class="line">2. 校验安装包</span><br><span class="line">   sha1sum kibana-5.6.8-linux-x86_64.tar.gz</span><br><span class="line"></span><br><span class="line">3. 解压安装包</span><br><span class="line">   tar -xzf kibana-5.6.8-linux-x86_64.tar.gz</span><br><span class="line"></span><br><span class="line">4. 运行</span><br><span class="line">   cd kibana-5.6.8-linux-x86_64/bin</span><br><span class="line">   ./kibana</span><br><span class="line"></span><br><span class="line">5. 守护进程运行</span><br><span class="line">   nohup ./kibana &amp;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="配置调整"><a href="#配置调整" class="headerlink" title="配置调整"></a>配置调整</h3></blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim kibana-5.6.8-linux-x86_64/config/kibana.yml</span><br><span class="line"></span><br><span class="line">server.host: &quot;192.168.1.111&quot;</span><br><span class="line"></span><br><span class="line">elasticsearch.url: &quot;http://192.168.1.111:9200&quot;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="安装X-Pack插件"><a href="#安装X-Pack插件" class="headerlink" title="安装X-Pack插件"></a>安装X-Pack插件</h3></blockquote>
+<p>安装插件：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./bin/kibana-plugin install x-pack</span><br></pre></td></tr></table></figure></p>
+<p>离线安装：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wget https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.6.8.zip</span><br><span class="line">./bin/kibana-plugin install file:///path/to/file/x-pack-5.6.8.zip</span><br></pre></td></tr></table></figure></p>
+<p>卸载插件：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./bin/kibana-plugin remove x-pack</span><br></pre></td></tr></table></figure></p>
+<p>登录账号：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">username: elastic</span><br><span class="line">password: changeme</span><br></pre></td></tr></table></figure></p>
+<p>重新启动kibana，插件即可生效，这时就需要授权登录了。</p>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
 <ol>
-<li><p>ha-sync-mode：指定镜像队列中消息的同步方式，有效值为automatic(自动同步)，manually(手动同步)；默认是manually，请注意一定要记得设置为automatic(自动同步），否则消息在镜像队列中是不会自动同步的（即普通集群模式），只能通过命令手动去同步。</p>
-</li>
-<li><p>ha-mode：指定镜像队列的模式，有效值为all/exactly/nodes。其中all表示在集群中所有的节点上进行镜像；exactly表示在指定个数的节点上进行镜像，节点的个数由ha-params指定；nodes表示在指定的节点上进行镜像，节点名称通过ha-params指定。</p>
-</li>
-<li><p>ha-params: 用于指定ha-mode模式中需要用到的参数。</p>
-</li>
-</ol>
-<p>使用策略后的queue特性：</p>
-<p><img src="/images/201703242023.png" alt="image"></p>
-<h3 id="policy相关知识"><a href="#policy相关知识" class="headerlink" title="policy相关知识"></a>policy相关知识</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Name: policy策略的唯一名称；</span><br><span class="line"></span><br><span class="line">Pattern: 用于匹配exchange和queue等名称的正则表达式；</span><br><span class="line"></span><br><span class="line">Apply to：指定将此policy应用到哪些项上（例如：exchange，queue等）；</span><br><span class="line"></span><br><span class="line">Priority: 可选参数，policy的优先级，exchange和queue名称可以匹配到多个policy，优先级则定义了policy被执行的顺序；</span><br><span class="line"></span><br><span class="line">Definition：参数定义；</span><br></pre></td></tr></table></figure>
-<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ol>
-<li><a href="http://www.rabbitmq.com/ha.html" target="_blank" rel="noopener">http://www.rabbitmq.com/ha.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/kibana/5.6/introduction.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/kibana/5.6/introduction.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/kibana/5.6/targz.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/kibana/5.6/targz.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/kibana/5.6/installing-xpack-kb.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/kibana/5.6/installing-xpack-kb.html</a></li>
+<li><a href="https://www.cnblogs.com/wxw16/p/6150681.html" target="_blank" rel="noopener">https://www.cnblogs.com/wxw16/p/6150681.html</a></li>
 </ol>
 
       
@@ -391,17 +387,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/02/27/rabbitmq 配置说明/" rel="next" title="rabbitmq 配置说明">
-                <i class="fa fa-chevron-left"></i> rabbitmq 配置说明
+              <a href="/2018/04/16/elasticsearch 路由分片/" rel="next" title="elasticsearch 路由分片">
+                <i class="fa fa-chevron-left"></i> elasticsearch 路由分片
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/03/03/spring工具类之SerializationUtils/" rel="prev" title="spring工具类之SerializationUtils">
-                spring工具类之SerializationUtils <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -549,7 +541,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#普通集群模式"><span class="nav-number">2.</span> <span class="nav-text">普通集群模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#镜像队列集群模式"><span class="nav-number">3.</span> <span class="nav-text">镜像队列集群模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#镜像队列policy配置"><span class="nav-number">4.</span> <span class="nav-text">镜像队列policy配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#policy相关知识"><span class="nav-number">5.</span> <span class="nav-text">policy相关知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">6.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装步骤"><span class="nav-number">2.</span> <span class="nav-text">安装步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置调整"><span class="nav-number">3.</span> <span class="nav-text">配置调整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装X-Pack插件"><span class="nav-number">4.</span> <span class="nav-text">安装X-Pack插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>
