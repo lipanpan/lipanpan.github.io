@@ -1,0 +1,722 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 Elasticsearch 作为一个分布式系统，监控自然是重中之重。Elasticsearch 本身提供了非常完善的，由浅及深的各种性能数据接口。和数据读写检索接口一样，采用RESTful风格。我们可以直接使用curl来获取数据，编写监控程序，也可以使用一些现成的监控方案。通常这些方案也是通过接口读取数据，解析JSON，渲染界面。 下面将结合Kibana + X-Pack 实现Elasti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="elasticsearch 集群监控X-Pack">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/16/elasticsearch 集群监控X-Pack/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 Elasticsearch 作为一个分布式系统，监控自然是重中之重。Elasticsearch 本身提供了非常完善的，由浅及深的各种性能数据接口。和数据读写检索接口一样，采用RESTful风格。我们可以直接使用curl来获取数据，编写监控程序，也可以使用一些现成的监控方案。通常这些方案也是通过接口读取数据，解析JSON，渲染界面。 下面将结合Kibana + X-Pack 实现Elasti">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804192300.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804192303.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804192304.png">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804192305.png">
+<meta property="og:updated_time" content="2018-04-19T15:25:02.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="elasticsearch 集群监控X-Pack">
+<meta name="twitter:description" content="前言 Elasticsearch 作为一个分布式系统，监控自然是重中之重。Elasticsearch 本身提供了非常完善的，由浅及深的各种性能数据接口。和数据读写检索接口一样，采用RESTful风格。我们可以直接使用curl来获取数据，编写监控程序，也可以使用一些现成的监控方案。通常这些方案也是通过接口读取数据，解析JSON，渲染界面。 下面将结合Kibana + X-Pack 实现Elasti">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201804192300.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/16/elasticsearch 集群监控X-Pack/"/>
+
+  <title> elasticsearch 集群监控X-Pack | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                elasticsearch 集群监控X-Pack
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-16T22:27:58+08:00" content="2018-04-16">
+              2018-04-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Elasticsearch 作为一个分布式系统，监控自然是重中之重。Elasticsearch 本身提供了非常完善的，由浅及深的各种性能数据接口。和数据读写检索接口一样，采用RESTful风格。我们可以直接使用curl来获取数据，编写监控程序，也可以使用一些现成的监控方案。通常这些方案也是通过接口读取数据，解析JSON，渲染界面。</p>
+<p>下面将结合Kibana + X-Pack 实现Elasticsearch集群的可视化监控，X-Pack是一个Elastic Stack的扩展，将安全，警报，监视，报告和图形功能包含在一个易于安装的软件包中。在Elasticsearch 5.0.0之前，您必须安装单独的Shield，Watcher和Marvel插件才能获得在X-Pack中所有的功能。在Elasticsearch 5版本之后，一般情况下只需要安装一个官方推荐的X-pack扩展包即可。</p>
+<a id="more"></a>
+<blockquote>
+<h3 id="Kibana-安装"><a href="#Kibana-安装" class="headerlink" title="Kibana 安装"></a>Kibana 安装</h3></blockquote>
+<p>见<a href="http://www.pandan.xyz/2018/04/19/elasticsearch%20%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96Kibana%E5%AE%89%E8%A3%85/">《elasticsearch 数据可视化Kibana安装》</a></p>
+<blockquote>
+<h3 id="X-Pack-插件安装"><a href="#X-Pack-插件安装" class="headerlink" title="X-Pack 插件安装"></a>X-Pack 插件安装</h3></blockquote>
+<p>必须在集群中的所有节点上安装X-Pack插件：</p>
+<p>安装插件：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./elasticsearch-plugin install x-pack</span><br></pre></td></tr></table></figure></p>
+<p>卸载插件：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./elasticsearch-plugin remove x-pack</span><br></pre></td></tr></table></figure></p>
+<p>X-Pack插件安装完成后，重启各节点使其生效。</p>
+<blockquote>
+<h3 id="启用禁用"><a href="#启用禁用" class="headerlink" title="启用禁用"></a>启用禁用</h3></blockquote>
+<p>启用和禁用X-Pack功能。默认情况下，所有X-Pack功能都被启用；通过修改elasticsearch.yml，kibana.yml以及logstash.yml配置文件；您可以启用或禁用特定的X-Pack功能。</p>
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>xpack.graph.enabled</td>
+<td>设置为false禁用X-Pack图形功能</td>
+</tr>
+<tr>
+<td>xpack.ml.enabled</td>
+<td>设置为false禁用X-Pack机器学习功能</td>
+</tr>
+<tr>
+<td>xpack.monitoring.enabled</td>
+<td>设置为false禁用X-Pack监视功能</td>
+</tr>
+<tr>
+<td>xpack.reporting.enabled</td>
+<td>设置为false禁用X-Pack报告功能</td>
+</tr>
+<tr>
+<td>xpack.security.enabled</td>
+<td>设置为false禁用X-Pack安全功能</td>
+</tr>
+<tr>
+<td>xpack.watcher.enabled</td>
+<td>设置false为禁用观察器</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<h3 id="监控效果"><a href="#监控效果" class="headerlink" title="监控效果"></a>监控效果</h3></blockquote>
+<p><img src="http://www.pandan.xyz/images/201804192300.png" alt="image"></p>
+<p><img src="http://www.pandan.xyz/images/201804192303.png" alt="image"></p>
+<p><img src="http://www.pandan.xyz/images/201804192304.png" alt="image"></p>
+<p><img src="http://www.pandan.xyz/images/201804192305.png" alt="image"></p>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://www.cnblogs.com/wxw16/p/6150681.html" target="_blank" rel="noopener">https://www.cnblogs.com/wxw16/p/6150681.html</a></li>
+<li><a href="https://segmentfault.com/a/1190000010981283" target="_blank" rel="noopener">https://segmentfault.com/a/1190000010981283</a></li>
+<li><a href="https://www.elastic.co/guide/en/x-pack/5.6/index.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/x-pack/5.6/index.html</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/16/elasticsearch 节点/" rel="next" title="elasticsearch 节点">
+                <i class="fa fa-chevron-left"></i> elasticsearch 节点
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/16/elasticsearch 路由分片/" rel="prev" title="elasticsearch 路由分片">
+                elasticsearch 路由分片 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">131</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kibana-安装"><span class="nav-number">2.</span> <span class="nav-text">Kibana 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#X-Pack-插件安装"><span class="nav-number">3.</span> <span class="nav-text">X-Pack 插件安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启用禁用"><span class="nav-number">4.</span> <span class="nav-text">启用禁用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#监控效果"><span class="nav-number">5.</span> <span class="nav-text">监控效果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">6.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
