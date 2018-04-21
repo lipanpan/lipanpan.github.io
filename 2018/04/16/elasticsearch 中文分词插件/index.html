@@ -1,0 +1,719 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 Elasticsearch中默认的标准分词器，在处理中文的时候会把中文单词切分成一个一个的汉字。比如：“中华人民共和国国歌”，其默认的标准分词器会将其切分成“中”，“华”，“人”，“民”，“共”，“和”，“国”，“国”，“歌”。对中文分词完全背离了其真实的语义，搜索效果很差，所以就需要我们安装其他中文分词插件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="elasticsearch 中文分词插件">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/16/elasticsearch 中文分词插件/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 Elasticsearch中默认的标准分词器，在处理中文的时候会把中文单词切分成一个一个的汉字。比如：“中华人民共和国国歌”，其默认的标准分词器会将其切分成“中”，“华”，“人”，“民”，“共”，“和”，“国”，“国”，“歌”。对中文分词完全背离了其真实的语义，搜索效果很差，所以就需要我们安装其他中文分词插件。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-04-21T05:54:17.592Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="elasticsearch 中文分词插件">
+<meta name="twitter:description" content="前言 Elasticsearch中默认的标准分词器，在处理中文的时候会把中文单词切分成一个一个的汉字。比如：“中华人民共和国国歌”，其默认的标准分词器会将其切分成“中”，“华”，“人”，“民”，“共”，“和”，“国”，“国”，“歌”。对中文分词完全背离了其真实的语义，搜索效果很差，所以就需要我们安装其他中文分词插件。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/16/elasticsearch 中文分词插件/"/>
+
+  <title> elasticsearch 中文分词插件 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                elasticsearch 中文分词插件
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-16T21:27:56+08:00" content="2018-04-16">
+              2018-04-16
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch系列</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Elasticsearch中默认的标准分词器，在处理中文的时候会把中文单词切分成一个一个的汉字。比如：“中华人民共和国国歌”，其默认的标准分词器会将其切分成“中”，“华”，“人”，“民”，“共”，“和”，“国”，“国”，“歌”。对中文分词完全背离了其真实的语义，搜索效果很差，所以就需要我们安装其他中文分词插件。<br><a id="more"></a></p>
+<blockquote>
+<h3 id="IK-Analysis-插件"><a href="#IK-Analysis-插件" class="headerlink" title="IK Analysis 插件"></a>IK Analysis 插件</h3></blockquote>
+<p><a href="https://github.com/medcl/elasticsearch-analysis-ik/" target="_blank" rel="noopener">IK Analysis 插件</a>就是一款专门用于Elasticsearch的分词器，可以友好的处理中文。同时也支持自定义的分词规则。</p>
+<p>安装插件：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v5.6.8/elasticsearch-analysis-ik-5.6.8.zip</span><br></pre></td></tr></table></figure>
+<p>卸载插件：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./elasticsearch-plugin remove analysis-ik</span><br></pre></td></tr></table></figure>
+<p>注：elasticsearch 5.5.1版本之后，才支持使用此方式安装。安装版本最好和elasticsearch版本保持一致，避免安装冲突。安装完成之后，重启elasticsearch服务使插件生效。如果是多节点组成的集群，则需要在各节点中都安装IK Analysis 插件。</p>
+<blockquote>
+<h3 id="分词器"><a href="#分词器" class="headerlink" title="分词器"></a>分词器</h3></blockquote>
+<p>ik自带有两种分词器:ik_max_word 和 ik_smart。</p>
+<blockquote>
+<p>ik_max_word</p>
+</blockquote>
+<p>将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国, 中华人民, 中华, 华人, 人民共和国, 人民, 人, 民, 共和国, 共和, 和, 国国, 国歌”，会穷尽各种可能的组合；</p>
+<blockquote>
+<p>ik_smart</p>
+</blockquote>
+<p>做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国，国歌”。</p>
+<blockquote>
+<h3 id="对比测试"><a href="#对比测试" class="headerlink" title="对比测试"></a>对比测试</h3></blockquote>
+<p>以下是各种分词器效果结果对比。</p>
+<blockquote>
+<p>默认分词器</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -u elastic:changeme -X GET -d &apos;&#123;&quot;text&quot;:&quot;中华人民共和国国歌&quot;&#125;&apos; &apos;http://192.168.1.111:9200/_analyze?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tokens&quot; : [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;中&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 1,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;华&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 1,</span><br><span class="line">      &quot;end_offset&quot; : 2,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;人&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 2,</span><br><span class="line">      &quot;end_offset&quot; : 3,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 2</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;民&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 3,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 3</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;共&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 4,</span><br><span class="line">      &quot;end_offset&quot; : 5,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 4</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;和&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 5,</span><br><span class="line">      &quot;end_offset&quot; : 6,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 5</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 6,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 6</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 7,</span><br><span class="line">      &quot;end_offset&quot; : 8,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 7</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;歌&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 8,</span><br><span class="line">      &quot;end_offset&quot; : 9,</span><br><span class="line">      &quot;type&quot; : &quot;&lt;IDEOGRAPHIC&gt;&quot;,</span><br><span class="line">      &quot;position&quot; : 8</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>ik_max_word</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -u elastic:changeme -X GET -d &apos;&#123;&quot;analyzer&quot;:&quot;ik_max_word&quot;, &quot;text&quot;:&quot;中华人民共和国国歌&quot;&#125;&apos; &apos;http://192.168.1.111:9200/_analyze?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tokens&quot; : [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;中华人民共和国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;中华人民&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;中华&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 2,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 2</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;华人&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 1,</span><br><span class="line">      &quot;end_offset&quot; : 3,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 3</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;人民共和国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 2,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 4</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;人民&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 2,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 5</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;共和国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 4,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 6</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;共和&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 4,</span><br><span class="line">      &quot;end_offset&quot; : 6,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 7</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 6,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;CN_CHAR&quot;,</span><br><span class="line">      &quot;position&quot; : 8</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;国歌&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 7,</span><br><span class="line">      &quot;end_offset&quot; : 9,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 9</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>ik_smart</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -u elastic:changeme -X GET -d &apos;&#123;&quot;analyzer&quot;:&quot;ik_smart&quot;, &quot;text&quot;:&quot;中华人民共和国国歌&quot;&#125;&apos; &apos;http://192.168.1.111:9200/_analyze?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tokens&quot; : [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;中华人民共和国&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 7,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;国歌&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 7,</span><br><span class="line">      &quot;end_offset&quot; : 9,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 1</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="自定义分词规则"><a href="#自定义分词规则" class="headerlink" title="自定义分词规则"></a>自定义分词规则</h3></blockquote>
+<p>IK Analysis分词插件的规则文件存放目录：elasticsearch-5.6.8/config/analysis-ik<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">-rw-rw----. 1 lipanpan root 5225922 Apr 20 22:15 extra_main.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root   63188 Apr 20 22:15 extra_single_word.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root   63188 Apr 20 22:15 extra_single_word_full.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root   10855 Apr 20 22:15 extra_single_word_low_freq.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     156 Apr 20 22:15 extra_stopword.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     625 Apr 20 22:15 IKAnalyzer.cfg.xml</span><br><span class="line">-rw-rw----. 1 lipanpan root 3058510 Apr 20 22:15 main.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     123 Apr 20 22:15 preposition.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root    1824 Apr 20 22:15 quantifier.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     164 Apr 20 22:15 stopword.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     192 Apr 20 22:15 suffix.dic</span><br><span class="line">-rw-rw----. 1 lipanpan root     752 Apr 20 22:15 surname.dic</span><br></pre></td></tr></table></figure></p>
+<p>自定义分词规则：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 这里自定义分词规则统一放在custom目录下</span><br><span class="line">mkdir custom</span><br><span class="line">vim custom/lpp_word.dic</span><br><span class="line"># 加入以下配置</span><br><span class="line">王者荣耀</span><br><span class="line">一带一路</span><br></pre></td></tr></table></figure></p>
+<p>更新配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim IKAnalyzer.cfg.xml</span><br><span class="line"></span><br><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE properties SYSTEM &quot;http://java.sun.com/dtd/properties.dtd&quot;&gt;</span><br><span class="line">&lt;properties&gt;</span><br><span class="line">    &lt;comment&gt;IK Analyzer 扩展配置&lt;/comment&gt;</span><br><span class="line">    &lt;!--用户可以在这里配置自己的扩展字典 --&gt;</span><br><span class="line">    &lt;entry key=&quot;ext_dict&quot;&gt;custom/lpp_word.dic&lt;/entry&gt;</span><br><span class="line">    &lt;!--用户可以在这里配置自己的扩展停止词字典--&gt;</span><br><span class="line">    &lt;entry key=&quot;ext_stopwords&quot;&gt;&lt;/entry&gt;</span><br><span class="line">    &lt;!--用户可以在这里配置远程扩展字典:http://xxx.com/xxx.dic --&gt;</span><br><span class="line">    &lt;!-- &lt;entry key=&quot;remote_ext_dict&quot;&gt;words_location&lt;/entry&gt; --&gt;</span><br><span class="line">    &lt;!--用户可以在这里配置远程扩展停止词字典:http://xxx.com/xxx.dic--&gt;</span><br><span class="line">    &lt;!-- &lt;entry key=&quot;remote_ext_stopwords&quot;&gt;words_location&lt;/entry&gt; --&gt;</span><br><span class="line">&lt;/properties&gt;</span><br></pre></td></tr></table></figure>
+<p>重启elasticsearch服务使配置生效即可！</p>
+<p>生效前：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -u elastic:changeme -X GET -d &apos;&#123;&quot;analyzer&quot;:&quot;ik_max_word&quot;, &quot;text&quot;:&quot;王者荣耀&quot;&#125;&apos; &apos;http://192.168.1.111:9200/_analyze?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tokens&quot; : [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;王者&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 2,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;荣耀&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 2,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 1</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>生效后：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl -u elastic:changeme -X GET -d &apos;&#123;&quot;analyzer&quot;:&quot;ik_max_word&quot;, &quot;text&quot;:&quot;王者荣耀&quot;&#125;&apos; &apos;http://192.168.1.111:9200/_analyze?pretty&apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;tokens&quot; : [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;王者荣耀&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;王者&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 0,</span><br><span class="line">      &quot;end_offset&quot; : 2,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;token&quot; : &quot;荣耀&quot;,</span><br><span class="line">      &quot;start_offset&quot; : 2,</span><br><span class="line">      &quot;end_offset&quot; : 4,</span><br><span class="line">      &quot;type&quot; : &quot;CN_WORD&quot;,</span><br><span class="line">      &quot;position&quot; : 2</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="热更新分词规则"><a href="#热更新分词规则" class="headerlink" title="热更新分词规则"></a>热更新分词规则</h3></blockquote>
+<p>该插件支持热更新分词规则。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!--用户可以在这里配置远程扩展字典 --&gt;</span><br><span class="line">&lt;entry key=&quot;remote_ext_dict&quot;&gt;location&lt;/entry&gt;</span><br><span class="line">&lt;!--用户可以在这里配置远程扩展停止词字典--&gt;</span><br><span class="line">&lt;entry key=&quot;remote_ext_stopwords&quot;&gt;location&lt;/entry&gt;</span><br></pre></td></tr></table></figure>
+<p>其中 location 是指一个 url，比如<a href="http://yoursite.com/getCustomDict，该请求只需满足以下两点即可完成分词热更新。" target="_blank" rel="noopener">http://yoursite.com/getCustomDict，该请求只需满足以下两点即可完成分词热更新。</a></p>
+<ol>
+<li>该http请求需要返回两个头部(header)，一个是 Last-Modified，一个是 ETag，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库；</li>
+<li>该http请求返回的内容格式是一行一个分词，换行符用 \n 即可；</li>
+<li>分词内容以UTF-8格式编码；</li>
+</ol>
+<p>满足上面三点要求就可以实现热更新分词了，不需要重启ES实例。可以将需自动更新的热词放在一个UTF-8编码的.txt文件里，放在nginx或其他简易http server下，当.txt文件修改时，http server 会在客户端请求该文件时自动返回相应的Last-Modified和ETag。可以另外做一个工具来从业务系统提取相关词汇，并更新这个.txt文件。</p>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://github.com/medcl/elasticsearch-analysis-ik" target="_blank" rel="noopener">https://github.com/medcl/elasticsearch-analysis-ik</a></li>
+<li><a href="http://www.imooc.com/article/20637" target="_blank" rel="noopener">http://www.imooc.com/article/20637</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2017/08/elasticsearch.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2017/08/elasticsearch.html</a></li>
+<li><a href="https://blog.csdn.net/chengyuqiang/article/details/78991570" target="_blank" rel="noopener">https://blog.csdn.net/chengyuqiang/article/details/78991570</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/16/elasticsearch 节点/" rel="next" title="elasticsearch 节点">
+                <i class="fa fa-chevron-left"></i> elasticsearch 节点
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/16/elasticsearch 路由分片/" rel="prev" title="elasticsearch 路由分片">
+                elasticsearch 路由分片 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">132</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IK-Analysis-插件"><span class="nav-number">2.</span> <span class="nav-text">IK Analysis 插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分词器"><span class="nav-number">3.</span> <span class="nav-text">分词器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对比测试"><span class="nav-number">4.</span> <span class="nav-text">对比测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义分词规则"><span class="nav-number">5.</span> <span class="nav-text">自定义分词规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#热更新分词规则"><span class="nav-number">6.</span> <span class="nav-text">热更新分词规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">7.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
