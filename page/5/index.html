@@ -276,6 +276,121 @@
             
               
                 
+                <a class="post-title-link" href="/2017/05/13/linux dos2unix命令安装及使用/" itemprop="url">
+                  linux dos2unix命令安装及使用
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-05-13T13:14:36+08:00" content="2017-05-13">
+              2017-05-13
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>dos2unix是将Windows格式文件转换为Unix、Linux格式的实用命令。Windows格式文件的换行符为\r\n ,而Unix&amp;Linux文件的换行符为\n。 dos2unix命令其实就是将文件中的\r\n 转换为\n。<br>而unix2dos则是和dos2unix互为孪生的一个命令，它是将Linux&amp;Unix格式文件转换为Windows格式文件的命令。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/05/13/linux dos2unix命令安装及使用/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2017/04/23/redis 数据类型之字符串/" itemprop="url">
                   redis 数据类型之字符串
                 </a>
@@ -1290,121 +1405,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/03/19/rabbitmq 定位客户端connection经常断开问题/" itemprop="url">
-                  rabbitmq 定位客户端connection经常断开问题
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-03-19T23:58:36+08:00" content="2017-03-19">
-              2017-03-19
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
-                    <span itemprop="name">rabbitmq</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在研究rabbitmq使用特性时，发现如果在连接connection上一段时间内没有消息流动时，就会出现connection自动断开的现象，后台日志中有大量断连的错误日志，这个时候如果client开启了自动恢复连接的功能时，client会自动尝试重新连接服务器。而且client和broker之间是有heartbeat链路保活机制的，在链路空闲的情况下，默认60秒发送一次心跳。从而确保TCP连接不会由于长时间没有数据流动被防火墙，NAT路由等设备清除转发记录，导致TCP连接断连失效，所以从理论上来说，这种空闲连接自动断连的现象应该是不可能出现的，那么又是什么原因导致这一问题的出现呢?下面将逐步分析问题的原因及解决方法。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2017/03/19/rabbitmq 定位客户端connection经常断开问题/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1450,7 +1450,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">133</span>
+              <span class="site-state-item-count">134</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

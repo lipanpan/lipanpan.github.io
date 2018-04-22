@@ -84,17 +84,19 @@
 
 
 
-<meta name="description" content="前言在JDK1.5以上版本中，提供了基本数据类型的自动装箱及拆箱功能(装箱：将基本数据类型自动转为包装类对象；拆箱：将包装类对象自动转为基本数据类型)。">
+<meta name="description" content="前言 Logstash数据处理管道有三个阶段：输入→过滤器→输出。输入数据，过滤器处理数据，并将其输出到目的地。输入和输出支持编解码器，可以在数据进入或退出pipeline时对数据进行编码或解码，而无需使用单独的过滤器。总之一句话概括，logstash可以帮助我们对不同来源的数据，进行统一的转换处理，然后输出到指定的地方存储，便于日后的统计和分析，例如：Elasticsearch等。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java 数值包装类原理剖析">
-<meta property="og:url" content="http://www.pandan.xyz/2016/08/28/java 数值包装类原理剖析/index.html">
+<meta property="og:title" content="logstash 工作机制">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/22/logstash 工作机制/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言在JDK1.5以上版本中，提供了基本数据类型的自动装箱及拆箱功能(装箱：将基本数据类型自动转为包装类对象；拆箱：将包装类对象自动转为基本数据类型)。">
+<meta property="og:description" content="前言 Logstash数据处理管道有三个阶段：输入→过滤器→输出。输入数据，过滤器处理数据，并将其输出到目的地。输入和输出支持编解码器，可以在数据进入或退出pipeline时对数据进行编码或解码，而无需使用单独的过滤器。总之一句话概括，logstash可以帮助我们对不同来源的数据，进行统一的转换处理，然后输出到指定的地方存储，便于日后的统计和分析，例如：Elasticsearch等。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-03-15T14:24:54.000Z">
+<meta property="og:image" content="http://www.pandan.xyz/images/201804221426.png">
+<meta property="og:updated_time" content="2018-04-22T14:57:11.937Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="java 数值包装类原理剖析">
-<meta name="twitter:description" content="前言在JDK1.5以上版本中，提供了基本数据类型的自动装箱及拆箱功能(装箱：将基本数据类型自动转为包装类对象；拆箱：将包装类对象自动转为基本数据类型)。">
+<meta name="twitter:title" content="logstash 工作机制">
+<meta name="twitter:description" content="前言 Logstash数据处理管道有三个阶段：输入→过滤器→输出。输入数据，过滤器处理数据，并将其输出到目的地。输入和输出支持编解码器，可以在数据进入或退出pipeline时对数据进行编码或解码，而无需使用单独的过滤器。总之一句话概括，logstash可以帮助我们对不同来源的数据，进行统一的转换处理，然后输出到指定的地方存储，便于日后的统计和分析，例如：Elasticsearch等。">
+<meta name="twitter:image" content="http://www.pandan.xyz/images/201804221426.png">
 
 
 
@@ -115,9 +117,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2016/08/28/java 数值包装类原理剖析/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/22/logstash 工作机制/"/>
 
-  <title> java 数值包装类原理剖析 | lpp`s blog </title>
+  <title> logstash 工作机制 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -277,7 +279,7 @@
             
             
               
-                java 数值包装类原理剖析
+                logstash 工作机制
               
             
           </h1>
@@ -289,8 +291,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-28T23:31:56+08:00" content="2016-08-28">
-              2016-08-28
+            <time itemprop="dateCreated" datetime="2018-04-22T22:27:56+08:00" content="2018-04-22">
+              2018-04-22
             </time>
           </span>
 
@@ -303,8 +305,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/java/" itemprop="url" rel="index">
-                    <span itemprop="name">java</span>
+                  <a href="/categories/logstash系列/" itemprop="url" rel="index">
+                    <span itemprop="name">logstash系列</span>
                   </a>
                 </span>
 
@@ -336,11 +338,40 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在JDK1.5以上版本中，提供了基本数据类型的自动装箱及拆箱功能(装箱：将基本数据类型自动转为包装类对象；拆箱：将包装类对象自动转为基本数据类型)。<br><a id="more"></a></p>
-<h3 id="原理剖析"><a href="#原理剖析" class="headerlink" title="原理剖析"></a>原理剖析</h3><p>分析以下demo的运行结果：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/** Integer案例**/</span>  </span><br><span class="line">Integer i1 = <span class="number">128</span>;  </span><br><span class="line">Integer i2 = <span class="number">128</span>;  </span><br><span class="line">Integer i3 = <span class="number">127</span>;  </span><br><span class="line">Integer i4 = <span class="number">127</span>;  </span><br><span class="line">System.out.println(i1 == i2);<span class="comment">//false  </span></span><br><span class="line">System.out.println(i3==i4); <span class="comment">//true  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">/** Long案例**/</span>  </span><br><span class="line">Long l1 = <span class="number">128L</span>;  </span><br><span class="line">Long l2 = <span class="number">128L</span>;  </span><br><span class="line">Long l3 = -<span class="number">128L</span>;  </span><br><span class="line">Long l4 = -<span class="number">128L</span>;  </span><br><span class="line">System.out.println(l1 == l2);<span class="comment">//false  </span></span><br><span class="line">System.out.println(l3==l4);<span class="comment">//true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**Float(Double)案例(形成对比)**/</span>  </span><br><span class="line">Float f1 = <span class="number">128f</span>;  </span><br><span class="line">Float f2 = <span class="number">128f</span>;  </span><br><span class="line">Float f3 = <span class="number">127f</span>;  </span><br><span class="line">Float f4 = <span class="number">127f</span>;  </span><br><span class="line">System.out.println(f1 == f2);<span class="comment">//false  </span></span><br><span class="line">System.out.println(f3==f4);<span class="comment">//false</span></span><br></pre></td></tr></table></figure></p>
-<p>首先 Integer i1 = 127;将基本数据类型赋给包装类，会调用Integer.valueOf(int i)自动装箱，转换为包装类对象。同理，将包装类对象赋给基本数据类型，会调用intValue()方法自动拆箱。如果该包装类对象为null,则会出现NullPointerException异常。之所以会出现上述结果。因为Byte，Integer，Long对在-128~127之间的数据进行了缓存,如果待转换的数值 i 在该范围了则直接从缓存取，而不是new Integer(i)。<br>而Float和Double则是每次都new一个新的，没有缓存机制，所以都为false。</p>
-<p>JDK自动装箱源码如下：<br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**Integer的实现**/</span>  </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title">valueOf</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">if</span>(i &gt;= -<span class="number">128</span> &amp;&amp; i &lt;= IntegerCache.high) </span><br><span class="line">       <span class="comment">//IntegerCache.high为127，取缓存</span></span><br><span class="line">       <span class="keyword">return</span> IntegerCache.cache[i + <span class="number">128</span>];</span><br><span class="line">    <span class="keyword">else</span>  </span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">new</span> Integer(i);  </span><br><span class="line">&#125;  </span><br><span class="line">    </span><br><span class="line"><span class="comment">/**Long的实现**/</span>  </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Long <span class="title">valueOf</span><span class="params">(<span class="keyword">long</span> l)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> offset = <span class="number">128</span>;  </span><br><span class="line">    <span class="keyword">if</span> (l &gt;= -<span class="number">128</span> &amp;&amp; l &lt;= <span class="number">127</span>) &#123; <span class="comment">// will cache  </span></span><br><span class="line">        <span class="keyword">return</span> LongCache.cache[(<span class="keyword">int</span>)l + offset];  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Long(l);  </span><br><span class="line">&#125;  </span><br><span class="line">    </span><br><span class="line"><span class="comment">/**Float的实现(无缓存)**/</span>  </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Float <span class="title">valueOf</span><span class="params">(<span class="keyword">float</span> f)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Float(f);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Integer i = <span class="number">127</span>; <span class="comment">//jvm调用Integer.valueOf(int v);自动装箱</span></span><br><span class="line"><span class="keyword">int</span> n = i; <span class="comment">//jvm 会调用Integer.intValue();自动拆箱</span></span><br></pre></td></tr></table></figure>
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>Logstash数据处理管道有三个阶段：输入→过滤器→输出。输入数据，过滤器处理数据，并将其输出到目的地。输入和输出支持编解码器，可以在数据进入或退出pipeline时对数据进行编码或解码，而无需使用单独的过滤器。总之一句话概括，logstash可以帮助我们对不同来源的数据，进行统一的转换处理，然后输出到指定的地方存储，便于日后的统计和分析，例如：Elasticsearch等。</p>
+<a id="more"></a>
+<blockquote>
+<h3 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h3></blockquote>
+<p><img src="http://www.pandan.xyz/images/201804221426.png" alt="image"></p>
+<p>处理流程：</p>
+<ol>
+<li><strong>input插件</strong>：数据从file，stdin，redis，kafka等各渠道来源处输入到logstash管道处理器（不同渠道来源处对应不同的INPUT插件）；</li>
+<li><strong>filter插件</strong>：不同的过滤器插件对输入的数据进行处理，每个FILTER插件功能职责单一；</li>
+<li><strong>output插件</strong>：logstash管道处理完成之后，将数据输出到file，elasticsearch等不同的目的地（对应于不同的OUTPUT插件）；</li>
+</ol>
+<blockquote>
+<h3 id="input-插件"><a href="#input-插件" class="headerlink" title="input 插件"></a>input 插件</h3></blockquote>
+<p>从不同的输入渠道获取数据，这里以file input插件为例，简单说明其使用。不同的插件设置参数不同，含义不同，具体参照官方插件使用说明。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">input &#123;</span><br><span class="line"></span><br><span class="line">  file &#123;</span><br><span class="line">     path =&gt; [&quot;/var/log/*.log&quot;, &quot;/var/log/message&quot;]</span><br><span class="line">     exclude =&gt; &quot;*.gz&quot;</span><br><span class="line">     start_position =&gt; &quot;beginning&quot;</span><br><span class="line">     type =&gt; &quot;accesslog&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  # 可配置多个数据来源</span><br><span class="line">  .......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="filter-插件"><a href="#filter-插件" class="headerlink" title="filter 插件"></a>filter 插件</h3></blockquote>
+<p>grok filter插件，date filter插件使用示例：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">filter &#123;</span><br><span class="line">    grok &#123;</span><br><span class="line">        match =&gt; [&quot;message&quot;, &quot;%&#123;HTTPDATE:logdate&#125;&quot;]</span><br><span class="line">    &#125;</span><br><span class="line">    date &#123;</span><br><span class="line">        match =&gt; [&quot;logdate&quot;, &quot;dd/MMM/yyyy:HH:mm:ss Z&quot;]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="output-插件"><a href="#output-插件" class="headerlink" title="output 插件"></a>output 插件</h3></blockquote>
+<p>elasticsearch output 插件使用示例：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">output &#123;</span><br><span class="line"></span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        host =&gt; &quot;192.168.1.111&quot;</span><br><span class="line">        protocol =&gt; &quot;http&quot;</span><br><span class="line">        index =&gt; &quot;logstash-%&#123;type&#125;-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        index_type =&gt; &quot;%&#123;type&#125;&quot;</span><br><span class="line">        workers =&gt; 5</span><br><span class="line">        template_overwrite =&gt; true</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    # 可配置多个目的地</span><br><span class="line">    .......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<!-- more -->
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="https://www.elastic.co/guide/en/logstash/5.6/pipeline.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/pipeline.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/logstash/5.6/input-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/input-plugins.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/logstash/5.6/filter-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/filter-plugins.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/logstash/5.6/output-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/output-plugins.html</a></li>
+<li><a href="https://www.elastic.co/guide/en/logstash/5.6/codec-plugins.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/codec-plugins.html</a></li>
+</ol>
+
       
     </div>
 
@@ -365,17 +396,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/08/28/java  Copy-On-Write并发容器/" rel="next" title="java Copy-On-Write并发容器">
-                <i class="fa fa-chevron-left"></i> java Copy-On-Write并发容器
+              <a href="/2018/04/22/logstash 安装/" rel="next" title="logstash 安装">
+                <i class="fa fa-chevron-left"></i> logstash 安装
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/08/29/mysql 函数/" rel="prev" title="mysql 函数">
-                mysql 函数 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -523,7 +550,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理剖析"><span class="nav-number">2.</span> <span class="nav-text">原理剖析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作机制"><span class="nav-number">2.</span> <span class="nav-text">工作机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#input-插件"><span class="nav-number">3.</span> <span class="nav-text">input 插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#filter-插件"><span class="nav-number">4.</span> <span class="nav-text">filter 插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#output-插件"><span class="nav-number">5.</span> <span class="nav-text">output 插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">6.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>

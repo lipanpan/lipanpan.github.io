@@ -276,6 +276,121 @@
             
               
                 
+                <a class="post-title-link" href="/2017/03/09/rabbitmq 基于TTL和Dead Letter特性实现延迟队列/" itemprop="url">
+                  rabbitmq 基于TTL和Dead Letter特性实现延迟队列
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-09T23:10:36+08:00" content="2017-03-09">
+              2017-03-09
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
+                    <span itemprop="name">rabbitmq</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>首先，rabbitmq并没有直接支持延迟队列这样的特性，我们必须通过rabbitmq提供的TTL（Time-To-Live：用于设置消息和队列的有效时间）和 Dead Letter（死信队列DLX ，寓意是存放那些不可送达消息的队列）这两个特性来间接的实现延迟队列的效果；接下来，将详细介绍TTL和 Dead Letter特性，以及如何使用它们来实现延迟队列的效果。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2017/03/09/rabbitmq 基于TTL和Dead Letter特性实现延迟队列/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2017/03/08/rabbitmq 事务机制/" itemprop="url">
                   rabbitmq 事务机制
                 </a>
@@ -1290,121 +1405,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2017/02/27/rabbitmq 配置说明/" itemprop="url">
-                  rabbitmq 配置说明
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2017-02-27T23:10:36+08:00" content="2017-02-27">
-              2017-02-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/rabbitmq/" itemprop="url" rel="index">
-                    <span itemprop="name">rabbitmq</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本篇主要介绍rabbitmq相关的配置，首先在rabbitmq中有两类配置：rabbitmq-env.conf环境变量配置和rabbitmq.config服务节点配置，这些文件默认存放位置是在${rabbitmq安装路径}/etc/rabbitmq目录下，默认是没有的，需要自己手动创建。下面将着重介绍这两类配置，它们有哪些配置项? 以及这些配置项的作用?<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2017/02/27/rabbitmq 配置说明/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1450,7 +1450,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">133</span>
+              <span class="site-state-item-count">134</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

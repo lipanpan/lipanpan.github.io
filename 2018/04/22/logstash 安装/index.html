@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="lpp`s blog">
 <meta property="og:description" content="前言 Logstash 是开源的服务器端数据处理管道，能够同时从多个来源采集数据、转换数据，然后将数据发送到您最喜欢的 “存储库” 中。通常和Elasticsearch, Kibana等一起搭配使用，ELK日志分析平台。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-22T06:19:27.700Z">
+<meta property="og:updated_time" content="2018-04-22T10:11:04.127Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="logstash 安装">
 <meta name="twitter:description" content="前言 Logstash 是开源的服务器端数据处理管道，能够同时从多个来源采集数据、转换数据，然后将数据发送到您最喜欢的 “存储库” 中。通常和Elasticsearch, Kibana等一起搭配使用，ELK日志分析平台。">
@@ -346,7 +346,7 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">java -version</span><br><span class="line"></span><br><span class="line">java version &quot;1.8.0_161&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_161-b12)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)</span><br></pre></td></tr></table></figure>
 <blockquote>
 <h3 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h3></blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 下载安装包</span><br><span class="line"></span><br><span class="line">   wget https://artifacts.elastic.co/downloads/logstash/logstash-5.6.8.tar.gz</span><br><span class="line"></span><br><span class="line">2. 解压安装包</span><br><span class="line">   </span><br><span class="line">   tar -xvf logstash-5.6.8.tar.gz</span><br><span class="line">   </span><br><span class="line">3. 指定配置运行</span><br><span class="line"></span><br><span class="line">   cd logstash-5.6.8/bin</span><br><span class="line"></span><br><span class="line">   ./logstash -f xxx.conf</span><br><span class="line">   </span><br><span class="line">4. 命令行指定配置运行</span><br><span class="line">   </span><br><span class="line">   例如：./logstash -e &quot;input &#123; stdin &#123; &#125; &#125; output &#123; stdout &#123;&#125; &#125;&quot;</span><br><span class="line">   通常用于测试使用，正式环境都是使用xxx.conf配置文件的方式启动的。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 下载安装包</span><br><span class="line"></span><br><span class="line">   wget https://artifacts.elastic.co/downloads/logstash/logstash-5.6.8.tar.gz</span><br><span class="line"></span><br><span class="line">2. 解压安装包</span><br><span class="line">   </span><br><span class="line">   tar -xvf logstash-5.6.8.tar.gz</span><br><span class="line">   </span><br><span class="line">3. 指定配置运行</span><br><span class="line"></span><br><span class="line">   cd logstash-5.6.8/bin</span><br><span class="line"></span><br><span class="line">   ./logstash -f xxx.conf</span><br><span class="line">   </span><br><span class="line">4. 命令行指定配置运行</span><br><span class="line">   </span><br><span class="line">   例如：./logstash -e &quot;input &#123; stdin &#123; &#125; &#125; output &#123; stdout &#123;&#125; &#125;&quot;</span><br><span class="line">   通常用于测试使用，正式环境都是使用xxx.conf配置文件的方式启动的。</span><br><span class="line">   </span><br><span class="line">5. 守护进程运行</span><br><span class="line"></span><br><span class="line">   nohup ./logstash -f xxx.conf &amp;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <h3 id="JVM-配置"><a href="#JVM-配置" class="headerlink" title="JVM 配置"></a>JVM 配置</h3></blockquote>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vim logstash-5.6.8/config/jvm.options</span><br><span class="line"></span><br><span class="line"># 由于虚拟机内存限制，将jvm堆内存调小，默认1g</span><br><span class="line">-Xms512m</span><br><span class="line">-Xmx512m</span><br></pre></td></tr></table></figure>
@@ -365,6 +365,7 @@
 <h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
 <ol>
 <li><a href="https://www.elastic.co/guide/en/logstash/5.6/getting-started-with-logstash.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/logstash/5.6/getting-started-with-logstash.html</a></li>
+<li><a href="https://doc.yonyoucloud.com/doc/logstash-best-practice-cn/get_start/index.html" target="_blank" rel="noopener">https://doc.yonyoucloud.com/doc/logstash-best-practice-cn/get_start/index.html</a></li>
 </ol>
 
       
@@ -398,6 +399,10 @@
           </div>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/22/logstash 工作机制/" rel="prev" title="logstash 工作机制">
+                logstash 工作机制 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -465,7 +470,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">133</span>
+              <span class="site-state-item-count">134</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
