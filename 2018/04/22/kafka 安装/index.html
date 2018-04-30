@@ -84,17 +84,17 @@
 
 
 
-<meta name="description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
+<meta name="description" content="前言 kafka是使用Scala语言编写，运行在JVM环境下的开源分布式流式处理平台，专为分布式高吞吐量系统而设计。与其他消息传递系统相比，Kafka具有更好的吞吐量，内置分区，复制和固有的容错能力，这使得它非常适合大规模消息处理应用程序。能够很好的与Apache Storm，Spark，Hadoop等集成，用于处理实时流式数据分析和离线数据分析。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="elasticsearch 配置">
-<meta property="og:url" content="http://www.pandan.xyz/2018/04/15/elasticsearch 配置/index.html">
+<meta property="og:title" content="kafka 安装">
+<meta property="og:url" content="http://www.pandan.xyz/2018/04/22/kafka 安装/index.html">
 <meta property="og:site_name" content="lpp`s blog">
-<meta property="og:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
+<meta property="og:description" content="前言 kafka是使用Scala语言编写，运行在JVM环境下的开源分布式流式处理平台，专为分布式高吞吐量系统而设计。与其他消息传递系统相比，Kafka具有更好的吞吐量，内置分区，复制和固有的容错能力，这使得它非常适合大规模消息处理应用程序。能够很好的与Apache Storm，Spark，Hadoop等集成，用于处理实时流式数据分析和离线数据分析。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-17T04:05:11.194Z">
+<meta property="og:updated_time" content="2018-04-30T13:40:50.607Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="elasticsearch 配置">
-<meta name="twitter:description" content="前言 Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。">
+<meta name="twitter:title" content="kafka 安装">
+<meta name="twitter:description" content="前言 kafka是使用Scala语言编写，运行在JVM环境下的开源分布式流式处理平台，专为分布式高吞吐量系统而设计。与其他消息传递系统相比，Kafka具有更好的吞吐量，内置分区，复制和固有的容错能力，这使得它非常适合大规模消息处理应用程序。能够很好的与Apache Storm，Spark，Hadoop等集成，用于处理实时流式数据分析和离线数据分析。">
 
 
 
@@ -115,9 +115,9 @@
 
 
 
-  <link rel="canonical" href="http://www.pandan.xyz/2018/04/15/elasticsearch 配置/"/>
+  <link rel="canonical" href="http://www.pandan.xyz/2018/04/22/kafka 安装/"/>
 
-  <title> elasticsearch 配置 | lpp`s blog </title>
+  <title> kafka 安装 | lpp`s blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -277,7 +277,7 @@
             
             
               
-                elasticsearch 配置
+                kafka 安装
               
             
           </h1>
@@ -289,8 +289,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2018-04-15T21:27:56+08:00" content="2018-04-15">
-              2018-04-15
+            <time itemprop="dateCreated" datetime="2018-04-22T22:27:56+08:00" content="2018-04-22">
+              2018-04-22
             </time>
           </span>
 
@@ -303,8 +303,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/elasticsearch系列/" itemprop="url" rel="index">
-                    <span itemprop="name">elasticsearch系列</span>
+                  <a href="/categories/kafka系列/" itemprop="url" rel="index">
+                    <span itemprop="name">kafka系列</span>
                   </a>
                 </span>
 
@@ -338,42 +338,42 @@
       
         <blockquote>
 <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
-<p>Elasticsearch 已经有了很好的默认值配置，如果想更好的发挥其性能，则需要深入了解其配置，对于性能提升是很有帮助的。<br><a id="more"></a></p>
+<p>kafka是使用Scala语言编写，运行在JVM环境下的开源分布式流式处理平台，专为分布式高吞吐量系统而设计。与其他消息传递系统相比，Kafka具有更好的吞吐量，内置分区，复制和固有的容错能力，这使得它非常适合大规模消息处理应用程序。能够很好的与Apache Storm，Spark，Hadoop等集成，用于处理实时流式数据分析和离线数据分析。</p>
+<a id="more"></a>
 <blockquote>
-<h3 id="位置"><a href="#位置" class="headerlink" title="位置"></a>位置</h3></blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">elasticsearch-5.6.8/config/elasticsearch.yml</span><br></pre></td></tr></table></figure>
+<h3 id="搭建环境"><a href="#搭建环境" class="headerlink" title="搭建环境"></a>搭建环境</h3></blockquote>
+<ol>
+<li>jdk 1.8.0_161</li>
+<li>zookeeper-3.4.9</li>
+<li>kafka-1.1.0</li>
+</ol>
+<!-- more -->
 <blockquote>
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>常规配置</p>
+<h3 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h3></blockquote>
+<ol>
+<li><a href="http://www.pandan.xyz/2017/01/08/linux%20jdk%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85%E5%8F%8A%E9%85%8D%E7%BD%AE/">jdk 安装</a></li>
+<li><a href="http://www.pandan.xyz/2017/02/02/zookeeper%20%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/">zookeeper 安装</a></li>
+<li>kafka 安装</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 下载安装包</span><br><span class="line"></span><br><span class="line">   wget http://mirrors.hust.edu.cn/apache/kafka/1.1.0/kafka_2.11-1.1.0.tgz</span><br><span class="line">   </span><br><span class="line">2. 解压安装包</span><br><span class="line"></span><br><span class="line">   tar -xzf kafka_2.11-1.1.0.tgz</span><br><span class="line">   </span><br><span class="line">3. 修改zk地址，多个以,分隔</span><br><span class="line">   </span><br><span class="line">   zookeeper.connect=192.168.1.111:2181</span><br><span class="line"></span><br><span class="line">4. 启动zk</span><br><span class="line"></span><br><span class="line">   ./zkServer.sh start</span><br><span class="line">   </span><br><span class="line">5. 启动kafka</span><br><span class="line"></span><br><span class="line">   ./kafka-server-start.sh ../config/server.properties</span><br><span class="line">   </span><br><span class="line">6. 守护进程启动</span><br><span class="line">   </span><br><span class="line">   ./kafka-server-start.sh -daemon ../config/server.properties</span><br></pre></td></tr></table></figure>
+<p>注：kafka已经为我们默认内置了单机zk，这里使用专门搭建的zk集群。启动内置zk服务命令如下：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./zookeeper-server-start.sh ../config/zookeeper.properties</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<h3 id="测试验证"><a href="#测试验证" class="headerlink" title="测试验证"></a>测试验证</h3><p>创建主题</p>
 </blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># es集群的名称</span><br><span class="line">cluster.name：lipanpan</span><br><span class="line"></span><br><span class="line"># 当前节点的名称</span><br><span class="line">node.name：elasticsearch_005_data</span><br><span class="line"></span><br><span class="line"># 数据存放目录</span><br><span class="line">path.data：/path/to/data1,/path/to/data2</span><br><span class="line">备注：数据目录支持配置多个，以逗号分隔；最好将数据，日志，插件目录放置到安装目录之外的路径下，防止重新安装Elasticsearch的时候不小心把安装目录覆盖。</span><br><span class="line"></span><br><span class="line"># 日志存放目录</span><br><span class="line">path.logs: /path/to/logs</span><br><span class="line"></span><br><span class="line"># 插件存放目录</span><br><span class="line">path.plugins: /path/to/plugins</span><br><span class="line"></span><br><span class="line"># 是否master候选节点</span><br><span class="line">node.master: true</span><br><span class="line"></span><br><span class="line"># 是否数据存储节点</span><br><span class="line">node.data：false</span><br><span class="line"></span><br><span class="line"># 绑定ip</span><br><span class="line">network.host: 192.168.1.111</span><br><span class="line">注：设置es服务支持访问的绑定IP</span><br><span class="line"></span><br><span class="line"># 是否启用restful访问</span><br><span class="line">http.enabled：true</span><br><span class="line"></span><br><span class="line"># restful访问端口</span><br><span class="line">http.port：9200</span><br><span class="line"></span><br><span class="line"># restful跨域支持</span><br><span class="line">http.cors.enabled：true</span><br><span class="line">http.cors.allowed.origin: &quot;*&quot;</span><br><span class="line"></span><br><span class="line"># 节点间通信端口</span><br><span class="line">transport.tcp.port：9300</span><br></pre></td></tr></table></figure>
+<p>创建主题时，需要指定复制因子（replication-factory）、分区数量、主题名称、zookeeper服务。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@localhost bin]# ./kafka-topics.sh --create --zookeeper 192.168.1.111:2181 --replication-factor 1 --partitions 1 --topic my-test-topic</span><br><span class="line">Created topic &quot;my-test-topic&quot;.</span><br></pre></td></tr></table></figure></p>
 <blockquote>
-<p>索引配置</p>
+<p>发送消息</p>
 </blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 索引的主分片数</span><br><span class="line">index.number_of_shards：5</span><br><span class="line">注：每个索引的主分片数，默认值是 5 。这个配置在索引创建后不能修改。</span><br><span class="line"></span><br><span class="line"># 每个主分片的副本数</span><br><span class="line">index.number_of_replicas：1</span><br><span class="line">注：每个主分片的副本数，默认值是1。对于活动的索引库，这个配置可以随时修改。</span><br><span class="line"></span><br><span class="line"># 索引刷新间隔时间</span><br><span class="line">index.refresh_interval：1s</span><br><span class="line">注：默认值1s，意味着数据写入1秒后就可以被检索到。</span><br></pre></td></tr></table></figure>
+<p>kafka可以通过一个命令行客户端从文件或者标准输入终端中发送内容作为消息到kafka集群中，默认情况下，每一行将会被分割为一条消息。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@localhost bin]# ./kafka-console-producer.sh --broker-list localhost:9092 --topic my-test-topic</span><br><span class="line">&gt;hello kafka</span><br><span class="line">&gt;welcome to kafka.</span><br></pre></td></tr></table></figure></p>
 <blockquote>
-<p>集群发现配置</p>
+<p>消费消息</p>
 </blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 最少的的主节点数</span><br><span class="line">discovery.zen.minimum_master_nodes：2</span><br><span class="line">注：法定个数就是 ( master 候选节点个数 / 2) + 1，少于此值则无法完成选举。</span><br><span class="line"></span><br><span class="line"># 集群单播列表</span><br><span class="line">discovery.zen.ping.unicast.hosts：[&quot;192.168.1.111&quot;,&quot;192.168.1.112&quot;]</span><br><span class="line">注：可指定端口，默认是9300；示例：[&quot;192.168.1.111:9300&quot;]</span><br><span class="line"></span><br><span class="line"># 是否启用多播发现节点</span><br><span class="line">discovery.zen.ping.multicast.enabled：false</span><br><span class="line">注：在同一网段的情况下，可以使用多播发现集群节点；集群名称相同则自动加入该集群，所以使用多播发现节点时，强烈建议使用特殊的集群名称，禁止使用默认的名称elasticsearch，防止新安装的节点自动加入集群，影响数据的分片等；</span><br><span class="line"></span><br><span class="line"># 选举通信超时时间</span><br><span class="line">discovery.zen.ping_timeout：5s</span><br><span class="line">注：默认3秒，提高一点以应对网络不好的时候，防止脑裂。</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>集群恢复配置</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 设置集群中总节点数</span><br><span class="line">gateway.expected_nodes: 10</span><br><span class="line"></span><br><span class="line"># 等待集群至少存在8个节点时，启动分片数据恢复</span><br><span class="line">gateway.recover_after_nodes: 8</span><br><span class="line"></span><br><span class="line"># 等待5分钟后，启动分片数据恢复</span><br><span class="line">gateway.recover_after_time: 5m</span><br></pre></td></tr></table></figure>
-<p>注： 哪个条件先达到，则触发数据恢复。</p>
-<blockquote>
-<h3 id="脑裂"><a href="#脑裂" class="headerlink" title="脑裂"></a>脑裂</h3></blockquote>
-<p>脑裂：集群中同时存在两个master节点的现象；</p>
-<p>危害：如果你的集群发生了脑裂，那么你的集群就会处在丢失数据的危险中，因为主节点被认为是这个集群的最高统治者，它决定了什么时候新的索引可以创建，分片是如何移动的等等。如果你有两个masters节点， 你的数据完整性将得不到保证，因为你有两个节点认为他们有集群的控制权。</p>
-<p>如果你有两个节点，你遇到难题了。法定数当然是 2 ，但是这意味着如果有一个节点挂掉，你整个集群就不可用了（因为无法进行master选举了）。 设置成1可以保证集群的功能，但是就无法保证集群脑裂了（因为可能存在集群节点间通信问题，导致2个节点各自选举为master节点），像这样的情况，最好至少保证有3个节点。</p>
+<p>kafka也可以通过命令行把消息导入到标准输出中终端上。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[root@localhost bin]# ./kafka-console-consumer.sh --zookeeper 192.168.1.111:2181 --topic my-test-topic --from-beginning</span><br><span class="line">Using the ConsoleConsumer with old consumer is deprecated and will be removed in a future major release. Consider using the new consumer by passing [bootstrap-server] instead of [zookeeper].</span><br><span class="line">hello kafka</span><br><span class="line">welcome to kafka.</span><br></pre></td></tr></table></figure></p>
 <blockquote>
 <h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
 <ol>
-<li><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/important-configuration-changes.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/important-configuration-changes.html</a></li>
-<li><a href="https://www.ibm.com/support/knowledgecenter/zh/SSFPJS_8.5.6/com.ibm.wbpm.main.doc/topics/rfps_esearch_configoptions.html" target="_blank" rel="noopener">https://www.ibm.com/support/knowledgecenter/zh/SSFPJS_8.5.6/com.ibm.wbpm.main.doc/topics/rfps_esearch_configoptions.html</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-http.html</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html</a></li>
-<li><a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.6/index-modules.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/5.6/index-modules.html</a></li>
+<li><a href="https://kafka.apache.org/quickstart" target="_blank" rel="noopener">https://kafka.apache.org/quickstart</a></li>
+<li><a href="https://github.com/huangqian/note/blob/master/Kafka/kafka_quick_start.md" target="_blank" rel="noopener">https://github.com/huangqian/note/blob/master/Kafka/kafka_quick_start.md</a></li>
 </ol>
 
       
@@ -400,17 +400,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/09/elasticsearch 内网IP拒绝访问/" rel="next" title="elasticsearch 内网IP拒绝访问">
-                <i class="fa fa-chevron-left"></i> elasticsearch 内网IP拒绝访问
+              <a href="/2018/04/22/logstash 工作机制/" rel="next" title="logstash 工作机制">
+                <i class="fa fa-chevron-left"></i> logstash 工作机制
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/04/16/elasticsearch 节点/" rel="prev" title="elasticsearch 节点">
-                elasticsearch 节点 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -558,7 +554,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#位置"><span class="nav-number">2.</span> <span class="nav-text">位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#脑裂"><span class="nav-number">4.</span> <span class="nav-text">脑裂</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭建环境"><span class="nav-number">2.</span> <span class="nav-text">搭建环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装步骤"><span class="nav-number">3.</span> <span class="nav-text">安装步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试验证"><span class="nav-number">4.</span> <span class="nav-text">测试验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">5.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
             
           </div>
         </section>
