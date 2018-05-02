@@ -94,7 +94,7 @@
 <meta property="og:image" content="http://www.pandan.xyz/images/201805022126.png">
 <meta property="og:image" content="http://www.pandan.xyz/images/201805022127.png">
 <meta property="og:image" content="http://www.pandan.xyz/images/201805022128.png">
-<meta property="og:updated_time" content="2018-05-02T14:56:05.782Z">
+<meta property="og:updated_time" content="2018-05-02T15:04:40.335Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafka 基本概念">
 <meta name="twitter:description" content="前言 介绍kafka中涉及到的一些基本的概念，包括Broker，Topic，Partition，Producer，Consumer，Consumer Group等。">
@@ -376,7 +376,7 @@
 <blockquote>
 <h3 id="单播与多播"><a href="#单播与多播" class="headerlink" title="单播与多播"></a>单播与多播</h3></blockquote>
 <p>与rabbitmq不同的是，kafka消息多播是通过为Topic定义不同的Consumer Group来实现的，而rabbitmq则是通过消息在多个队列中复制实现的，因为rabbitmq对于已经消费成功的消息，会及时的清除，以释放内存空间。kafka由于是直接使用磁盘队列，不用担心内存空间不足的问题。</p>
-<p>在kafka中，同一Consumer Group种的Consumer并发消费broker中的消息，分组中的每个Consumer负责一个Partition，每个Consumer维护其所在分区中的消息读取偏移offset。</p>
+<p>在kafka中，同一Consumer Group中的Consumer并发消费broker中的消息，分组中的每个Consumer负责消费一个或多个Partition，每个Consumer各自维护其所在分区中的消息读取偏移offset。</p>
 <p>对于同一个Topic，不同的Consumer Group是相互隔离的，在消费消息时不存在相互影响的问题。</p>
 <p>单播：一个Topic仅有一个Consumer Group。</p>
 <p>组播：一个Topic有多个不同的Consumer Group。</p>
@@ -386,8 +386,7 @@
 <blockquote>
 <h3 id="过期消息清理策略"><a href="#过期消息清理策略" class="headerlink" title="过期消息清理策略"></a>过期消息清理策略</h3></blockquote>
 <p>在kafka中，消息被消费完之后，并不会像rabbitmq一样，会将已经确认消费成功的消息，在broker中给清理掉，它是不会主动清理的，这也是kafka为什么既能够与spark集成，实时处理消息；同时也支持与hadoop集成，离线处理消息的关键。同时，我们也可以在Consumer端手动调整offset的值来重复消费之前的消息，也可以跳过一些消息等。</p>
-<p>具体配置如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">############################# Log Retention Policy #############################</span><br><span class="line"></span><br><span class="line"># 过期日志清理策略[delete|compact]，默认删除</span><br><span class="line">log.cleanup.policy=delete</span><br><span class="line"></span><br><span class="line"># 基于时间的策略：日志保留的最大时间，默认7天，触发条件则开始清理过期日志</span><br><span class="line">log.retention.hours=168</span><br><span class="line"></span><br><span class="line"># 基于空间的策略：分区文件最大size，触发条件则开始清理过期日志</span><br><span class="line">log.retention.bytes=1073741824</span><br><span class="line"></span><br><span class="line"># 过期日志清理检测时间间隔300秒</span><br><span class="line">log.retention.check.interval.ms=300000</span><br></pre></td></tr></table></figure>
+<p>但是，对于过期消息所占磁盘空间的释放，kafka提供了以下两种处理策略：<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">############################# Log Retention Policy #############################</span><br><span class="line"></span><br><span class="line"># 过期日志清理策略[delete|compact]，默认删除</span><br><span class="line">log.cleanup.policy=delete</span><br><span class="line"></span><br><span class="line"># 基于时间的策略：日志保留的最大时间，默认7天，触发条件则开始清理过期日志</span><br><span class="line">log.retention.hours=168</span><br><span class="line"></span><br><span class="line"># 基于空间的策略：分区文件最大size，触发条件则开始清理过期日志</span><br><span class="line">log.retention.bytes=1073741824</span><br><span class="line"></span><br><span class="line"># 过期日志清理检测时间间隔300秒</span><br><span class="line">log.retention.check.interval.ms=300000</span><br></pre></td></tr></table></figure></p>
 <blockquote>
 <h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
 <ol>
@@ -419,16 +418,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/22/kafka 集群/" rel="next" title="kafka 集群">
-                <i class="fa fa-chevron-left"></i> kafka 集群
+              <a href="/2018/04/22/logstash 安装/" rel="next" title="logstash 安装">
+                <i class="fa fa-chevron-left"></i> logstash 安装
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/04/22/logstash 工作机制/" rel="prev" title="logstash 工作机制">
-                logstash 工作机制 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/04/22/kafka 安装/" rel="prev" title="kafka 安装">
+                kafka 安装 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
