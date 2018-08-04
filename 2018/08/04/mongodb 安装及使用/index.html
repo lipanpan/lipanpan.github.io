@@ -1,0 +1,667 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言 MongoDB 是一个基于分布式文件存储的数据库。由 C++ 语言编写。旨在为 WEB 应用提供可扩展的高性能数据存储解决方案。MongoDB 是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mongodb 安装及使用">
+<meta property="og:url" content="http://www.pandan.xyz/2018/08/04/mongodb 安装及使用/index.html">
+<meta property="og:site_name" content="lpp`s blog">
+<meta property="og:description" content="前言 MongoDB 是一个基于分布式文件存储的数据库。由 C++ 语言编写。旨在为 WEB 应用提供可扩展的高性能数据存储解决方案。MongoDB 是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-04T14:48:38.787Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mongodb 安装及使用">
+<meta name="twitter:description" content="前言 MongoDB 是一个基于分布式文件存储的数据库。由 C++ 语言编写。旨在为 WEB 应用提供可扩展的高性能数据存储解决方案。MongoDB 是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6322803657364473000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://www.pandan.xyz/2018/08/04/mongodb 安装及使用/"/>
+
+  <title> mongodb 安装及使用 | lpp`s blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">lpp`s blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', '68joz6yBu9h4R_HyKQr9','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                mongodb 安装及使用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-08-04T16:37:56+08:00" content="2018-08-04">
+              2018-08-04
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/mongodb系列/" itemprop="url" rel="index">
+                    <span itemprop="name">mongodb系列</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3></blockquote>
+<p>MongoDB 是一个基于分布式文件存储的数据库。由 C++ 语言编写。旨在为 WEB 应用提供可扩展的高性能数据存储解决方案。MongoDB 是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库当中功能最丰富，最像关系数据库的。</p>
+<a id="more"></a>
+<blockquote>
+<h3 id="安装启动"><a href="#安装启动" class="headerlink" title="安装启动"></a>安装启动</h3></blockquote>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 下载文件</span><br><span class="line">curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.0.6.tgz</span><br><span class="line"></span><br><span class="line"># 解压文件</span><br><span class="line">tar -zxvf mongodb-linux-x86_64-3.0.6.tgz</span><br><span class="line"></span><br><span class="line"># 创建数据目录data</span><br><span class="line">mkdir /usr/local/mongodb-linux-x86_64-3.0.6/data</span><br><span class="line"></span><br><span class="line"># 守护启动服务，指定数据目录，默认目录/data/db</span><br><span class="line">./mongod --dbpath=/usr/local/mongodb-linux-x86_64-3.0.6/data &amp;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3></blockquote>
+<p>默认链接的是test库，mongo是安装时自带的客户端命令。<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">./mongo</span><br><span class="line">MongoDB shell version: 3.0.6</span><br><span class="line">connecting to: test</span><br><span class="line"></span><br><span class="line">&gt; db.student.insert(&#123;&apos;id&apos;:10001, &apos;name&apos;:&apos;Jeck&apos;, &apos;age&apos;: 25, &apos;address&apos;:&apos;China&apos;, &apos;phoneNo&apos;:&apos;13243744257&apos;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)</span><br><span class="line"></span><br><span class="line">&gt; db.student.find()</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b06d1e371899dbc900b9&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &apos;age&apos;: 25, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b0a81e371899dbc900ba&quot;), &quot;id&quot; : 10002, &quot;name&quot; : &quot;rouse&quot;, &apos;age&apos;: 20, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13243744278&quot; &#125;</span><br><span class="line"></span><br><span class="line">&gt; db.student.find(&#123;&apos;address&apos;:&apos;China&apos;&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b06d1e371899dbc900b9&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line"></span><br><span class="line"># 查询匹配20&lt;age&lt;30的记录</span><br><span class="line">&gt; db.student.find(&#123;&apos;age&apos;:&#123;$gt:20, $lt:30&#125;&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b2ab1e371899dbc900bd&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &quot;age&quot; : 25, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line"></span><br><span class="line"># 统计符合条件的总数</span><br><span class="line">&gt; db.student.find(&#123;&apos;age&apos;:&#123;$gt:20, $lt:30&#125;&#125;).count()</span><br><span class="line">2</span><br><span class="line"></span><br><span class="line"># 1：升序</span><br><span class="line">&gt; db.student.find(&#123;&apos;age&apos;:&#123;$gt:20, $lt:30&#125;&#125;).sort(&#123;&apos;age&apos;:1&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b4081e371899dbc900c0&quot;), &quot;id&quot; : 10004, &quot;name&quot; : &quot;rouse4&quot;, &quot;age&quot; : 22, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13543744898&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b2ab1e371899dbc900bd&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &quot;age&quot; : 25, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line"></span><br><span class="line"># -1：降序</span><br><span class="line">&gt; db.student.find(&#123;&apos;age&apos;:&#123;$gt:20, $lt:30&#125;&#125;).sort(&#123;&apos;age&apos;:-1&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b2ab1e371899dbc900bd&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &quot;age&quot; : 25, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b4081e371899dbc900c0&quot;), &quot;id&quot; : 10004, &quot;name&quot; : &quot;rouse4&quot;, &quot;age&quot; : 22, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13543744898&quot; &#125;</span><br><span class="line"></span><br><span class="line"># 分页查询</span><br><span class="line">&gt; db.student.find(&#123;&apos;age&apos;:&#123;$gt:20, $lt:30&#125;&#125;).sort(&#123;&apos;age&apos;:1&#125;).skip(1).limit(1)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b2ab1e371899dbc900bd&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;Jeck&quot;, &quot;age&quot; : 25, &quot;address&quot; : &quot;China&quot;, &quot;phoneNo&quot; : &quot;13243744257&quot; &#125;</span><br><span class="line"></span><br><span class="line"># 模糊查询：匹配前缀以rouse开头的name</span><br><span class="line">&gt; db.student.find(&#123;&apos;name&apos;:/^rouse/&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b2c11e371899dbc900be&quot;), &quot;id&quot; : 10001, &quot;name&quot; : &quot;rouse&quot;, &quot;age&quot; : 20, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13243744897&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b3f31e371899dbc900bf&quot;), &quot;id&quot; : 10003, &quot;name&quot; : &quot;rouse3&quot;, &quot;age&quot; : 30, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13243744898&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b4081e371899dbc900c0&quot;), &quot;id&quot; : 10004, &quot;name&quot; : &quot;rouse4&quot;, &quot;age&quot; : 22, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13543744898&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5b65b7e13f43e28fb79f732f&quot;), &quot;id&quot; : 10005, &quot;name&quot; : &quot;rouse 5&quot;, &quot;age&quot; : 25, &quot;address&quot; : &quot;Jeban&quot;, &quot;phoneNo&quot; : &quot;13453744898&quot; &#125;</span><br><span class="line"></span><br><span class="line"># 仅更新匹配的第一条</span><br><span class="line">&gt; db.student.update(&#123;&apos;name&apos;:/^rouse/, &apos;age&apos;:&#123;$gt:22&#125;&#125;, &#123;$set:&#123;&apos;address&apos;:&apos;Thailand&apos;&#125;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line"></span><br><span class="line"># 更新所有匹配的记录</span><br><span class="line">&gt; db.student.update(&#123;&apos;name&apos;:/^rouse/, &apos;age&apos;:&#123;$gt:22&#125;&#125;, &#123;$set:&#123;&apos;address&apos;:&apos;Thailand&apos;&#125;&#125;, &#123;multi:true&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 2, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line"></span><br><span class="line"># 移除匹配的记录</span><br><span class="line">&gt; db.student.remove(&#123;&apos;name&apos;:&apos;Jeck&apos;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nRemoved&quot; : 1 &#125;)</span><br><span class="line"></span><br><span class="line"># 移除所有记录</span><br><span class="line">&gt; db.student.remove(&#123;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nRemoved&quot; : 2 &#125;)</span><br></pre></td></tr></table></figure></p>
+<p><strong>索引操作：(1：升序创建索引，-1：降序创建索引)</strong><br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 单列索引：指定name升序创建索引</span><br><span class="line">&gt; db.student.createIndex(&#123;&apos;name&apos;:1&#125;)</span><br><span class="line">2018-08-04T10:36:41.824-0400 I INDEX    [conn7] build index on: test.student properties: &#123; v: 1, key: &#123; name: 1.0 &#125;, name: &quot;name_1&quot;, ns: &quot;test.student&quot; &#125;</span><br><span class="line">2018-08-04T10:36:41.824-0400 I INDEX    [conn7] 	 building index using bulk method</span><br><span class="line">2018-08-04T10:36:41.824-0400 I INDEX    [conn7] build index done.  scanned 5 total records. 0 secs</span><br><span class="line">&#123;</span><br><span class="line">	&quot;createdCollectionAutomatically&quot; : false,</span><br><span class="line">	&quot;numIndexesBefore&quot; : 1,</span><br><span class="line">	&quot;numIndexesAfter&quot; : 2,</span><br><span class="line">	&quot;ok&quot; : 1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 联合索引</span><br><span class="line">&gt; db.student.createIndex(&#123;&apos;id&apos;:1, &apos;age&apos;:-1&#125;)</span><br><span class="line">2018-08-04T10:40:17.782-0400 I INDEX    [conn7] build index on: test.student properties: &#123; v: 1, key: &#123; id: 1.0, age: -1.0 &#125;, name: &quot;id_1_age_-1&quot;, ns: &quot;test.student&quot; &#125;</span><br><span class="line">2018-08-04T10:40:17.782-0400 I INDEX    [conn7] 	 building index using bulk method</span><br><span class="line">2018-08-04T10:40:17.782-0400 I INDEX    [conn7] build index done.  scanned 5 total records. 0 secs</span><br><span class="line">&#123;</span><br><span class="line">	&quot;createdCollectionAutomatically&quot; : false,</span><br><span class="line">	&quot;numIndexesBefore&quot; : 2,</span><br><span class="line">	&quot;numIndexesAfter&quot; : 3,</span><br><span class="line">	&quot;ok&quot; : 1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 唯一索引</span><br><span class="line">&gt; db.student.createIndex(&#123;&apos;phoneNo&apos;:1&#125;, &#123;unique:true&#125;)</span><br><span class="line">2018-08-04T10:42:33.740-0400 I INDEX    [conn7] build index on: test.student properties: &#123; v: 1, unique: true, key: &#123; phoneNo: 1.0 &#125;, name: &quot;phoneNo_1&quot;, ns: &quot;test.student&quot; &#125;</span><br><span class="line">2018-08-04T10:42:33.740-0400 I INDEX    [conn7] 	 building index using bulk method</span><br><span class="line">2018-08-04T10:42:33.740-0400 I INDEX    [conn7] build index done.  scanned 5 total records. 0 secs</span><br><span class="line">&#123;</span><br><span class="line">	&quot;createdCollectionAutomatically&quot; : false,</span><br><span class="line">	&quot;numIndexesBefore&quot; : 3,</span><br><span class="line">	&quot;numIndexesAfter&quot; : 4,</span><br><span class="line">	&quot;ok&quot; : 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>数据库操作：</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 显示所有数据库</span><br><span class="line">&gt; show dbs</span><br><span class="line">local  0.078GB</span><br><span class="line">test   0.078GB</span><br><span class="line"></span><br><span class="line"># 切换数据库，没有则创建</span><br><span class="line">&gt; use local</span><br><span class="line">switched to db local</span><br><span class="line"></span><br><span class="line"># 删除数据库</span><br><span class="line">&gt; db.dropDatabase()</span><br><span class="line">2018-08-04T10:47:53.825-0400 I COMMAND  [conn7] dropDatabase test-1 starting</span><br><span class="line">2018-08-04T10:47:53.829-0400 I JOURNAL  [conn7] journalCleanup...</span><br><span class="line">2018-08-04T10:47:53.829-0400 I JOURNAL  [conn7] removeJournalFiles</span><br><span class="line">2018-08-04T10:47:53.833-0400 I JOURNAL  [conn7] journalCleanup...</span><br><span class="line">2018-08-04T10:47:53.833-0400 I JOURNAL  [conn7] removeJournalFiles</span><br><span class="line">2018-08-04T10:47:53.838-0400 I COMMAND  [conn7] dropDatabase test-1 finished</span><br><span class="line">&#123; &quot;dropped&quot; : &quot;test-1&quot;, &quot;ok&quot; : 1 &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3></blockquote>
+<ol>
+<li><a href="http://www.runoob.com/mongodb" target="_blank" rel="noopener">http://www.runoob.com/mongodb</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/30/hexo 利用Webhooks自动发布博客/" rel="next" title="利用Webhooks自动发布博客">
+                <i class="fa fa-chevron-left"></i> 利用Webhooks自动发布博客
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="lipanpan" />
+          <p class="site-author-name" itemprop="name">lipanpan</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">140</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/lipanpan" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              友情链接
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://jm.taobao.org" title="阿里中间件博客" target="_blank">阿里中间件博客</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://ifeve.com" title="并发编程网" target="_blank">并发编程网</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.infoq.com/cn/" title="InfoQ" target="_blank">InfoQ</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.programcreek.com/java-api-examples/" title="Java-api-examples" target="_blank">Java-api-examples</a>
+                </li>
+              
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.cnblogs.com/itfly8" title="ITFLY8架构师之家" target="_blank">ITFLY8架构师之家</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装启动"><span class="nav-number">2.</span> <span class="nav-text">安装启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本使用"><span class="nav-number">3.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lipanpan</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
