@@ -1318,8 +1318,8 @@
             
               
                 
-                <a class="post-title-link" href="/2016/08/28/haproxy 突破单IP端口限制/" itemprop="url">
-                  haproxy 突破单IP端口限制
+                <a class="post-title-link" href="/2016/08/28/haproxy 根据cookie实现灰度发布/" itemprop="url">
+                  haproxy 根据cookie实现灰度发布
                 </a>
               
             
@@ -1380,10 +1380,9 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p><a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html#source%20%28Server%20and%20default-server%20options%29" target="_blank" rel="noopener">haproxy官方手册</a></p>
-<p>tcp四元组：源IP，源端口，目标IP，目标端口；用于唯一标识一条tcp连接。目标IP(服务器IP)和目标端口(例如：80)都是固定的，当建立连接的时候，客户端操作系统都会随机的分配一个未使用的端口，用于建立tcp连接，众所周知，一个tcp报文头使用2个字节来传输源端口(也就是说端口的最大范围0-65535)；去掉常用的端口，对于客户端操作系统可随机分配的端口大概只有64K左右，当然也要看操作系统的限制(可通过调整内核参数进行修改)。那么，基于这一理论，代理服务器是如何做到动不动就号称并发几十万的呢？(如：F5硬件负载均衡机等)，明显代理机可用端口最大也只有65535。要突破端口的限制，就必须为代理机分配多个内网IP，这样通过扩展绑定到代理机IP的个数，来扩大客户端可分配端口数(比如：基于tcp四元组唯一性原则，代理机上绑定了两个Lan Ip，那么端口数就有130K左右了)。所以，F5负载均衡服务器一般都是绑定了多个内网IP的，同样，我们也可以让部署haproxy的软负载均衡机绑定多个内网IP，提升并发连接数。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>一般我们把环境分为：开发环境，测试环境，灰度环境以及生产环境；其中，灰度环境相当于准生产环境，当有改动比较大的特性上线之前(例如：网站改版等)，往往会先上到灰度环境，将一部分生产环境的流量引到灰度环境，进行一个小范围的公测；以此搜集用户的反馈，即时改进。避免直接部署到生产环境，如果出现问题，影响会很大；下面将介绍haproxy如何根据cookie进行分流。<br>
           <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/28/haproxy 突破单IP端口限制/#more" rel="contents">
+            <a class="btn" href="/2016/08/28/haproxy 根据cookie实现灰度发布/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
